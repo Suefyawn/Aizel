@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Inventory scratch scripts — not committed (see .gitignore), so no
+    // need to keep them lint-clean. The importer itself stays linted.
+    "inventory/_*.mjs",
   ]),
 ]);
 

@@ -33,6 +33,6 @@ describe('TOTP', () => {
     const url = otpauthUrl({ secret: 'JBSWY3DPEHPK3PXP', account: 'me@example.com' });
     expect(url.startsWith('otpauth://totp/')).toBe(true);
     expect(url).toMatch(/secret=JBSWY3DPEHPK3PXP/);
-    expect(url).toMatch(/issuer=Yellow%20Pink/);
+    expect(url).toMatch(/issuer=Aizel/);
   });
 });

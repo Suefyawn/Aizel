@@ -26,7 +26,7 @@ describe('unsubscribe token', () => {
 
   it('builds a query-stringed absolute URL', () => {
     const url = unsubscribeUrl('https://aizel.co.uk', 'alice@example.com');
-    expect(url).toMatch(/^https:\/\/aizel\.pk\/newsletter\/unsubscribe\?email=alice%40example\.com&token=[A-Za-z0-9_-]{32}$/);
+    expect(url).toMatch(/^https:\/\/aizel\.co\.uk\/newsletter\/unsubscribe\?email=alice%40example\.com&token=[A-Za-z0-9_-]{32}$/);
   });
 
   it('handles trailing slash on the site url', () => {

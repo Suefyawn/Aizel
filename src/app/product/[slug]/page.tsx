@@ -12,7 +12,6 @@ import { MoreToExplore } from '@/components/pdp/MoreToExplore';
 import { pageMeta, jsonLd, productLd, breadcrumbLd, faqLd } from '@/lib/seo';
 import { isEnabled } from '@/lib/flags';
 import { brandPlusName, stripBrandPrefix } from '@/lib/product-display';
-import { taxonForCategory } from '@/lib/category-taxonomy';
 import type { Product, ProductReview, ProductImage, ProductVariant, ProductAttribute, AttributeValue } from '@/types';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

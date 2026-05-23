@@ -1,0 +1,81 @@
+# CI for Aizel — runs on every push to main and every pull request.
+# Three independent jobs run in parallel so a failing test doesn't block the
+# typecheck signal (and vice versa). All three must pass before a PR can land
+# once branch protection requires them.
+#
+# Secrets needed for the build to succeed in CI:
+#   None at this stage — the build runs in demo mode without Supabase / Stripe
+#   / Twilio / Resend. Add SUPABASE_* + STRIPE_* + TWILIO_* + RESEND_API_KEY
+#   under Settings → Secrets → Actions when you want CI to exercise the live
+#   integrations.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel older runs for the same branch — saves Actions minutes when you push
+# a fix on top of a failing run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      # Disable Next telemetry so CI logs aren't cluttered, and tell Sentry's
+      # build plugin to skip source-map upload (no auth token in plain CI).
+      NEXT_TELEMETRY_DISABLED: '1'
+      SENTRY_AUTH_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+
+  test:
+    name: Unit tests (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test

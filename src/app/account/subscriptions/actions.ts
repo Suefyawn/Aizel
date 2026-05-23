@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { createServerSupabase as authedClient } from '@/lib/supabase-server';
 import { supabase } from '@/lib/supabase';
-import { taxonForCategory } from '@/lib/category-taxonomy';
 import { SUBSCRIPTION_INTERVALS } from '@/lib/subscriptions';
 
 const DAY_MS = 86_400_000;
