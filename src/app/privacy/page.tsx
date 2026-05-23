@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         Privacy &amp; cookies
       </h1>
       <p style={{ color: 'var(--ink-500)', fontSize: '0.875rem', marginBottom: 32 }}>
-        Last updated: 18 May 2026
+        Last updated: 23 May 2026
       </p>
 
       <PrivacyCenter />
@@ -26,10 +26,22 @@ export default function PrivacyPage() {
       <section style={{ marginTop: 48 }}>
         <h2 className="h2" style={{ marginBottom: 16 }}>Who we are</h2>
         <p className="body-text" style={{ color: 'var(--ink-700)' }}>
-          Aizel is an online beauty and wellness retailer operating in the UK. When you
+          Aizel is an online retailer of authentic Afro/Black hair and body care brands, operating
+          in the United Kingdom. We are the &ldquo;data controller&rdquo; for the personal data
+          described below, as defined by the UK GDPR and the Data Protection Act 2018. When you
           shop with us we collect the information needed to deliver your order and improve our
-          service — nothing more.
+          service &mdash; nothing more.
         </p>
+      </section>
+
+      <section style={{ marginTop: 36 }}>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Lawful basis for processing</h2>
+        <ul style={{ color: 'var(--ink-700)', lineHeight: 1.7, paddingLeft: 20 }}>
+          <li><strong>Contract:</strong> we need your address and contact details to deliver the order you placed.</li>
+          <li><strong>Legal obligation:</strong> we retain order records for HMRC tax compliance (6 years).</li>
+          <li><strong>Legitimate interest:</strong> transactional email about your order status — you can stop these by cancelling the order.</li>
+          <li><strong>Consent:</strong> analytics cookies and the marketing newsletter. You opt-in via the cookie banner / signup form, and you can withdraw consent any time.</li>
+        </ul>
       </section>
 
       <section style={{ marginTop: 36 }}>
@@ -63,12 +75,26 @@ export default function PrivacyPage() {
       </section>
 
       <section style={{ marginTop: 36 }}>
-        <h2 className="h2" style={{ marginBottom: 16 }}>Your rights</h2>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Your rights under the UK GDPR</h2>
         <p className="body-text" style={{ color: 'var(--ink-700)' }}>
-          You can ask us at any time to: see the data we hold about you, correct it, or delete your
-          account. Email <a href="mailto:privacy@aizel.co.uk" className="underline">privacy@aizel.co.uk</a>{' '}
-          and we&apos;ll respond within 30 days.
+          You have the right to: access the data we hold about you, request a correction, request
+          deletion (&ldquo;right to be forgotten&rdquo;), object to processing, restrict processing,
+          and receive your data in a portable format. Email{' '}
+          <a href="mailto:privacy@aizel.co.uk" className="underline">privacy@aizel.co.uk</a> and we&apos;ll
+          respond within one calendar month. If you&apos;re not happy with how we&apos;ve handled your
+          request, you can complain to the UK&apos;s Information Commissioner&apos;s Office at{' '}
+          <a href="https://ico.org.uk/make-a-complaint/" target="_blank" rel="noopener noreferrer" className="underline">ico.org.uk</a>.
         </p>
+      </section>
+
+      <section style={{ marginTop: 36 }}>
+        <h2 className="h2" style={{ marginBottom: 16 }}>How long we keep data</h2>
+        <ul style={{ color: 'var(--ink-700)', lineHeight: 1.7, paddingLeft: 20 }}>
+          <li><strong>Order records:</strong> 6 years from the order date (HMRC retention rule).</li>
+          <li><strong>Account profiles:</strong> until you delete your account.</li>
+          <li><strong>Marketing list:</strong> until you unsubscribe.</li>
+          <li><strong>Analytics events:</strong> 14 months in aggregate; no individual identifiers.</li>
+        </ul>
       </section>
     </article>
   );

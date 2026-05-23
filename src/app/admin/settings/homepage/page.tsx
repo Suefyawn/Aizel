@@ -140,7 +140,7 @@ export default async function SettingsHomepagePage({ searchParams }: { searchPar
             <div>
               <label style={lbl}>Message</label>
               <input name="announcement_text" defaultValue={g('announcement_text')} style={inp}
-                placeholder="Free delivery on orders over £2,500 — COD Nationwide" />
+                placeholder="Free UK delivery on orders over £15 · Authentic brands · Fast tracked shipping" />
             </div>
             <div>
               <label style={lbl}>Background colour</label>

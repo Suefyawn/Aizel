@@ -9,7 +9,7 @@
 // No background sync / push for now — opt in via a follow-up commit.
 // ============================================================================
 
-const VERSION = 'yp-v1';
+const VERSION = 'az-v1';
 const HTML_CACHE   = `${VERSION}-html`;
 const ASSET_CACHE  = `${VERSION}-assets`;
 const IMAGE_CACHE  = `${VERSION}-images`;

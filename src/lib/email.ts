@@ -473,13 +473,13 @@ export async function sendNewsletterWelcomeEmail(args: { email: string; source: 
     <ul style="margin:0 0 20px;padding-left:20px;color:${INK_700}">
       <li style="margin-bottom:6px"><strong>One email a fortnight</strong> — we never blast.</li>
       <li style="margin-bottom:6px">New drops, restock alerts, and a tightly-edited offer or two.</li>
-      <li style="margin-bottom:6px">UK-specific routine tips from our editorial team.</li>
+      <li style="margin-bottom:6px">Hair-care routines and product guides from our editorial team.</li>
     </ul>
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px">
       <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:20px 24px;text-align:center">
         <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">A little welcome gift</p>
         <p style="margin:0 0 4px;color:${INK};font-size:26px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">WELCOME10</p>
-        <p style="margin:0;color:${INK_700};font-size:13px">10% off your first order over £1,500. Apply it at checkout.</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">10% off your first order over £15. Apply it at checkout.</p>
       </td></tr>
     </table>
     <p style="margin:0 0 24px;color:${INK_700}">
@@ -550,7 +550,7 @@ export async function sendReorderReminderEmail(args: {
       <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:18px 22px;text-align:center">
         <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Your subscriber discount</p>
         <p style="margin:0 0 4px;color:${INK};font-size:24px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">SUBSCRIBE10</p>
-        <p style="margin:0;color:${INK_700};font-size:13px">10% off this reorder over £1,500. Apply it at checkout.</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">10% off this reorder over £15. Apply it at checkout.</p>
       </td></tr>
     </table>
     <p style="margin:0 0 24px;text-align:center">

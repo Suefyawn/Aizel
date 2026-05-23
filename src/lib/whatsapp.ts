@@ -9,8 +9,8 @@
 // Env:
 //   NEXT_PUBLIC_WHATSAPP_NUMBER — merchant's WhatsApp number in
 //     international E.164 format **without** the leading "+" and without
-//     spaces/dashes. Pakistan example: 923001234567 (where 92 is the country
-//     code and 3001234567 is the 10-digit mobile).
+//     spaces/dashes. UK example: 447123456789 (where 44 is the country
+//     code and 7123456789 is the 10-digit mobile).
 //
 // The number is intentionally public-build-time so the buttons can render
 // server-side without a runtime fetch. If unset, the helper returns null
@@ -47,16 +47,30 @@ export function whatsappUrl(message?: string): string | null {
 }
 
 /** Build a `wa.me` link to an arbitrary customer phone (admin → customer
- *  outbound), normalising the phone the same way the merchant number is
- *  normalised. Returns null if the phone is empty / unparseable. */
+ *  outbound), normalising the phone to UK E.164 (without the leading "+",
+ *  per wa.me's URL format). Returns null if the phone is empty / unparseable.
+ *
+ *  Handles the common UK input styles:
+ *    "07123456789"     → 447123456789
+ *    "+447123456789"   → 447123456789
+ *    "447123456789"    → 447123456789
+ *    "00447123456789"  → 447123456789
+ *    "07123 456 789"   → 447123456789  (spaces / dashes stripped)
+ */
 export function whatsappUrlForCustomer(phone: string | null | undefined, message?: string): string | null {
   if (!phone) return null;
-  // UK phones often arrive as "0300 1234567" / "07123456789" /
-  // "+447123456789". Strip non-digits then prepend the country code if the
-  // remaining string starts with "0".
   let digits = phone.replace(/\D+/g, '');
-  if (digits.startsWith('0')) digits = '92' + digits.slice(1);
   if (!digits) return null;
+  // 0044 → 44
+  if (digits.startsWith('0044')) digits = digits.slice(2);
+  // Leading single 0 → assume national-format UK mobile/landline; prepend 44.
+  else if (digits.startsWith('0')) digits = '44' + digits.slice(1);
+  // Bare number (no prefix) — if it looks like a 10-11 digit UK mobile,
+  // prepend the country code. Anything else we pass through and let wa.me
+  // reject if invalid.
+  else if (!digits.startsWith('44') && digits.length >= 10 && digits.length <= 11) {
+    digits = '44' + digits;
+  }
   if (!message) return `https://wa.me/${digits}`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }

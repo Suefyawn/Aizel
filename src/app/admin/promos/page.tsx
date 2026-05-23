@@ -52,7 +52,7 @@ function PromoFields({ promo }: { promo?: Promo }) {
         <input name="label" placeholder="NEW" defaultValue={promo?.label ?? ''} style={inp} />
       </Field>
       <Field label="Headline" wide>
-        <input name="headline" required placeholder="Free delivery over £2,500 — COD nationwide" defaultValue={promo?.headline ?? ''} style={inp} />
+        <input name="headline" required placeholder="Free UK delivery over £15 · Cantu, ORS, Palmer's & more" defaultValue={promo?.headline ?? ''} style={inp} />
       </Field>
       <Field label="Subline" wide>
         <input name="subline" placeholder="(optional)" defaultValue={promo?.subline ?? ''} style={inp} />
