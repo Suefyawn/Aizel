@@ -1,5 +1,5 @@
 {
-  "regions": ["bom1"],
+  "regions": ["lhr1"],
   "crons": [
     {
       "path": "/api/cron/daily",
@@ -7,3 +7,4 @@
     }
   ]
 }
+
