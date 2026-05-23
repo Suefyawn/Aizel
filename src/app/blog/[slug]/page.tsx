@@ -1,9 +1,27 @@
 // ISR: cache for 10 min; admin blog edits call revalidatePath to bust.
 export const revalidate = 600;
 
+// Known limitation (Next 16): /blog/<unknown-slug> returns HTTP 200 with
+// the not-found body rendered, not a clean 404. The body is correct; only
+// the status header is wrong. Google can soft-404 from body content, so
+// this is a tolerable SEO edge-case. Same limitation as /product/[slug] —
+// see that file for context.
+
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getBlogPostBySlug, getBlogPosts, getProducts } from '@/lib/supabase';
+
+// Prebuild every known post slug at build time so known posts get the
+// fast SSG path. Unknown slugs still hit the runtime + notFound() path
+// per the limitation noted above.
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  try {
+    const posts = await getBlogPosts();
+    return posts.map(p => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 import { BlogPostPage } from '@/sections/blog/BlogPostPage';
 import { pageMeta, jsonLd, articleLd, breadcrumbLd } from '@/lib/seo';
 import type { Product } from '@/types';

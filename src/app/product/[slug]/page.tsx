@@ -1,6 +1,15 @@
 // ISR: cache the rendered PDP for 5 min; admin edits call revalidatePath('/product/...') to bust.
 export const revalidate = 300;
 
+// Known limitation: /product/<unknown-slug> returns HTTP 200 with the
+// not-found.tsx body rendered, not a clean 404. This is a Next 16 quirk
+// affecting ISR'd dynamic routes that call notFound() — see GitHub issue
+// vercel/next.js#55561 and related. The body is correct (Google can soft-
+// 404 from content), but the HTTP status is wrong. dynamicParams=false
+// would fix it but blocks admin-added products until a redeploy — not
+// acceptable for an active catalogue. Revisit when Next ships a proper
+// fix or when a sitemap-driven 410 strategy is in place.
+
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getProductBySlug, supabase, isDemo, getProductsByBrand, getProductsByTaxon } from '@/lib/supabase';

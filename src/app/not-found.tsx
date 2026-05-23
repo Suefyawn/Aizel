@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-// Force dynamic so prerender doesn't choke on the useSearchParams() inside
-// the PostHogProvider that the root layout renders. The cost is one extra
-// SSR per 404 hit which is negligible (404s are rare and uncacheable
-// anyway). This used to be implicit when the layout exported
-// force-dynamic — restored explicitly when the layout opt-out shipped.
-export const dynamic = 'force-dynamic';
+// Note: this page used to set `export const dynamic = 'force-dynamic';` to
+// bypass a prerender issue with PostHogProvider's useSearchParams(). The
+// provider now wraps that in a Suspense boundary (see PostHogProvider.tsx),
+// so the opt-out is no longer needed — and keeping it forced the framework
+// to return 200 instead of 404 on notFound() calls from dynamic routes,
+// which Google's crawler reads as a soft-404. Removed.
 import { LogoMark } from '@/components/ui/LogoMark';
 import { Overline } from '@/components/ui/Overline';
 import { getProducts } from '@/lib/supabase';
