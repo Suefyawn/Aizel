@@ -56,14 +56,22 @@ const INTEGRATIONS: IntegrationCheck[] = [
   {
     name: 'Stripe payments',
     purpose: 'Card checkout via Stripe (Visa, Mastercard, Amex, Apple Pay, Google Pay). Skip if you only take bank transfer.',
-    envVars: ['STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY', 'STRIPE_WEBHOOK_SECRET'],
-    setupRef: 'Pending wiring at src/lib/payments/stripe.ts',
+    envVars: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
+    optionalEnvVars: ['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'],
+    setupRef: 'src/lib/payments/stripe.ts',
   },
   {
     name: 'PayPal Checkout',
     purpose: 'PayPal smart buttons at checkout. Optional alongside Stripe.',
     envVars: ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'],
     setupRef: 'Pending wiring at src/lib/payments/paypal.ts',
+  },
+  {
+    name: 'Twilio SMS',
+    purpose: 'Customer-facing SMS for order placed / shipped / delivered, plus internal new-order alerts. Sends are gated — no keys = no SMS.',
+    envVars: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN'],
+    optionalEnvVars: ['TWILIO_FROM_NUMBER', 'TWILIO_MESSAGING_SERVICE_SID'],
+    setupRef: 'src/lib/notifications/twilio.ts',
   },
   {
     name: 'Google Search Console',

@@ -267,7 +267,7 @@ export async function updateOrderStatus(
   const admin = supabaseAdmin();
   const { data: before } = await admin
     .from('orders')
-    .select('status, email, first_name, order_number, items, tracking_number, courier')
+    .select('status, email, first_name, phone, order_number, items, tracking_number, courier')
     .eq('id', id)
     .single();
 
@@ -307,21 +307,47 @@ export async function updateOrderStatus(
     revalidatePath('/admin/inventory');
   }
 
-  // Fire-and-forget transition emails. The status trigger logs the change to
-  // order_events; here we only handle the customer-facing notification.
-  if (before && before.status !== status && before.email) {
-    const { sendShippedEmail, sendDeliveredEmail, sendCancelledEmail } = await import('@/lib/email');
-    const args = {
-      email: before.email,
-      first_name: before.first_name ?? 'there',
-      order_number: before.order_number,
-    };
-    if (status === 'shipped') {
-      void sendShippedEmail({ ...args, tracking_number: before.tracking_number ?? undefined, courier: before.courier ?? undefined });
-    } else if (status === 'delivered') {
-      void sendDeliveredEmail(args);
-    } else if (status === 'cancelled') {
-      void sendCancelledEmail(args);
+  // Fire-and-forget transition notifications. The status trigger logs the
+  // change to order_events; here we only handle the customer-facing email
+  // + SMS. Both are best-effort — neither blocks the status update.
+  if (before && before.status !== status) {
+    const phone = (before as { phone?: string | null }).phone ?? null;
+    if (before.email) {
+      const { sendShippedEmail, sendDeliveredEmail, sendCancelledEmail } = await import('@/lib/email');
+      const args = {
+        email: before.email,
+        first_name: before.first_name ?? 'there',
+        order_number: before.order_number,
+      };
+      if (status === 'shipped') {
+        void sendShippedEmail({ ...args, tracking_number: before.tracking_number ?? undefined, courier: before.courier ?? undefined });
+      } else if (status === 'delivered') {
+        void sendDeliveredEmail(args);
+      } else if (status === 'cancelled') {
+        void sendCancelledEmail(args);
+      }
+    }
+    // Customer SMS — fires only when Twilio is configured AND we have a
+    // phone number on the order. The Twilio helper rejects non-UK numbers
+    // gracefully so a malformed phone never bubbles an error here.
+    if (phone) {
+      const twilio = await import('@/lib/notifications/twilio');
+      if (twilio.isConfigured()) {
+        const smsArgs = {
+          phone,
+          firstName: before.first_name ?? undefined,
+          orderNumber: before.order_number,
+        };
+        if (status === 'shipped') {
+          void twilio.sendOrderShippedSms({
+            ...smsArgs,
+            courier: before.courier ?? undefined,
+            trackingNumber: before.tracking_number ?? undefined,
+          });
+        } else if (status === 'delivered') {
+          void twilio.sendOrderDeliveredSms(smsArgs);
+        }
+      }
     }
   }
 
