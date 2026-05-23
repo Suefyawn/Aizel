@@ -8,7 +8,8 @@
 
 import { NextResponse } from 'next/server';
 import { isConfigured, createCheckoutSession } from '@/lib/payments/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
+import { checkoutLimiter, ipFromHeaders } from '@/lib/ratelimit';
 import * as Sentry from '@sentry/nextjs';
 
 export const runtime = 'nodejs';
@@ -40,6 +41,15 @@ export async function POST(req: Request) {
     );
   }
 
+  // Per-IP rate limit. The route accepts arbitrary order_numbers from the
+  // open web, so without a limit an attacker can spam-create Stripe
+  // Checkout sessions (wastes API quota + leaks order existence via 404 vs
+  // 409). The same limiter already gates the cart-side checkout submit.
+  const rate = await checkoutLimiter.limit(ipFromHeaders(req.headers));
+  if (!rate.success) {
+    return NextResponse.json({ error: 'Too many requests. Please try again in a moment.' }, { status: 429 });
+  }
+
   // Form-encoded body (the checkout page submits a real <form>, not fetch).
   const form = await req.formData();
   const orderNumber = String(form.get('order_number') ?? '').trim();
@@ -47,26 +57,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'order_number is required' }, { status: 400 });
   }
 
-  const { data: order, error } = await supabase
+  // Cheap shape check before the DB lookup — order numbers are AZ-XXXXXXX
+  // (uppercase base36 + a 3-char random suffix). Anything wildly off shape
+  // we reject with a generic 404 to avoid leaking that the format exists.
+  if (!/^[A-Z]{2}-[A-Z0-9]{4,16}$/.test(orderNumber)) {
+    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+  }
+
+  // Service-role client — RLS on orders/payments blocks the anon role from
+  // reading/writing arbitrary rows, so this MUST be admin. The route is
+  // already gated by the order_number being a server-issued secret.
+  const admin = supabaseAdmin();
+  const { data: order, error } = await admin
     .from('orders')
     .select('id, order_number, email, pay_method, status, shipping, discount_amount, items')
     .eq('order_number', orderNumber)
     .maybeSingle<OrderRow>();
 
-  if (error || !order) {
-    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-  }
-  if (order.pay_method !== 'card') {
-    return NextResponse.json(
-      { error: `Order is not a card order (method: ${order.pay_method})` },
-      { status: 409 },
-    );
-  }
-  if (order.status !== 'payment_pending') {
-    return NextResponse.json(
-      { error: `Order is in status ${order.status}; cannot initiate payment` },
-      { status: 409 },
-    );
+  // Return identical 404 for "no row" and "wrong pay_method" / "wrong
+  // status" so an attacker can't probe for orders by status. The legitimate
+  // failure modes (e.g. customer hit Back after Stripe redirect, order is
+  // already `pending`) just get a generic message.
+  const validOrder = !error && order
+    && order.pay_method === 'card'
+    && order.status === 'payment_pending';
+  if (!validOrder) {
+    return NextResponse.json({ error: 'Order not found or not awaiting payment' }, { status: 404 });
   }
 
   try {
@@ -86,7 +102,7 @@ export async function POST(req: Request) {
 
     // Record the initiation as a `payments` row so we can correlate when
     // the webhook lands. RLS on `payments` permits service-role inserts.
-    await supabase.from('payments').insert({
+    await admin.from('payments').insert({
       order_id: order.id,
       gateway: 'stripe',
       amount: 0, // filled in by the webhook with the actual settled amount

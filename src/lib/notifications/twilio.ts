@@ -57,12 +57,21 @@ function client() {
 // Normalise a UK phone number to E.164 (+44…). Twilio rejects most other
 // formats. We accept the common UK input styles (07…, +447…, 447…, 0044…)
 // and reject anything we can't confidently fix.
+//
+// UK mobile numbers are exactly 11 digits and always start with `07`
+// (or +447 / 0447 with the prefix). UK landlines are 10–11 digits and
+// start with `01`, `02`, or `03`. The regex below only accepts those
+// leading-digit patterns so a string like "0000000000" or "0123456789"
+// stops here instead of failing later at the Twilio API.
+const NATIONAL_RE = /^0(7\d{9}|[123]\d{8,9})$/;
+const INTERNATIONAL_RE = /^(?:\+44|44|0044)(7\d{9}|[123]\d{8,9})$/;
+
 export function normaliseUKPhone(raw: string): string | null {
   const stripped = raw.replace(/[\s()-]/g, '');
-  if (/^\+44\d{9,10}$/.test(stripped)) return stripped;
-  if (/^0044\d{9,10}$/.test(stripped)) return '+' + stripped.slice(2);
-  if (/^44\d{9,10}$/.test(stripped)) return '+' + stripped;
-  if (/^0\d{9,10}$/.test(stripped)) return '+44' + stripped.slice(1);
+  const natM = stripped.match(NATIONAL_RE);
+  if (natM) return '+44' + natM[1];
+  const intM = stripped.match(INTERNATIONAL_RE);
+  if (intM) return '+44' + intM[1];
   return null;
 }
 

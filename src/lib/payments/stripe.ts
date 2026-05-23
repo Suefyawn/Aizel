@@ -164,10 +164,17 @@ export async function createCheckoutSession(input: CreateSessionInput): Promise<
       order_number: input.orderNumber,
     },
     // Receipt sent by Stripe in addition to our own confirmation email —
-    // belt-and-braces given Resend can fail silently.
+    // belt-and-braces given Resend can fail silently. We also drop the
+    // order_number into the PaymentIntent's metadata so the
+    // `payment_intent.payment_failed` webhook can correlate back to our
+    // order row (PI events arrive separately from Session events on 3DS
+    // failures + post-authorisation declines).
     payment_intent_data: {
       receipt_email: input.customerEmail || undefined,
       description: `Aizel order ${input.orderNumber}`,
+      metadata: {
+        order_number: input.orderNumber,
+      },
     },
   });
 

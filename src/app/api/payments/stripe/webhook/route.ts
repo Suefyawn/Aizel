@@ -17,7 +17,7 @@
 
 import { NextResponse } from 'next/server';
 import { verifyWebhookEvent } from '@/lib/payments/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { sendPaymentReceivedEmail } from '@/lib/email';
 import * as Sentry from '@sentry/nextjs';
 import type Stripe from 'stripe';
@@ -67,9 +67,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   } catch (err) {
     Sentry.captureException(err, { tags: { area: 'stripe-webhook-handler', event_type: event.type } });
-    // 500 → Stripe will retry. Only emit 500 for transient issues we want a
-    // retry on; permanent failures should still return 200 to stop loops.
-    return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
+    // ALWAYS return 200 from the handler-error path so Stripe stops retrying.
+    // A permanent failure (bad schema, malformed event) re-tried for 3 days
+    // floods Sentry and our DB. The signature is already verified at this
+    // point, so emitting 200 doesn't risk accepting a forged event.
+    // Transient DB outages will retry on the NEXT real webhook anyway since
+    // the order will still be in payment_pending.
+    return NextResponse.json({ received: true, handler_failed: true });
   }
 }
 
@@ -81,7 +85,7 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session): Promise
   }
 
   // Look up the order. The session.amount_total is in pence; convert back.
-  const { data: order } = await supabase
+  const { data: order } = await supabaseAdmin()
     .from('orders')
     .select('id, order_number, email, first_name, total')
     .eq('order_number', orderNumber)
@@ -95,20 +99,20 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session): Promise
 
   // Update the `payments` row inserted at init time. If somehow none exists
   // (initiation race / replay), insert one.
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin()
     .from('payments')
     .select('id')
     .eq('gateway', 'stripe')
     .eq('txn_ref', session.id)
     .maybeSingle();
   if (existing) {
-    await supabase.from('payments').update({
+    await supabaseAdmin().from('payments').update({
       amount: settledAmount,
       status: 'succeeded',
       raw_payload: session as unknown as Record<string, unknown>,
     }).eq('id', existing.id);
   } else {
-    await supabase.from('payments').insert({
+    await supabaseAdmin().from('payments').insert({
       order_id: order.id,
       gateway: 'stripe',
       amount: settledAmount,
@@ -121,7 +125,7 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session): Promise
 
   // Promote the order out of payment_pending. We don't touch it if it's
   // already past pending — staff may have moved it forward in the meantime.
-  await supabase.from('orders').update({
+  await supabaseAdmin().from('orders').update({
     status: 'pending',
   }).eq('id', order.id).eq('status', 'payment_pending');
 
@@ -141,7 +145,7 @@ async function handleSessionFailed(session: Stripe.Checkout.Session, reason: str
   const orderNumber = session.client_reference_id;
   if (!orderNumber) return;
 
-  await supabase.from('payments')
+  await supabaseAdmin().from('payments')
     .update({
       status: reason === 'checkout.session.expired' ? 'cancelled' : 'failed',
       error_message: reason,
@@ -152,28 +156,44 @@ async function handleSessionFailed(session: Stripe.Checkout.Session, reason: str
 
   // Move the order into payment_failed so it doesn't sit silently in
   // payment_pending forever. Owner can manually advance / cancel.
-  await supabase.from('orders')
+  await supabaseAdmin().from('orders')
     .update({ status: 'payment_failed' })
     .eq('order_number', orderNumber)
     .eq('status', 'payment_pending');
 }
 
 async function handlePaymentIntentFailed(pi: Stripe.PaymentIntent): Promise<void> {
-  // PaymentIntent failures arrive separately to session events on cards that
-  // 3DS-fail or are declined post-authorisation. We log the error against the
-  // existing payments row (matched via the related session if available) so
-  // staff have the decline reason on the order detail page.
-  const sessionId = typeof pi.metadata?.checkout_session_id === 'string'
-    ? pi.metadata.checkout_session_id
+  // PaymentIntent failures arrive separately to session events on cards
+  // that 3DS-fail or are declined post-authorisation. We correlate back to
+  // our order via `metadata.order_number`, which the Checkout Session
+  // creator copies into the PI at create time (see createCheckoutSession).
+  const orderNumber = typeof pi.metadata?.order_number === 'string'
+    ? pi.metadata.order_number
     : null;
-  if (!sessionId) return;
+  if (!orderNumber) return;
 
-  await supabase.from('payments')
+  const admin = supabaseAdmin();
+  // Find the order, then mark its most recent stripe payment row failed.
+  const { data: order } = await admin
+    .from('orders')
+    .select('id')
+    .eq('order_number', orderNumber)
+    .maybeSingle<{ id: string }>();
+  if (!order) return;
+
+  await admin.from('payments')
     .update({
       status: 'failed',
       error_message: pi.last_payment_error?.message ?? 'payment_intent.payment_failed',
       raw_payload: pi as unknown as Record<string, unknown>,
     })
+    .eq('order_id', order.id)
     .eq('gateway', 'stripe')
-    .eq('txn_ref', sessionId);
+    .eq('status', 'initiated');
+
+  // Move the order to payment_failed if still in payment_pending.
+  await admin.from('orders')
+    .update({ status: 'payment_failed' })
+    .eq('id', order.id)
+    .eq('status', 'payment_pending');
 }
