@@ -1,0 +1,1552 @@
+                                                                  API User Guide
+                                                                       Version 1.0
+
+API User Guide
+
+     Version 1.0
+
+                                                                                                          1
+                                                                                                                         API User Guide
+                                                                                                                             Version 1.0
+
+Table of Contents
+API Listing ....................................................................................................................................................................................................................... 4
+
+   Our List of API includes the following APIs with relevant details:............................................................................................................................... 4
+   Authorization .............................................................................................................................................................................................................. 4
+   E-COM API Listing ....................................................................................................................................................................................................... 5
+   Authentication ............................................................................................................................................................................................................ 5
+   Booking ­ Create......................................................................................................................................................................................................... 6
+   Booking ­ Create Cost Center Code .......................................................................................................................................................................... 13
+   Booking ­ Cancel....................................................................................................................................................................................................... 14
+   Booking ­ Payment Invoice ....................................................................................................................................................................................... 15
+   Booking ­ Reverse..................................................................................................................................................................................................... 17
+   Booking ­ Get CN Update ......................................................................................................................................................................................... 18
+   CN Print .................................................................................................................................................................................................................... 18
+   Inquiry ­ Cost Center Inquiry .................................................................................................................................................................................... 19
+   Payment ­ Status ...................................................................................................................................................................................................... 21
+   Payment ­ Detail....................................................................................................................................................................................................... 22
+   Setup ­ Area Code .................................................................................................................................................................................................... 24
+   Setup ­ Block Code ................................................................................................................................................................................................... 26
+   Setup ­ Country List .................................................................................................................................................................................................. 27
+   Setup ­ City list by Country ....................................................................................................................................................................................... 28
+   Setup ­ Route List ..................................................................................................................................................................................................... 29
+   Setup ­ Delivery Status List ....................................................................................................................................................................................... 31
+   Tracking .................................................................................................................................................................................................................... 32
+   Status Codes ............................................................................................................................................................................................................. 34
+
+                                                                                                                                                                                2
+                                                                                                                         API User Guide
+                                                                                                                             Version 1.0
+
+Overview:
+
+To test the complete set of product APIs & get better understanding of TCS API integration visit, please visit:
+https://ociconnect.tcscourier.com/ecom/index.html
+
+Available APIs:
+
+Check the list of available APIs at: https://ociconnect.tcscourier.com/ecom/index.html
+
+Sandbox Access:
+
+Below is the link for UAT and production portals.
+https://devconnect.tcscourier.com/ecom/index.html
+
+Production Access:
+
+If you need production access, you must proceed with the successful UAT phase. Please note that production access approval/setup will take at
+least three working days.
+https://ociconnect.tcscourier.com/ecom/index.html
+
+                                                                                                                                                                                3
+                                                                                                    API User Guide
+                                                                                                        Version 1.0
+
+API Listing
+
+Our List of API includes the following APIs with relevant details:
+
+Authorization
+
+API Name                   Authorization
+Description
+Sandbox/Developer Link     To get bearer token to access authorized APIs
+Production Link
+API Method                 https://devconnect.tcscourier.com/auth/api/auth
+API Body
+                           https://ociconnect.tcscourier.com/auth/api/auth
+JSON Body Request/Payload
+API Success Response       GET
+
+Failure Response           S No.     Parameter                      Mandatory      Data Type                   Remarks
+                             1         clientId                         Yes         Number             To be provided by TCS
+                             2                                          Yes           String           To be provided by TCS
+                                    clientsecret                               Response Parameters
+                             1                                          Yes           String        Token expiry date and time
+                             2      accesstoken                         Yes
+                             3          expiry                           No           Date
+                                                                                      String
+                                  userinformation
+
+                           {
+                                  "clientid": "205659575",
+                                  "clientsecret": "YWxuYXNlZWJkYWlyeWZvb2RAdGNzYm9va=="
+
+                           }
+
+                           {
+                                  "result": {
+                                         "accessToken":
+
+                           "eyJhbGciOipXVCJ9.eyJjbGllbnRpZCI6IjIzIjoiMzcwLDM3MS2x1ZpK0O9Zv7slp9-
+                           q7mwPXlXFzfk8A",
+
+                                         "expiry": "2027-01-04T05:08:47Z",
+                                         "userInformation": null
+                                  },
+                                  "status": true,
+                                  "code": "0200"
+                           }
+
+                           {
+                                  "result": null,
+                                  "status": false,
+                                  "code": "401"
+
+                           }
+
+                                                                                                                                4
+                                                                                                        API User Guide
+                                                                                                            Version 1.0
+
+E-COM API Listing
+
+Authentication             Authentication
+ API Name                  To obtain access token and gain access to permitted APIs, utilize this API.
+ Description
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/authentication/token
+Production Link            https://ociconnect.tcscourier.com/ecom/api/authentication/token
+API Method                 GET
+Access Token               Provided in Authentication API
+
+API Body                   S No.  Parameter    Mandatory   Data Type                                              Remarks
+JSON Body Request/Payload    1     username        Yes        String                                     To be provided by TCS
+API Success Response         2     password        Yes        String                                     To be provided by TCS
+
+Failure Response             1    accesstoken      Yes    Response Parameters                           Token expiry date & time
+                             2       expiry        Yes        String
+                             3                     No          Date
+                                    message                   String
+
+                           {
+                                  "username": "abc",
+                                  "password": "123"
+
+                           }
+
+                           {
+                                  "accesstoken":
+
+                           "jcgwsU85g+loIFikVpysWUQ/0sycayn1fOKUHbanhNc4Hix21+9FtBgTNT+17xcw8hCA/m0WK
+                           WvjlWdkCRRamFiwoEIcst9yGRPksWtzlYzAeo2sIQBv6vbf8H2yFRSc4bD4oCpQznmOuzRLumY
+                           Gj0B15qJnVczoG1WHo=",
+
+                                  "expiry": "2027-06-08T09:01:25.0704875Z",
+                                  "message": "success",
+                                  "traceid": "f6a5843c-e60a-40d7-8cf1-607d26d8a4f2"
+                           }
+
+                           {
+                                  "result": null,
+                                  "status": false,
+                                  "code": "401"
+
+                           }
+
+                                                                                                                                  5
+Booking ­ Create         Create Booking                                                          API User Guide
+ API Name                To schedule and confirm new shipments.                                       Version 1.0
+ Description
+                         https://devconnect.tcscourier.com/ecom/api/booking/create      Remarks
+ Sandbox/Developer Link  https://ociconnect.tcscourier.com/ecom/api/booking/create  Provided by TCS
+ Production Link         POST
+ API Method              Provided in Authorization API                                Not mapped
+ Bearer Token
+                         S.No.     Parameter   Date Type           Mandatory        Provided by TCS
+ API Body                         accesstoken    String                 Yes         Max Length: 12
+                           1                                             No          Min Length: 3
+                           2    consignmentno   Number                              Max Length: 50
+                                                                 Shipper Info        Min Length: 3
+                                                                                    Max Length: 120
+                         1      tcsaccount     String (12)       Yes                 Min Length: 3
+                                                                                    Max Length: 120
+                         2      shippername    String (50)       Yes                 Min Length: 3
+                                                                                    Max Length: 120
+                         3      address1       String (120)      Yes                 Min Length: 3
+                                                                                     Max Length: 6
+                         4      address2       String (120)      No                  Min Length: 3
+                                                                                     Max Length: 2
+                         5      address3       String (120)      No                  Min Length: 2
+                                                                                    Max Length: 50
+                         6      Zip            String (6)        No                  Min Length: 3
+                                                                                     Max Length: 5
+                         7      countrycode    String (2)        Yes
+                                                                                                                           6
+                         8      countryname    String (50)       Yes
+
+                         9      citycode       String (5)        No
+10  cityname       String (50)   Yes                           API User Guide
+                                                                   Version 1.0
+11  mobile         Number (11)   Yes
+                                                   Min Length: 0
+                                 Consignee Info   Max Length: 50
+                                                   Min Length: 3
+1   consigneecode  String (10)   No              Like (0300xxxxxxx)
+                                                  Max Length: 11
+2   firstname      String (50)   Yes               Min Length: 11
+
+3   middlename     String (50)   Yes              Max Length: 10
+                                                   Min Length: 2
+4   lastname       String (50)   No               Max Length: 50
+                                                   Min Length: 3
+5   address1       String (120)  Yes              Max Length: 50
+                                                   Min Length: 3
+6   address2       String (120)  No               Max Length: 50
+                                                   Min Length: 3
+7   address3       String (120)  No               Max Length: 120
+                                                   Min Length: 3
+8   zip            String (6)    No               Max Length: 120
+                                                   Min Length: 3
+9   countrycode    String (2)    Yes              Max Length: 120
+                                                   Min Length: 3
+10  countryname    String (50)   Yes               Max Length: 6
+                                                   Min Length: 0
+11  citycode       String (5)    No                Max Length: 2
+                                                   Min Length: 2
+                                                  Max Length: 50
+                                                   Min Length: 3
+                                                   Max Length: 5
+                                                   Min Length: 3
+
+                                                                                         7
+12  cityname   String (50)   Yes                        API User Guide
+                                                            Version 1.0
+13  Email      String (50)   No
+                                           Max Length: 50
+14  areacode   String (5)    No             Min Length: 3
+                                           Max Length: 50
+15  areaname   String (50)   No             Min Length: 3
+                                            Max Length: 5
+16  blockcode  String (5)    No             Min Length: 3
+                                           Max Length: 50
+17  blockname  String (50)   No             Min Length: 3
+                                            Max Length: 5
+18  lat        String (50)   No             Min Length: 3
+                                           Max Length: 50
+19  lng        String (50)   No             Min Length: 3
+                                           Max Length: 50
+20  landmark   String (200)  No             Min Length: 3
+                                           Max Length: 50
+21  mobile     Number (11)   Yes            Min Length: 3
+                                           Max Length: 200
+                             Vendor Info    Min Length: 0
+                                          Like (0300xxxxxxx)
+1   name       String (50)   No            Max Length: 11
+                                            Min Length: 11
+2   address1   String (120)  No
+                                           Max Length: 50
+3   address2   String (120)  No             Min Length: 1
+                                           Max Length: 120
+4   address3   String (120)  No             Min Length: 3
+                                           Max Length: 120
+                                            Min Length: 3
+                                           Max Length: 120
+
+                                                                                  8
+5  citycode       String (5)      No                           API User Guide
+                                                                    Version 1.0
+6  cityname       String (50)     No
+                                                    Min Length: 3
+7  mobile         Number (11)     No                Max Length: 5
+                                                    Min Length: 3
+                                  Shipment Info    Max Length: 50
+                                                    Min Length: 3
+1 costcentercode  String (20)     Yes            Like (0300xxxxxxx)
+                                                   Max Length: 11
+2  referenceno    String (50)     No               Min Length: 11
+
+3  contentdesc    String (50)     No               Max Length: 20
+                                                    Min Length: 2
+4  servicecode    String (6)      Yes              Max Length: 50
+                                                    Min Length: 3
+5  parametertype  String (50)     No              Max Length: 999
+                                                    Min Length: 3
+6  shipmentdate   String (20)     No                Max Length: 6
+                                                    Min Length: 1
+7  shippingtype   String          No               Max Length: 50
+                                                    Min Length: 1
+8  currency       String (5)      Yes               DD-MM-YYYY
+                                                   Max Length: 20
+9  codamount      Number (int32)  Yes               Min Length: 1
+                                                    Maximum: 10
+                                                     Minimum: 0
+                                                 PKR, USD and so on
+                                                    Max Length: 5
+                                                    Min Length: 3
+                                                 maximum: 250000
+                                                     minimum: 0
+
+                                                                                          9
+10  declaredvalue   Number (int32)  No                         API User Guide
+                                                                    Version 1.0
+
+                                                 maximum: 250000
+
+                                                     minimum: 0
+
+11  insuredvalue    Number (int32)  No           maximum: 250000
+                                                     minimum: 0
+
+12 transactiontype  String          No           Maximum: 10
+                                                 Minimum: 0
+
+13  dsflag          String (50)     No           Max Length: 50
+                                                  Min Length: 0
+
+14  carrierslug     String (50)     No           Max Length: 50
+                                                  Min Length: 0
+
+15  weightinkg Number (double)      Yes          Minimum weight is 0.5
+                                                 maximum: 2147483647
+16  pieces          Number (int32)  Yes
+                                                        minimum: 1
+
+17  remarks         String (500)    No           Max Length: 500
+                                                  Min Length: 3
+
+18  fragile         Boolean           Yes        Value should be true or false
+                                    SKU
+
+1   description     String (50)     No           Max Length: 200
+                                                  Min Length: 3
+
+2   quantity        Number(int32)   Yes    Quantity should be greater than or equals
+                                                                 to 1.
+
+3   weight          Number(double)  Yes          Minimum weight is 0.5
+
+4   uom             String          No             maximum: 250000
+                                                       minimum: 1
+5   unitprice       Number(int32)   Yes
+
+6   declaredvalue Number(int32)     No           maximum: 250000
+                                                     minimum: 0
+
+7   insuredvalue    Number(int32)   No           maximum: 250000
+                                                     minimum: 0
+
+                            Response Parameters
+
+                                                                                      10
+                                                                                               API User Guide
+                                                                                                   Version 1.0
+
+                           S. No.     Response    Remarks
+                             1     Consignment #
+                             2     Response Code  To be provided by TCS
+                             3
+                             4          Status    Response code based on provided information
+                             5        Message
+                             6     Request Time   True or False
+                                   Response Time
+                                                  API response
+
+JSON Body Request/Payload  {
+                                  "accesstoken": "",
+                                  "consignmentno": "",
+                                  "shipperinfo": {
+                                         "tcsaccount": "04011K1",
+                                         "shippername": "Test",
+                                         "address1": "Test address 1",
+                                         "address2": "Test address 2",
+                                         "address3": "Test address 3",
+                                         "zip": "75800",
+                                         "countrycode": "PK",
+                                         "countryname": "Pakistan",
+                                         "citycode": "KHI",
+                                         "cityname": "Karachi",
+                                         "mobile": "03451234567"
+                                  },
+                                  "consigneeinfo": {
+                                         "consigneecode": "C103",
+                                         "firstname": "First name",
+                                         "middlename": "Middle name",
+                                         "lastname": "Last name",
+                                         "address1": "Test address 1",
+                                         "address2": "Test address 2",
+                                         "address3": "Test address 3",
+                                         "zip": "75800",
+                                         "countrycode": "PK",
+                                         "countryname": "Pakistan",
+                                         "citycode": "KHI",
+                                         "cityname": "Karachi",
+                                         "email": "test@test.com",
+                                         "areacode": "KHI00001",
+                                         "areaname": "Gulshan",
+                                         "blockcode": "",
+                                         "blockname": "Gulshan block 6 PECHS",
+                                         "lat": "24.920733",
+                                         "lng": "67.088162",
+                                         "landmark": "Baloch Hospital",
+
+                                                                                               11
+API Success Response                "mobile": "03451234567"                          API User Guide
+                             },                                                          Version 1.0
+                             "vendorinfo": {
+                                                                                                         12
+                                    "name": "Test Vendor",
+                                    "address1": "Test address 1",
+                                    "address2": "Test address 2",
+                                    "address3": "Test address 3",
+                                    "citycode": "KHI",
+                                    "cityname": "Karachi",
+                                    "mobile": "03451234567"
+                             },
+                             "shipmentinfo": {
+                                    "costcentercode": "Test-01",
+                                    "referenceno": "123456789",
+                                    "contentdesc": "Cost center description",
+                                    "servicecode": "O",
+                                    "parametertype": "Parameter Type",
+                                    "shipmentdate": "28/08/2023 01:04:02",
+                                    "shippingtype": "",
+                                    "currency": "PKR",
+                                    "codamount": 250,
+                                    "declaredvalue": null,
+                                    "insuredvalue": null,
+                                    "transactiontype": "",
+                                    "dsflag": "",
+                                    "carrierslug": "",
+                                    "weightinkg": 0.5,
+                                    "pieces": 1,
+                                    "fragile": false,
+                                    "remarks": "Test remarks",
+                                    "skus": [
+
+                                           {
+                                                  "description": "SKU description",
+                                                  "quantity": 1,
+                                                  "weight": 0.5,
+                                                  "uom": "KG",
+                                                  "unitprice": 250,
+                                                  "declaredvalue": null,
+                                                  "insuredvalue": null
+
+                                           }
+                                    ]
+                             }
+                      }
+
+                      {
+                             "response": "SUCCESS",
+                             "consignmentNo": "99210301520",
+                             "code": "200",
+                             "status": true,
+Failure Response                                                                                                 API User Guide
+                                                                                                                     Version 1.0
+
+                               "message": "success",
+                               "requestTime": "07:27:43",
+                               "responseTime": "07:27:44"
+                        }
+
+                        {
+                               "error": [
+                                      {
+                                             "errorname": "error description"
+                                      }
+                               ],
+                               "message": "Summary of error",
+                               "traceid": "00-b5059f8935daf8f3d75e-3d58b17af9ab812-00"
+
+                        }
+                        OR
+                        {
+
+                               "code": 401,
+                               "message": "Invalid Bearer token. Mismatch configuration.",
+                               "status": "UnAuthorized"
+                        }
+
+Booking ­ Create Cost Center Code
+
+API Name                Create Cost Center Code
+Description             To generate and assign cost center codes for bookings.
+
+Sandbox/Developer Link  https://devconnect.tcscourier.com/ecom/api/booking/createcostcentercode
+Production Link         https:/ociconnect.tcscourier.com/ecom/api/booking/createcostcentercode
+API Method              POST
+Bearer Token            Provided in Authorization API
+
+API Body                S No.          Parameter      Mandatory Data Type                        Remarks
+                          1        costcentercitname                                     To be provided by TCS
+                          2                           Yes           String
+                          3         costcentercode
+                          4         costcentername    Yes           String
+                          5          pickupaddress
+                          6          returnaddress    Yes           String
+                          7
+                          8            islabelprint   Yes           String
+                          9         accountNumber
+                                     phoneNumber      Yes           String
+                          1
+                                           email      Yes           String
+
+                                      accesstoken     Yes           String
+
+                                                      No            String
+
+                                                      No            String
+
+                                                                    Response Parameters
+
+                                                      String (400)  Yes
+
+                                                                                                                13
+                                                                                      API User Guide
+                                                                                          Version 1.0
+
+JSON Body Request/Payload {
+                                              "costcentercityname": "KARACHI",
+                                              "costcentercode": "9211",
+                                              "costcentername": "Kathryn Poole1",
+                                              "pickupaddress": "KHI Airport",
+                                              "returnaddress": "KHI Airport",
+                                              "islabelprint": "yes",
+                                              "accountNumber": "04011K1",
+                                              "phoneNumber": "32122457457",
+                                              "email": "test@abc.com",
+                                              "accesstoken": ""
+
+                                       }
+
+API Success Response       {
+                                  "message": "SUCCESS",
+                                  "costcentercode": "9211",
+                                  "traceid": "49a5e1e7-2f47-430e-9443-8227acba134c"
+
+                           }
+
+Failure Response           {
+                                  "message": "FAILURE: Cost Center Already Exists",
+                                  "costcentercode": null,
+                                  "traceid": "0b131f86-ee51-4a11-abdc-4266e08b65ab"
+
+                           }
+
+Booking ­ Cancel           Cancel Booking
+ API Name                  To cancel an existing booking in TCS system
+ Description
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/booking/cancel
+Production Link            https:/ociconnect.tcscourier.com/ecom/api/booking/cancel
+API Method                 POST
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.     Parameter   Mandatory              Data Type                Remarks
+JSON Body Request/Payload    1    ConsignmentNu      Yes                 Number       To be provided by Customer
+                                  mber
+                             1                   Response Parameters                                                                14
+                                    accesstoken
+                                                 String (400)           Yes
+
+                           {
+                              "consignmentNumber": "173000008151",
+                              "accesstoken": ""
+
+                           }
+                                                                                              API User Guide
+                                                                                                  Version 1.0
+
+API Success Response       {
+Failure Response                  "message": "SUCCESS",
+                                  "traceid": "294d5e4f-913c-45a4-bf90-e00993157c0b"
+
+                           }
+
+                           {
+                                  "message": "Failure: No Record Founds",
+                                  "traceid": "e291bead-5a51-4669-87eb-6f65535da994"
+
+                           }
+
+Booking ­ Payment Invoice  Payment Invoice
+ API Name                  To generate and retrieve payment invoices against bookings
+ Description
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/booking/paymentinvoice
+Production Link            https:/ociconnect.tcscourier.com/ecom/api/booking/paymentinvoice
+API Method                 GET
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.  Parameter  Mandatory   Data Type                                    Remarks
+JSON Body Request/Payload    1    Invoiceno      Yes      Number                              To be provided by TCS
+API Success Response                                    Response Parameters
+                           1 accesstoken String (400)
+                                                             Yes
+
+                           {
+                              "invoiceno": "543777",
+                              "accesstoken": ""
+
+                           }
+
+                           {
+                              "message": "SUCCESS",
+                              "traceid": "94a05367-5a0d-44e1-8dd1-d2ba01b344cd",
+                              "data": [
+                                  {
+                                     "cnsg_no": "779412314605",
+                                     "cust_ref": "Internet 570372",
+                                     "bkg_dat": "2024-08-07T00:00:00",
+                                     "consignee": "Muhib Ali",
+                                     "orgn": "LHE",
+                                     "dstn": "HSL",
+                                     "wtt_bkg": 2,
+                                     "paymentperiod": "08_Aug_to_14_Aug_2024",
+                                     "status": "Return To Origin",
+
+                                                                                                                     15
+Failure Response            "codamount": 2057,                         API User Guide
+                            "courier_charges": 116,                        Version 1.0
+                            "gst": 18.56,
+                            "cus_no": "882161",                                            16
+                            "invoiceno": "LHEGEW888257"
+                         },
+                         {
+                            "cnsg_no": "779412315161",
+                            "cust_ref": "Internet 571197",
+                            "bkg_dat": "2024-08-07T00:00:00",
+                            "consignee": "Khalid Bashir",
+                            "orgn": "LHE",
+                            "dstn": "LHE",
+                            "wtt_bkg": 0.5,
+                            "paymentperiod": "08_Aug_to_14_Aug_2024",
+                            "status": "Delivered",
+                            "codamount": 0,
+                            "courier_charges": 83,
+                            "gst": 13.28,
+                            "cus_no": "882161",
+                            "invoiceno": "LHEGEW888257"
+                         },
+                         {
+                            "cnsg_no": "779412315162",
+                            "cust_ref": "Internet 571299",
+                            "bkg_dat": "2024-08-07T00:00:00",
+                            "consignee": "Marism Shahid",
+                            "orgn": "LHE",
+                            "dstn": "LHE",
+                            "wtt_bkg": 1,
+                            "paymentperiod": "08_Aug_to_14_Aug_2024",
+                            "status": "Delivered",
+                            "codamount": 2559,
+                            "courier_charges": 83,
+                            "gst": 13.28,
+                            "cus_no": "882161",
+                            "invoiceno": "LHEGEW888257"
+                         }
+                     ]
+                  }
+
+                  {
+                         "code": "UnAuthorized",
+                         "message": "Invalid access token",
+                         "status": 401
+
+                  }
+                                                                                        API User Guide
+                                                                                            Version 1.0
+
+Booking ­ Reverse          Reverse
+ API Name                  To book a reverse pickup for your shipments.
+ Description
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/booking/reverse
+Production Link            https:/ociconnect.tcscourier.com/ecom/api/booking/reverse
+API Method                 POST
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.    Parameter    Mandatory   Data Type                            Remarks
+                             1    costcentercod       No       String                  To be provided by Customer
+JSON Body Request/Payload    2                       Yes                               To be provided by Customer
+API Success Response         3            e           No       String
+Failure Response                  consignmentn                                                         -
+                                                               String
+                                          o                 Response Parameters
+                                  consigneemob
+                                                               String
+                                       ileno
+
+                           1 accesstoken         Yes
+
+                           {
+                              "costcentercode": "",
+                              "consignmentno": "99555303992",
+                              "consigneemobno": "",
+                              "accesstoken": ""
+
+                           }
+
+                           {
+                              "message": "SUCCESS",
+                              "status": "true",
+                              "accesstoken":
+
+                           "4563d2ejhfberbfkejfbkejrfb322dhdjdjjdf2532ggfjfj325djjfj6"
+                           }
+
+                           {
+                                  "code": 401,
+                                  "message": "Invalid Bearer token. Mismatch configuration. "
+                                  "status": "UnAuthorized"
+
+                           }
+
+                                                                                                                   17
+Booking ­ Get CN Update                                                                                             API User Guide
+ API Name                                                                                                               Version 1.0
+ Description
+                           Get CN Update
+                           To retrieves the latest update on the status of a consignment note (CN) based on the provided CN Number.
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/booking/getcnupdate
+Production Link            https://ociconnect.tcscourier.com/ecom/api/booking/getcnupdate
+API Method                 GET
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.  Parameter    Mandatory     Data Type                               Remarks
+JSON Body Request/Payload    1          ID         Yes         String                             To be provided
+API Success Response         2        Flag         Yes        Number                              To be provided
+Failure Response
+                             1    accesstoken      Yes    Response Parameters
+                                                            String (400)
+
+                           {
+                                  "ID": "779416038409",
+                                  "flag": "2"
+
+                           }
+
+                           {
+
+                                  "MESSAGE": "MSG01- CN 779416038409 Succesfully Updated ",
+                                  "status": "true",
+                                  "traceid": "2ac10ba8-5679-4bb2-8a9a-407e37ea7647"
+                           }
+
+                           {
+                                  "MESSAGE": "ERR01-No Data Found against 779416038410",
+                                  "status": "true",
+                                  "traceid": "5354d4d5-4800-4ae8-a9b1-070daae8c7f8"
+
+                           }
+
+CN Print                   CN print
+                           To facilitate all your CN printing needs efficiently and effectively.
+ API Name
+ Description               https://devconnect.tcscourier.com/ecom/api/print/label
+                           https://ociconnect.tcscourier.com/ecom/api/print/label
+ Sandbox/Developer Link    GET
+ Production Link           Provided in Authorization API
+ API Method
+ Bearer Token
+
+                                                                                                                  18
+API Body                       S No.      Parameter           Mandatory     Data Type                          API User Guide
+                                 1     consignmentno              Yes         String                                Version 1.0
+                                 2      shipperdetail             Yes
+                                                                           Dropdown                  Remarks
+                                                                  Yes    Response Parameters      To be provided
+                                                                                                  To be provided
+                                                                           String (400)
+                                    1  accesstoken
+
+JSON Body Request/Payload      {
+API Success Response              "consignmentno": "99555303992",
+                                  "shipperdetail": "true",
+                                  "accesstoken": ""
+
+                               }
+
+                               A PDF file will be available for downloading as per below sample:
+
+Failure Response                 779412322995.pdf
+
+                               {
+                                  "message": "CN not found",
+                                  "url": "",
+                                  "traceid": "6e621297-3881-40c1-b611-d03717827690"
+
+                               }
+
+Inquiry ­ Cost Center Inquiry
+
+API Name                       Cost Center Inquiry
+
+Description                    To fetch cost center details against customer account Number
+
+Production Link                https://devconnect.tcscourier.com/ecom/inquiry/costcenterinquiry
+
+Sandbox/Developer Link         https://ociconnect.tcscourier.com/ecom/inquiry/costcenterinquiry
+
+API Method                     GET
+
+Bearer Token                   Provided in Authorization API
+
+                                                                                                  19
+API Body              S.No.  Parameter       Data Type     Mandatory                               API User Guide
+                        1    accesstoken     String (400)      Yes                                      Version 1.0
+                        2
+                             customerno       Number           Yes                           Remarks
+                        1                        (20)                 Generated through provided Envio credentials
+                        2
+                        3                                                          TCS account Number
+                        4
+                        5                                  Response Parameters
+                        6
+                        7    costcentercode  Number        Yes
+                        8                      (20)
+
+                             costcentercity String (30)    Yes
+                                                           Yes
+                             costcentername String (50)
+
+                             phoneno         Number        No
+                                               (11)
+                                                           No
+                                  email      String (50)
+                             pickupaddress   String (120)  Yes
+                             returnaddress   String (120)
+                                                           Yes
+                             printonlabel    String (1)
+                                                                                                 Yes -> Y
+                                                           Yes
+
+                                                                                                 No -> N
+
+JSON Body Request/Payload {
+
+                                              "accessToken":
+                                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJjbGlbnRpZCI6IjIxNTYxMDgxNyIsInNlcn
+                                      ZpY2VzIjoiMzcwLDM3MSIsIm",
+
+                                              "customerno": "217698"
+
+                                      )
+
+API Success Response  {
+                             "detail": [
+                                    {
+                                           "costcentercode": "001 - LHR",
+                                           "costcentercity": "LAHORE",
+                                           "costcentername": "Dubuy LHR",
+                                           "phoneno": "03447274889",
+                                           "email": "info@dubuypk.com",
+                                           "pickupaddress": " AGRICS TOWN RAIWIND ROAD LAHORE ,",
+                                           "returnaddress": " AGRICS TOWN RAIWIND ROAD LAHORE ,",
+                                           "printonlabel": "Y"
+                                    },
+                                    {
+                                           "costcentercode": "002 - KHI",
+                                           "costcentercity": "LAHORE",
+                                           "costcentername": "Dubuy KHI",
+
+                                                                                                                  20
+ Failure Response                                                                                                   API User Guide
+                                                                                                                        Version 1.0
+Payment ­ Status
+ API Name                                       "phoneno": "03112313616",
+ Description                                    "email": "info@dubuypk.com",
+                                                "pickupaddress": "Lasbella Garden Karachi",
+                                                "returnaddress": "Lasbella Garden Karachi",
+                                                "printonlabel": "Y"
+                                         },
+                                         {
+                                                "costcentercode": "003 - GUJ",
+                                                "costcentercity": "LAHORE",
+                                                "costcentername": "Sharif Fabrics Gujranwala",
+                                                "phoneno": "03237466222",
+                                                "email": "info@dubuypk.com",
+                                                "pickupaddress": "M sharif 276 A model town back side of
+                           Jinnah hospital band Gali Gujranwala",
+                                                "returnaddress": "M sharif 276 A model town back side of
+                           Jinnah hospital band Gali Gujranwala",
+                                                "printonlabel": "Y"
+                                         }
+                                  ],
+                                  "message": "success",
+                                  "traceid": "15f62e2d-bccf-44ae-9928-63996b4bcc22"
+                           }
+
+                           {
+                                  "code": "UnAuthorized",
+                                  "message": "Invalid access token",
+                                  "status": 401
+
+                           }
+
+                           Payment Status
+
+                           To retrieve the current status of a payment transaction.
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/Payment/status
+Production Link            https://ociconnect.tcscourier.com/ecom/api/Payment/status
+API Method                 GET
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.     Parameter   Mandatory  Data Type                           Remarks
+JSON Body Request/Payload    1      customerno       Yes     Number                   To be provided by Shipper
+                             2    consignmentno      Yes     Number                   To be provided by Shipper
+
+                           {
+                                  "customerno": "1234"
+                                  "consignmentno": "779412323079"
+
+                           }
+
+                                                                                                                 21
+                                                                                                 API User Guide
+                                                                                                     Version 1.0
+
+ API Success Response    {
+                            "detail": [
+ Failure Response
+                         {
+Payment ­ Detail                   "booking date": "09/09/2024",
+ API Name                          "cn by courier": "779412323079",
+ Description                       "cn status": "RO",
+ Sandbox/Developer Link            "order no": "Internet 591139",
+ Production Link                   "payment status": "N",
+ API Method                        "amount paid": 0,
+ Bearer Token                      "parcel weight": 0.5,
+ API Body                          "city": "TMK",
+                                   "delivery charges": 116,
+                                   "delivery date": "16/09/2024",
+                                   "payment date": null
+
+                                }
+                            ],
+                            "message": "SUCCESS",
+                            "status": "true",
+                            "traceid": "7cc65dfc-8b8b-4186-9259-aae6ba9f7d66"
+                         }
+
+                         {
+                            "detail": null,
+                            "message": "Invalid CN",
+                            "status": "true",
+                            "traceid": "3a52a19c-84cc-4416-b7f9-b05d38051eb4"
+
+                         }
+
+                         Payment Detail
+                         To retrieve detailed information about a specific payment transaction.
+
+                         https://devconnect.tcscourier.com/ecom/api/Payment/detail
+                         https://ociconnect.tcscourier.com/ecom/api/Payment/detail
+
+                         GET
+                         Provided in Authorization API
+
+                         S. No.   Parameter   Mandatory   Data Type                                          Remarks
+                           1     accesstoken      Yes    String (400)                            To be provided by Customer
+                           2     customerno       Yes                                            To be provided by Customer
+                           3                      Yes      Number
+                           4      fromdate        Yes      Number                                                -
+                                    todate                 Number                                                -
+
+                                                                                                                             22
+JSON Body Request/Payload  {                                           API User Guide
+API Success Response              "accesstoken": ""                        Version 1.0
+                                  "customerno": "123456"
+                                  "fromdate": "2024-09-08"                                 23
+                                  "todate": "2024-09-14"
+
+                           }
+
+                           {
+                              "detail": [
+                                  {
+                                     "booking date": "09/09/2024",
+                                     "cn by courier": "779412322995",
+                                     "cn status": "OK",
+                                     "order no": "Internet 591128",
+                                     "payment status": "N",
+                                     "amount paid": 0,
+                                     "parcel weight": 1,
+                                     "city": "KHI",
+                                     "delivery charges": 118,
+                                     "delivery date": "10/09/2024",
+                                     "payment date": null
+                                  },
+                                  {
+                                     "booking date": "09/09/2024",
+                                     "cn by courier": "779412323054",
+                                     "cn status": "OK",
+                                     "order no": "Internet 590823",
+                                     "payment status": "N",
+                                     "amount paid": 0,
+                                     "parcel weight": 2,
+                                     "city": "SLT",
+                                     "delivery charges": 174,
+                                     "delivery date": "13/09/2024",
+                                     "payment date": null
+                                  },
+                                  {
+                                     "booking date": "09/09/2024",
+                                     "cn by courier": "779412323079",
+                                     "cn status": "RO",
+                                     "order no": "Internet 591139",
+                                     "payment status": "N",
+                                     "amount paid": 0,
+                                     "parcel weight": 0.5,
+                                     "city": "TMK",
+                                     "delivery charges": 116,
+                                     "delivery date": "16/09/2024",
+                                     "payment date": null
+                                                                                      API User Guide
+                                                                                          Version 1.0
+
+                                  }
+                              ],
+                              "message": "SUCCESS",
+                              "status": "true",
+                              "traceid": "7cc65dfc-8b8b-4186-9259-aae6ba9f7d66"
+                           }
+
+Failure Response           {
+                                  "code": 401,
+                                  "message": "Invalid Bearer token. Mismatch configuration.",
+                                  "status": "UnAuthorized"
+
+                           }
+
+Setup ­ Area Code          Area code
+ API Name                  To retrieve area codes by area description
+ Description
+
+Sandbox/Developer Link     https://devconnect.tcscourier.com/ecom/api/setup/areacode
+Production Link            https://ociconnect.tcscourier.com/ecom/api/setup/areacode
+API Method                 GET
+Bearer Token               Provided in Authorization API
+
+API Body                   S No.  Parameter  Mandatory                 Data Type              Remarks
+JSON Body Request/Payload    1     citycode      No                      String       To be provided by TCS
+API Success Response         2                   No                      String       To be provided by TCS
+                                     area
+
+                           {
+                                  "citycode": "KHI",
+                                  "area": ""
+
+                           }
+
+                           {
+                              "message": "SUCCESS",
+                              "count": "9",
+                              "data": [
+                                  {
+                                     "srl": 1,
+                                     "areaid": 163,
+                                     "citycode": "HSL",
+                                     "areacode": "R80302402",
+                                     "areaname": "Jamalpur"
+                                  },
+                                  {
+                                     "srl": 2,
+
+                                                                                                             24
+   "areaid": 164,                        API User Guide
+   "citycode": "JMP",                        Version 1.0
+   "areacode": "R80302762",
+   "areaname": "Jampur"                                      25
+},
+{
+   "srl": 3,
+   "areaid": 165,
+   "citycode": "PEW",
+   "areacode": "RPK5773",
+   "areaname": "Jamrud - Khyber Agency"
+},
+{
+   "srl": 4,
+   "areaid": 166,
+   "citycode": "JND",
+   "areacode": "R80302688",
+   "areaname": "Jand"
+},
+{
+   "srl": 5,
+   "areaid": 167,
+   "citycode": "QML",
+   "areacode": "R80302947",
+   "areaname": "Jandala"
+},
+{
+   "srl": 6,
+   "areaid": 168,
+   "citycode": "NRL",
+   "areacode": "R80302434",
+   "areaname": "Jassar"
+},
+{
+   "srl": 7,
+   "areaid": 169,
+   "citycode": "NOW",
+   "areacode": "R80302362",
+   "areaname": "Jehangira"
+},
+{
+   "srl": 8,
+   "areaid": 170,
+   "citycode": "HZD",
+   "areacode": "R80302556",
+   "areaname": "Jhairanwala"
+},
+                                                                                       API User Guide
+                                                                                           Version 1.0
+
+                                  {
+                                     "srl": 9,
+                                     "areaid": 171,
+                                     "citycode": "SGD",
+                                     "areacode": "R80306616",
+                                     "areaname": "Jhal Chakian"
+
+                                  }
+                           ],
+
+                              "traceid": "83351973-9924-4133-ab3-007ead38e62f"
+                           }
+
+Failure Response           {
+                                  "code": 401,
+                                  "message": "Invalid Bearer token. Mismatch configuration.",
+                                  "status": "UnAuthorized"
+
+                           }
+
+Setup ­ Block Code         Block code
+                           To retrieve block code by block description
+ API Name
+ Description               https://devconnect.tcscourier.com/ecom/api/setup/blockcode
+                           https://ociconnect.tcscourier.com/ecom/api/setup/blockcode
+ Sandbox/Developer Link    GET
+ Production Link           Provided in Authorization API
+ API Method
+ Bearer Token
+
+API Body                   S No.  Parameter  Mandatory              Data Type                  Remarks
+JSON Body Request/Payload    1       area        Yes                  String           To be provided by TCS
+                             2                   No                   String           To be provided by TCS
+                                  blockcode
+
+                           {
+                                  "area": "R80306631",
+                                  "blockcode": ""
+
+                           }
+
+API Success Response       {
+                                  "message": "SUCCESS",
+                                  "count": "2",
+                                  "data": [
+                                         {
+                                                "srl": 1,
+                                                "blockid": 19396,
+                                                "citycode": "LHE",
+                                                "areaid": 593,
+
+                                                                                                              26
+ Failure Response                                                                                                 API User Guide
+                                                                                                                      Version 1.0
+Setup ­ Country List
+ API Name                                     "areacode": "R80306631",
+ Description                                  "blockcode": "R80306632",
+ Sandbox/Developer Link                       "blockname": "Abdul Karim Road"
+ Production Link                       },
+ API Method                            {
+ Bearer Token                                 "srl": 2,
+ API Body                                     "blockid": 19397,
+                                              "citycode": "LHE",
+                                              "areaid": 593,
+                                              "areacode": "R80306631",
+                                              "blockcode": "R80306633",
+                                              "blockname": "Shaheen Complex"
+                                       }
+                                ],
+                                "traceid": "ef12bf80-9cd9-46f1-a060-c3b73c4f011e"
+                         }
+
+                         {
+                                "code": 401,
+                                "message": "Invalid Bearer token. Mismatch configuration.",
+                                "status": "UnAuthorized"
+
+                         }
+
+                         Country list
+                         To retrieve a list of countries for setup using the Country List API.
+
+                         https://devconnect.tcscourier.com/ecom/api/setup/countrylist
+                         https://ociconnect.tcscourier.com/ecom/api/setup/countrylist
+                         GET
+                         Provided in Authorization API
+
+                         This API runs without any input parameters
+
+JSON Body Request/Payload N/A
+
+API Success Response     {
+                                "message": "SUCCESS",
+                                "data": [
+                                       {
+                                              "countrycode": "PK",
+                                              "countryname": "PAKISTAN"
+
+                                                                         27
+                                                                                                                     API User Guide
+                                                                                                                         Version 1.0
+
+Failure Response                            },
+                                            {
+
+                                                   "countrycode": "DXB",
+                                                   "countryname": "UAE"
+                                            }
+                                     ],
+                                     "traceid": "20aeb-72fc-4b21-92c8-8abc5eb163b9"
+                              }
+
+                              {
+                                     "result": null,
+                                     "status": false,
+                                     "code": "401"
+
+                              }
+
+Setup ­ City list by Country  City list by Country
+ API Name                     To retrieve a list of cities for a specified country using the CityListByCountry API.
+ Description
+
+Sandbox/Developer Link        https://devconnect.tcscourier.com/ecom/api/setup/citylistbycountry
+Production Link               https://ociconnect.tcscourier.com/ecom/api/setup/citylistbycountry
+API Method                    GET
+Bearer Token                  Provided in Authorization API
+
+API Body                      S No. Parameter Mandatory          Data Type                                Remarks
+                                                                   String                         To be provided by TCS
+                              1 countrycode  Yes
+
+JSON Body Request/Payload     {
+API Success Response
+                                     "countrycode": ["PK"]
+
+                              }
+
+                              {
+                                 "message": "SUCCESS",
+                                 "data": [
+                                     {
+                                        "citycode": "TAL",
+                                        "cityname": "TALL"
+                                     },
+                                     {
+                                        "citycode": "TDJ",
+                                        "cityname": "TANDO JAM"
+                                     },
+                                     {
+
+                                                                                                                         28
+                                                                                 API User Guide
+                                                                                     Version 1.0
+
+ Failure Response                    "citycode": "TOP",
+                                     "cityname": "TOPI"
+Setup ­ Route List                }
+ API Name                     ],
+ Description                  "traceid": "e52914aa-1f71-4a0a-b899-b4edd7361b72"
+                           }
+ Sandbox/Developer Link
+ Production Link           {
+ API Method                       "result": null,
+ Bearer Token                     "status": false,
+ API Body                         "code": "401"
+
+                           }
+
+                           Route list
+                           To fetch or set up a list of routes for a specified system or module, The request can include various filtering or
+                           sorting parameters to customize the output based on the route list requirements.
+
+                           https://devconnect.tcscourier.com/ecom/api/setup/routelist/
+                           https://ociconnect.tcscourier.com/ecom/api/setup/routelist/
+                           GET
+                           Provided in Authorization API
+
+                           S No. Parameter Mandatory     Data Type              Remarks
+                                                           String   To be provided by Customer
+                           1 countrycode  Yes
+
+JSON Body Request/Payload   {
+                                  "countrycode": "SKT",
+
+                           }
+
+API Success Response       {
+                                  "message": "SUCCESS",
+                                  "data": [
+                                         {
+                                                "stA_NO": "SKT",
+                                                "routE_CODE": "X24118",
+                                                "routE_TYPE": "COCO",
+                                                "exP_NAME": "Khurrianwala Express Center",
+                                                "address": "TCS Express Center Shop No. 707 Khilot No. 1029
+
+                           Khrrianwals Shahkot",
+                                                "contacT_NUMBER": "3169992870",
+                                                "areA_NO": "FSD",
+
+                                                                                                                                               29
+Failure Response                                                                                           API User Guide
+                                                                                                               Version 1.0
+
+                                       "latitude": "31.496388",
+                                       "longitude": "73.269244",
+                                       "flaG_HAZIR": "N",
+                                       "flaG_EC": "Y"
+                                },
+                                {
+                                       "stA_NO": "SKT",
+                                       "routE_CODE": "X24203",
+                                       "routE_TYPE": "Franchise",
+                                       "exP_NAME": "Shahkot Express Center",
+                                       "address": "TCS Express Center Opposite Govt. Elementary
+                  School No. 3 Nankana Road Shahkot ",
+                                       "contacT_NUMBER": "3169992870",
+                                       "areA_NO": "FSD",
+                                       "latitude": "31.575158",
+                                       "longitude": "73.483265",
+                                       "flaG_HAZIR": "N",
+                                       "flaG_EC": "Y"
+                                },
+                                {
+                                       "stA_NO": "SKT",
+                                       "routE_CODE": "X24404",
+                                       "routE_TYPE": "Shop in Shop",
+                                       "exP_NAME": "Adda Jhol ",
+                                       "address": "TCS Express Center Bismillah Market Sheikhupura
+                  Faisalabad ",
+                                       "contacT_NUMBER": "3169992870",
+                                       "areA_NO": "FSD",
+                                       "latitude": "31.522127",
+                                       "longitude": "73.371926",
+                                       "flaG_HAZIR": "N",
+                                       "flaG_EC": "Y"
+                                }
+                         ],
+                         "status": "true",
+                         "traceid": "21291a14-8232-4e5b-a24b-de90a0b13d0f"
+                  }
+
+                  {
+                         "code": 401,
+                         "Message": "Invalid.",
+                         "status": "UnAuthorized"
+
+                  }
+
+                  30
+Setup ­ Delivery Status List                                                                                       API User Guide
+ API Name                                                                                                               Version 1.0
+ Description
+ Production Link              Delivery Status List
+ Sandbox/Developer Link
+ API Method                   To fetch available tracking status for orders
+ Bearer Token
+ API Body                     https://devconnect.tcscourier.com/ecom/setup/deliverystatuslist
+ JSON Body Request/Payload
+ API Success Response         https://ociconnect.tcscourier.com/ecom/setup/deliverystatuslist
+
+ Failure Response             GET
+
+                              Provided in Authorization API
+
+                              This API runs without any input parameters
+
+                              N/A
+
+                              {
+                                     "detail": [
+                                       {
+                                                   "statuscode": "DBC",
+                                                   "description": "Delay Beyond Our Control"
+                                       },
+
+                                       {
+                                                   "statuscode": "DFC",
+                                                   "description": "Delay due to Flight Cancelled"
+
+                                       },
+
+                                       {
+                                                   "statuscode": "DAE",
+                                                   "description": "Delay due To Airline Handling Error"
+
+                                       },
+                                       {
+
+                                                   "statuscode": "DFM",
+                                                   "description": "Delay due To Force Majeure"
+                                       }
+
+                                     ],
+                                     "message": "SUCCESS",
+                                     "traceid": "7c9dbc4b-5edb-457f-9343-7e89e422025c"
+                              }
+                              {
+                                     "code": "UnAuthorized",
+                                     "message": "Invalid access token",
+                                     "status": 401
+                              }
+
+                              31
+                                                                                                        API User Guide
+                                                                                                            Version 1.0
+
+Tracking                 Tracking
+                         To efficiently monitor and manage tracking needs.
+ API Name
+ Descriptio              https://devconnect.tcscourier.com/tracking/api/Tracking/GetDynamicTrackDetail
+                         https://ociconnect.tcscourier.com/tracking/api/Tracking/GetDynamicTrackDetail
+ Sandbox/Developer Link  GET
+ Production Link         Provided in Authorization API
+ API Method
+ Bearer Token
+
+API Body                 S No.  Parameter  Mandatory  Data Type                  Remarks
+                           1    consignee      Yes      String               TCS CN Number
+
+JSON Body Request/Payload {
+                                              "consignee": ["779412326902"]
+
+                                       }
+
+API Success Response     {
+                                "shipmentinfo": [
+                                       {
+                                              "consignmentno": "779412326902",
+                                              "bookingdate": "Oct 14, 2024",
+                                              "shipper": "Imrooz Haider",
+                                              "consignee": "Imrooz Haider",
+                                              "origin": "LAHORE",
+                                              "origincountry": "PAK",
+                                              "destination": "BAGH",
+                                              "destinationcountry": "PAK",
+                                              "referenceno": "NA"
+                                       }
+                                ],
+                                "deliveryinfo": [
+                                       {
+                                              "consignmentno": "779412326902",
+                                              "station": "BAGH",
+                                              "datetime": "Thursday Oct 17, 2024 12:58",
+                                              "recievedby": "IMROOZ",
+                                              "status": "Delivered",
+                                              "code": "OK",
+                                              "allowshow": "Y"
+                                       },
+                                       {
+                                              "consignmentno": "779412326902",
+                                              "station": "BAGH",
+                                              "datetime": "Wednesday Oct 16, 2024 11:58",
+                                              "recievedby": null,
+                                              "status": "Awaiting Receiver Collection",
+
+                                                                                                        32
+Failure Response                                                                                           API User Guide
+                                                                                                               Version 1.0
+
+                                       "code": "SC",
+                                       "allowshow": "Y"
+                                }
+                         ],
+                         "checkpoints": [
+                                {
+                                       "consignmentno": "779412326902",
+                                       "datetime": "Thursday Oct 17, 2024 12:58",
+                                       "recievedby": "IMROOZ",
+                                       "status": "Shipment Delivered"
+                                },
+                                {
+                                       "consignmentno": "779412326902",
+                                       "datetime": "Thursday Oct 17, 2024 09:35",
+                                       "recievedby": null,
+                                       "status": "Out For Delivery"
+                                },
+                                {
+                                       "consignmentno": "779412326902",
+                                       "datetime": "Wednesday Oct 16, 2024 10:52",
+                                       "recievedby": "BAGH",
+                                       "status": "Arrived at TCS Facility"
+                                },
+                                {
+                                       "consignmentno": "779412326902",
+                                       "datetime": "Monday Oct 14, 2024 23:19",
+                                       "recievedby": "LAHORE",
+                                       "status": "Arrived at TCS Facility"
+                                }
+                         ],
+                         "shipmentsummary": "Current Status: DELIVERED\nDelivered On:
+                  Thursday Oct 17, 2024 12:58\nSigned By: Imrooz",
+                         "message": "SUCCESS",
+                         "traceid": "111c95db-9d3b-4b6d-8509-6b116fd372a5"
+                  }
+
+                  {
+                         "shipmentinfo": null,
+                         "deliveryinfo": null,
+                         "checkpoints": null,
+                         "shipmentsummary": "No Data Found/Invalid CN",
+                         "message": "FAIL",
+                         "traceid": "8aded596-4811-408d-b4f7-7481d0602a75"
+
+                  }
+
+                  33
+Status Codes                          API User Guide
+                                          Version 1.0
+Status Code Description
+                                                          34
+200           OK
+
+201           Created
+
+400           Bad request
+
+401           Authentication failure
+
+403           Forbidden
+
+404           Resource not found
+
+405           Method Not Allowed
+
+500           Internal Server Error
+
+501           Not Implemented
+
+503           Service Unavailable
+

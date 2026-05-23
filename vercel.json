@@ -1,0 +1,9 @@
+{
+  "regions": ["bom1"],
+  "crons": [
+    {
+      "path": "/api/cron/daily",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

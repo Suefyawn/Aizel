@@ -1,0 +1,45 @@
+{
+  "name": "aizel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:analyze": "ANALYZE=true next build --no-turbopack",
+    "analyze": "next experimental-analyze",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "import:ebay": "node --env-file=.env.local scripts/import-ebay-inventory.mjs"
+  },
+  "dependencies": {
+    "@sentry/nextjs": "^10.53.1",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.3",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.3",
+    "next": "16.2.4",
+    "posthog-js": "^1.374.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "resend": "^6.12.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.6",
+    "@playwright/test": "^1.48.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.4",
+    "dotenv": "^16.4.5",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "vitest": "^2.1.5"
+  }
+}

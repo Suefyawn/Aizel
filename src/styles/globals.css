@@ -1,0 +1,757 @@
+/* Aizel — Design Tokens & Global Styles. Brand palette: Purple, Gold, Black. */
+/* Fonts (Fraunces + Inter) are loaded via next/font/google in
+   src/app/layout.tsx — Next self-hosts the woff2, emits preload
+   links, and exposes the family via --font-display / --font-ui CSS
+   variables. */
+
+/* CSS variable names retain their Aizel names (--brand-pink,
+ * --brand-yellow) for backwards compatibility with existing component
+ * code. The actual values now carry Aizel's Purple + Gold palette:
+ *   --brand-pink*   → purple (primary brand colour, CTAs)
+ *   --brand-yellow  → gold   (warm accent, theme/PWA colour)
+ *   --ink-900       → black  (used as ink throughout)
+ */
+
+:root {
+  --ink-900: #0A0A0A;
+  --ink-700: #2A2A2A;
+  --ink-500: #595959;
+  --ink-400: #7A7A7A;
+  --ink-300: #B0B0B0;
+  --paper: #FAF6EE;
+  --paper2: #F2EDE2;
+  /* Aizel gold — warm metallic accent. Used for borders, hover glows,
+   * seasonal highlights, and the PWA theme tile. */
+  --brand-yellow: #D4A437;
+  /* Aizel purple — primary brand colour for decorative fills, pills,
+   * heart icons, badges. WCAG ratio on --paper is ~7.2:1 — safe for
+   * text use too, but the dedicated -text / -cta variants are slightly
+   * deeper for AAA confidence. */
+  --brand-pink: #6B2C91;
+  /* Deeper purple for text and white-on-colour button labels. White on
+   * #4A1A6B is ~12:1 (AAA), so all CTAs remain accessible. */
+  --brand-pink-text: #4A1A6B;
+  --brand-pink-cta: #4A1A6B;
+  --line: rgba(26,26,26,0.10);
+  --success: #2D6A4F;
+  --error: #9B2C2C;
+  --shadow-1: 0 4px 24px rgba(10,10,10,0.08);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --max-w: 1440px;
+  --gutter: 24px;
+  --side: 32px;
+  --section-gap: 96px;
+  --radius-card: 3px;
+  --radius-pill: 8px;
+}
+
+/* ── Seasonal themes ──────────────────────────────────────────────────
+ * Applied via a `data-theme` attribute on <html>, set server-side in
+ * src/app/layout.tsx from the `active_theme` site setting. Registry +
+ * the admin picker live in src/lib/themes.ts.
+ *
+ * Each block overrides ONLY the brand palette — ink, spacing, radii and
+ * fonts stay constant so layout and text legibility never shift between
+ * themes. `--brand-pink` is the decorative tone (fills, pills, badges);
+ * `--brand-pink-text` / `--brand-pink-cta` are the darker tones that
+ * carry text / white-on-colour button labels — they are kept dark enough
+ * to clear WCAG AA on that theme's --paper. Tune the hex freely; keep
+ * that contrast. */
+
+/* Festive / formal — richer gold against deep aubergine. */
+:root[data-theme="eid"] {
+  --paper: #FBF6EA;
+  --paper2: #F1E8D4;
+  --brand-yellow: #C99230;
+  --brand-pink: #4F1F6E;
+  --brand-pink-text: #341148;
+  --brand-pink-cta: #341148;
+}
+
+/* High-energy sale: brighter gold + electric violet. */
+:root[data-theme="sale"] {
+  --paper: #FFFFFF;
+  --paper2: #F4F4F5;
+  --brand-yellow: #E5B538;
+  --brand-pink: #8A2BE2;
+  --brand-pink-text: #5D17A6;
+  --brand-pink-cta: #5D17A6;
+}
+
+/* Christmas: warm gold + plum-burgundy. */
+:root[data-theme="christmas"] {
+  --paper: #FBF4EF;
+  --paper2: #EEE3DB;
+  --brand-yellow: #C99A3C;
+  --brand-pink: #5A1240;
+  --brand-pink-text: #3B0928;
+  --brand-pink-cta: #3B0928;
+}
+
+/* Easter / spring: soft champagne + lavender. */
+:root[data-theme="easter"] {
+  --paper: #FBF7F4;
+  --paper2: #EFE8F1;
+  --brand-yellow: #E2C97C;
+  --brand-pink: #8E62B5;
+  --brand-pink-text: #5D3D85;
+  --brand-pink-cta: #5D3D85;
+}
+
+/* Seasonal background motifs — a faint, tiled SVG texture layered over
+ * --paper, one per season. Kept at very low opacity so body-text contrast is
+ * unaffected (the palette blocks above own legibility). Inline data-URIs mean
+ * zero extra requests. These only apply while <html> carries a non-default
+ * data-theme, which layout.tsx sets only when the seasonal toggle is on. */
+:root[data-theme="eid"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='none' stroke='%23341148' stroke-width='1.1' opacity='0.07'%3E%3Crect x='12' y='12' width='20' height='20'/%3E%3Crect x='12' y='12' width='20' height='20' transform='rotate(45 22 22)'/%3E%3C/g%3E%3C/svg%3E");
+}
+:root[data-theme="sale"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M-2 2 L2 -2 M0 24 L24 0 M22 26 L26 22' stroke='%235D17A6' stroke-width='2' opacity='0.05'/%3E%3C/svg%3E");
+}
+:root[data-theme="christmas"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='%233B0928' opacity='0.06'%3E%3Ccircle cx='15' cy='12' r='2'/%3E%3Ccircle cx='44' cy='33' r='2.6'/%3E%3Ccircle cx='30' cy='52' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+}
+:root[data-theme="easter"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='%235D3D85' opacity='0.06'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Ccircle cx='36' cy='36' r='3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@media (max-width: 768px) {
+  :root {
+    --side: 16px;
+    --section-gap: 64px;
+    --gutter: 16px;
+  }
+
+  /* Mobile-tight promo banner: was eating ~250 px of the first viewport
+   * (almost a full thumbswipe). Tighten padding, drop the subline, and
+   * shrink the headline so the bar is informative without being a wall. */
+  .promo-banner { padding: 12px 16px !important; }
+  .promo-banner-headline { font-size: 1rem !important; }
+  .promo-banner-subline { display: none !important; }
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* `overflow-x: clip` on the root kills any horizontal page scroll —
+ * including from off-screen position:fixed drawers (mini-cart, shop filter
+ * rail) which `body { overflow-x: hidden }` cannot clip because fixed
+ * elements escape the body. `clip` (not `hidden`) is used so the root never
+ * becomes a scroll container, keeping `position: sticky` working. */
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: clip; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--paper);
+  color: var(--ink-900);
+  line-height: 1.5;
+  /* `clip`, not `hidden`: `overflow-x: hidden` forces `overflow-y` to compute
+   * to `auto`, which turns <body> into a scroll container and stops the
+   * sticky <header> from pinning to the viewport. `clip` contains the same
+   * horizontal overflow without creating a scroll container. */
+  overflow-x: clip;
+}
+
+/* iOS Safari zooms in on focused inputs whose font-size is below 16 px.
+ * Pretty much every form on this site uses 14–15 px inline styles for
+ * visual density, so the page jolts every time a customer taps an input
+ * on iPhone. Force ≥16 px on any phone-sized viewport OR coarse-pointer
+ * device, so the bug is gone for real touchscreens AND for desktop
+ * browsers driving a narrow viewport (testing, devtools emulation).
+ * Desktop forms keep their tighter look. */
+@media (pointer: coarse), (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  /* Touch devices have no `hover` state — keep the quick-add button on the
+   * shop tile always visible instead of waiting for an event that never
+   * fires. The opacity-0 inline style on desktop is overridden here. */
+  .quick-add-btn {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+}
+
+/* The PDP sticky buy-bar is a mobile-only affordance — desktop keeps the
+ * Add-to-Cart button visible in the right column without needing it. Hidden
+ * above 768px so it never overlaps the desktop layout. */
+@media (min-width: 769px) {
+  .pdp-sticky-bar { display: none !important; }
+}
+
+/* Modern reset: links never underline by default; bring it back via .underline
+ * (e.g. for inline body-text links like the cart "Forgot password?" links).
+ * Buttons styled as links keep clean type. */
+a { color: inherit; text-decoration: none; }
+a.underline,
+.body-text a,
+.body-text-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* a11y: bring back a real focus ring for keyboard users (mouse / touch users
+ * see nothing — only :focus-visible triggers). Without this rule every
+ * <button> looks the same focused vs unfocused, which silently breaks
+ * keyboard navigation across the storefront. !important so it beats inline
+ * `outline: none` that many input elements ship with. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--brand-pink) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* Dialog slide animations on filter rail / MiniCart / SearchOverlay are
+ * auto-suppressed by the existing global prefers-reduced-motion rule
+ * further down (kills transition-duration on every element). */
+
+/* Skip-to-main link — hidden until keyboard-focused, then surfaces at the
+ * top-left as a high-contrast pill. Used by app/layout.tsx (`<a className="skip-link">`). */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -100px;
+  z-index: 1000;
+  padding: 10px 16px;
+  background: var(--ink-900);
+  color: var(--paper);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 160ms ease-out;
+}
+.skip-link:focus { top: 12px; outline: 2px solid var(--brand-yellow); outline-offset: 2px; }
+
+/* When the skip-link focuses #main, browsers scroll it to the top edge.
+ * Without scroll-margin the sticky-ish header + banners cover it. */
+#main { scroll-margin-top: 200px; }
+
+/* Typography scale */
+.display-xl { font-family: var(--font-display); font-size: 4.5rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; }
+.display-l  { font-family: var(--font-display); font-size: 3rem; font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; }
+.h1 { font-family: var(--font-ui); font-size: 2.25rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.h2 { font-family: var(--font-ui); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+.h3 { font-family: var(--font-ui); font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+.body-text { font-size: 0.9375rem; font-weight: 400; line-height: 1.6; }
+.small-text { font-size: 0.8125rem; font-weight: 400; line-height: 1.5; color: var(--ink-500); }
+.overline {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-900);
+}
+
+/* Utility */
+.container { max-width: var(--max-w); margin: 0 auto; padding-left: var(--side); padding-right: var(--side); }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Hairline */
+.hairline { border: none; border-top: 1px solid var(--line); }
+
+/* Button base */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 32px;
+  /* --brand-pink-cta (#C5286A) — passes WCAG AA for the small uppercase
+   * white label below. The lighter --brand-pink fails 1.4.3 at 13px. */
+  background: var(--brand-pink-cta);
+  color: #fff;
+  font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: none; border-radius: var(--radius-card); cursor: pointer;
+  text-decoration: none;
+  transition: background 180ms ease-out, transform 180ms ease-out;
+}
+.btn-primary:hover { background: #aa1f5a; transform: translateY(-1px); }
+
+/* Outlined twin to .btn-primary — same height + padding so the two CTAs sit
+ * on a shared baseline. Ghost button reads as "alternative path" not "tiny
+ * text link", which is what hero / section CTAs need for visual hierarchy. */
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 28px;
+  background: transparent;
+  color: var(--ink-900);
+  font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--ink-900); border-radius: var(--radius-card); cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  transition: background 180ms ease-out, color 180ms ease-out, transform 180ms ease-out;
+}
+.btn-secondary::after {
+  content: '→'; margin-left: 2px;
+  transition: transform 180ms ease-out;
+}
+.btn-secondary:hover {
+  background: var(--ink-900);
+  color: var(--paper);
+  transform: translateY(-1px);
+}
+.btn-secondary:hover::after { transform: translateX(3px); }
+
+/* Inline text-link variant for spots where .btn-secondary would feel too heavy
+ * (e.g. "View all →" in a section header). Opt-in via className="text-link". */
+.text-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0; background: none; border: none; cursor: pointer;
+  font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-900);
+  text-decoration: none;
+  position: relative;
+}
+.text-link::after {
+  content: '→'; margin-left: 4px;
+  transition: transform 180ms ease-out;
+}
+.text-link:hover::after { transform: translateX(3px); }
+
+/* Placeholder image */
+.img-placeholder {
+  background: var(--paper2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace; font-size: 0.75rem;
+  color: var(--ink-500); text-align: center;
+  border: 1px dashed var(--line);
+  overflow: hidden;
+}
+
+/* Scrollbar minimal */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(10,10,10,0.15); border-radius: 3px; }
+
+/* Selection */
+::selection { background: var(--brand-yellow); color: var(--ink-900); }
+
+/* Animations */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Footer marquee — auto-pauses on hover and respects prefers-reduced-motion.
+ * Previously inlined on the element, which forced screenshot tools / Lighthouse
+ * audits to wait forever for the page to "settle". */
+.footer-marquee {
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+.footer-marquee:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .footer-marquee { animation: none; transform: none; }
+}
+/* Page-level entry animation, applied via `.fade-in` to `<main>` on most
+ * routes. We deliberately use ONLY opacity here — no transform — because a
+ * transform on a parent element creates a new containing block for any
+ * `position: fixed` descendants, which would trap the shop-page filter
+ * drawer + cart drawer inside <main> rather than letting them anchor to the
+ * viewport. Opacity-only also paints faster and avoids the brief layout
+ * shift a translateY produces. */
+@keyframes fadeUp {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fadeUp 0.4s ease-out both; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading skeletons (see components/ui/Skeleton). Soft shimmer over a muted
+ * paper colour so it feels native to the brand palette. */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background-color: var(--paper2);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
+
+/* Admin loading skeletons (see components/admin/Skeleton). Neutral grey to
+ * match the admin shell's white cards and #e5e7eb / #f3f4f6 placeholders,
+ * rather than the cream storefront palette above. */
+.adm-skeleton {
+  background-color: #e5e7eb;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.65) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .adm-skeleton { animation: none; }
+}
+
+/* Stats strip in RealResults: 4 cols desktop → 2 cols tablet → stacks lower */
+@media (max-width: 900px) {
+  .results-stats { grid-template-columns: repeat(2, 1fr) !important; row-gap: 20px !important; }
+}
+@media (max-width: 480px) {
+  .results-stats { grid-template-columns: 1fr 1fr !important; padding: 20px !important; }
+}
+
+/* Responsive grid helpers */
+@media (max-width: 900px) {
+  .product-grid, .cat-grid, .results-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .product-grid-3, .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .duo-grid, .story-grid { grid-template-columns: 1fr !important; }
+  .pdp-grid { grid-template-columns: 1fr !important; }
+  .search-suggestions { grid-template-columns: 1fr !important; }
+  .trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
+  .wellness-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .display-xl { font-size: 2.75rem !important; }
+  .display-l { font-size: 1.75rem !important; }
+  .hero-grid { grid-template-columns: 1fr !important; min-height: auto !important; }
+  .hero-grid > div:last-child { min-height: 300px; position: relative !important; }
+}
+/* PDP gallery: on phones the 64px vertical thumbnail rail steals too much
+ * width from the hero image. Flip to column-reverse so the hero gets full
+ * width and the thumbnails wrap onto a horizontal scroll strip below it. */
+@media (max-width: 720px) {
+  .pdp-gallery {
+    flex-direction: column-reverse !important;
+    gap: 12px !important;
+  }
+  .pdp-gallery-thumbs {
+    flex-direction: row !important;
+    width: 100% !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .pdp-gallery-thumbs::-webkit-scrollbar { display: none; }
+}
+
+/* Frequently-bought-together: 2fr / 1fr stacks awkwardly on phones. Drop
+ * to a single column so the product rail and the totals/CTA card each
+ * get the full width. */
+@media (max-width: 900px) {
+  .fbt-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+}
+
+/* Cart rows: the desktop "Product | Quantity | Total | ×" 4-col grid
+ * gets too cramped under 700px (qty stepper alone needs ~96px). Re-flow
+ * into a 2-col layout: product spans the full row, qty + total share
+ * the row below, × pins to the top-right. */
+@media (max-width: 700px) {
+  .cart-row-head { display: none !important; }
+  .cart-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px 16px !important;
+    padding: 18px 0 !important;
+    position: relative;
+    align-items: center !important;
+  }
+  .cart-row > div:nth-child(1) { grid-column: 1 / -1 !important; }
+  .cart-row > div:nth-child(2) { grid-column: 1 !important; justify-content: flex-start !important; }
+  .cart-row > div:nth-child(3) { grid-column: 2 !important; text-align: right !important; }
+  .cart-row > button:last-child {
+    position: absolute !important;
+    top: 14px !important; right: 0 !important;
+    width: 32px !important; height: 32px !important;
+    display: inline-flex !important; align-items: center; justify-content: center;
+  }
+}
+
+/* Blog tile hover lift — replaces JS onMouseEnter/Leave from BlogPage.
+   Compiler-clean (no DOM mutation in event handlers) and stays smooth
+   on touch devices via the @media (hover) gate. */
+.blog-tile .blog-tile-img { transition: transform 200ms ease-out, box-shadow 200ms ease-out; }
+@media (hover: hover) {
+  .blog-tile:hover .blog-tile-img { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(26, 26, 26, 0.08); }
+}
+
+/* Blog article body: a sticky table-of-contents rail fills the left margin
+   on desktop so the long-form column isn't marooned in white space. The
+   rail collapses away below 1024px and the body re-centres. */
+.blog-article-grid {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 720px);
+  gap: 64px;
+  justify-content: start;
+  align-items: start;
+}
+.blog-article-main { max-width: 720px; }
+.blog-toc { position: sticky; top: 96px; font-family: var(--font-ui); }
+.blog-toc-title {
+  margin: 0 0 12px;
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-500);
+}
+.blog-toc ul {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  border-left: 2px solid var(--line);
+}
+.blog-toc a {
+  display: block; margin-left: -2px; padding: 7px 0 7px 16px;
+  border-left: 2px solid transparent;
+  font-size: 0.8125rem; line-height: 1.45;
+  color: var(--ink-500); text-decoration: none;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+@media (hover: hover) { .blog-toc a:hover { color: var(--ink-900); } }
+.blog-toc a.is-active {
+  color: var(--brand-pink-text); font-weight: 600;
+  border-left-color: var(--brand-pink-cta);
+}
+/* Anchor jumps land clear of the sticky site header. */
+.blog-body h2 { scroll-margin-top: 96px; }
+@media (max-width: 1023px) {
+  .blog-article-grid { display: block; }
+  .blog-article-main { margin: 0 auto; }
+  .blog-toc { display: none; }
+}
+
+@media (max-width: 600px) {
+  .product-grid, .cat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .blog-grid { grid-template-columns: 1fr !important; }
+  .trust-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .desktop-nav { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+  .display-xl { font-size: 2.25rem !important; }
+  /* Account + wishlist move into the mobile menu drawer, so the header row
+   * has room for the logo without it wrapping to two lines. */
+  .header-icon-desktop-only { display: none !important; }
+  .logo-wordmark { font-size: 1.0625rem !important; }
+
+  /* Bestsellers + blog "Mentioned in this article" — 3 tiles. Stacking them
+   * 1-col makes for a vertical wall on a phone. Convert to a horizontal
+   * scroll-snap slider so 1.3 cards are visible — the half-card on the
+   * right edge cues swipeability without needing copy. */
+  .product-grid-3 {
+    display: flex !important;
+    grid-template-columns: none !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--side);
+    margin-left: calc(var(--side) * -1);
+    margin-right: calc(var(--side) * -1);
+    padding-left: var(--side);
+    padding-right: var(--side);
+    gap: 12px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .product-grid-3::-webkit-scrollbar { display: none; }
+  .product-grid-3 > * {
+    flex: 0 0 72%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
+/* Home reviews: 2-col crushes the cards on mobile. Convert the grid into a
+ * native CSS scroll-snap slider so each review gets one full card width,
+ * with the next card peeking in to hint that there's more to swipe.
+ * Pure CSS — no JS, no carousel library.
+ *
+ * `scrollbar-width: none` + ::-webkit-scrollbar:none hides the rail; the
+ * scroll-snap dots in the JSX provide orientation instead.
+ */
+@media (max-width: 720px) {
+  .results-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--side);
+    /* Negative margin + matching padding so cards can scroll edge-to-edge
+     * while keeping the container aligned with the rest of the page gutter. */
+    margin-left: calc(var(--side) * -1);
+    margin-right: calc(var(--side) * -1);
+    padding-left: var(--side);
+    padding-right: var(--side);
+    gap: 16px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* Force iOS / Safari to honour scroll-snap on momentum-fling. */
+    -webkit-overflow-scrolling: touch;
+  }
+  .results-grid::-webkit-scrollbar { display: none; }
+  .results-grid > * {
+    flex: 0 0 86%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  /* Slide indicator dots — only visible on the mobile slider. */
+  .results-dots {
+    display: flex !important;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .results-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: rgba(26, 26, 26, 0.20);
+    cursor: pointer;
+    transition: background 200ms ease-out, transform 200ms ease-out, width 200ms ease-out;
+  }
+  .results-dot[data-active='true'] {
+    background: var(--brand-pink);
+    width: 24px;
+    border-radius: 4px;
+  }
+}
+@media (min-width: 601px) {
+  .mobile-menu-btn { display: none !important; }
+}
+
+/* Shop filter rail — left-side slide-in panel on every viewport.
+ * Position / transform / backdrop are inlined in CollectionPage.tsx; we
+ * only add the always-visible close-× rule here since it's controlled
+ * by a class. */
+.shop-rail-close { display: inline-block; }
+
+/* Checkout / Cart responsive */
+@media (max-width: 860px) {
+  .checkout-grid { grid-template-columns: 1fr !important; }
+  .checkout-grid > div:last-child { position: static !important; }
+  .cart-grid { grid-template-columns: 1fr !important; }
+  .cart-grid > div:last-child { position: static !important; }
+  .addr-grid-3 { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 600px) {
+  .checkout-name-grid { grid-template-columns: 1fr !important; }
+  .addr-grid-3 { grid-template-columns: 1fr !important; }
+}
+
+/* Admin responsive
+ *
+ * The 768-1024 px rule narrows the permanent sidebar for tablets. It MUST be
+ * scoped to (min-width: 768px) so it doesn't bleed onto phones — on phones
+ * the sidebar transforms off-screen and `.adm-main` runs full width, but if
+ * this rule fires with !important it would re-apply margin-left:200px and
+ * leave only ~200 px for content. */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .adm-sidebar { width: 200px !important; }
+  .adm-main { margin-left: 200px !important; }
+  /* The 200px sidebar leaves a narrow content column on tablets — drop the
+   * stat-card grids to 3-up so the dashboard / analytics KPI cards don't
+   * cram (the inline styles set 4–5 columns for desktop). */
+  .adm-stat-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 767px) {
+  .adm-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .adm-analytics-grid { grid-template-columns: 1fr !important; }
+  .adm-two-col { grid-template-columns: 1fr !important; }
+  /* PDP "Why Aizel" trust cards: 4-up cramps badly on a phone. */
+  .trust-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  /* Reclaim horizontal room on phones — the 36px desktop gutter is too wide. */
+  .adm-page { padding: 20px 14px !important; }
+}
+
+/* Admin data tables → stacked cards on phones.
+ *
+ * The Orders, Products, Vendors, Users, Blog, Coupons, Segments, Audit and
+ * Team tables all carry `.adm-table-cards` and a `data-label` on every body
+ * cell. On a phone a 6–7 column table overflows the viewport; here each row
+ * collapses into a bordered card, the header row is hidden, and every cell
+ * shows its column name (from `data-label`) beside its value. */
+@media (max-width: 767px) {
+  .adm-table-cards { display: block; }
+  .adm-table-cards thead { display: none; }
+  .adm-table-cards tbody { display: block; }
+  .adm-table-cards tr {
+    display: block;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px;
+    margin: 0 0 10px;
+    padding: 4px 2px;
+    overflow: hidden;
+  }
+  .adm-table-cards td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 14px !important;
+    border: none !important;
+    text-align: right;
+    white-space: normal !important;
+  }
+  .adm-table-cards td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    text-align: left;
+  }
+  /* Cells with no column label (row checkbox, the actions column). */
+  .adm-table-cards td:not([data-label]) { justify-content: flex-start; }
+  /* Un-truncate cell content that ellipsises in the desktop table. */
+  .adm-table-cards td div { white-space: normal !important; max-width: 100% !important; }
+}
+
+/* Settings split layout: side rail + content on desktop, stacked on phones.
+ * On narrow viewports the rail collapses into a horizontal scroller so all
+ * sub-page links remain reachable without a hamburger / drawer pattern. */
+@media (max-width: 900px) {
+  .adm-settings-layout { flex-direction: column !important; }
+  .adm-settings-nav { width: 100% !important; padding-right: 0 !important; padding-bottom: 12px; overflow-x: auto; }
+  .adm-settings-nav nav { flex-direction: row !important; min-width: max-content; gap: 4px !important; }
+  .adm-settings-nav-link { white-space: nowrap; border-left: 0 !important; border-bottom: 3px solid transparent !important; padding: 8px 12px !important; }
+  .adm-settings-nav-link[aria-current="page"] { border-bottom-color: #C5286A !important; }
+  .adm-settings-nav-link > div:last-child { display: none; }
+}
+
+/* FAQ accordion chevron: rotate + into × when the <details> is open. */
+.faq-item[open] .faq-chevron {
+  transform: rotate(45deg);
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* :focus-visible + .skip-link rules live near the top of this file (the
+ * canonical ones with !important). Older non-!important duplicates that
+ * used to live here have been removed. */
+
+/* Screen-reader-only utility. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
