@@ -246,6 +246,96 @@ export async function getProductsByBrand(brand: string | null | undefined, limit
   }, []);
 }
 
+/** ALL products from a single brand — used by the /brand/[slug] landing
+ *  page. No limit (the brand-landing template paginates client-side if
+ *  needed). Published + in-stock-first ordering. */
+export async function getAllProductsByBrand(brand: string): Promise<Product[]> {
+  if (!brand) return [];
+  if (isDemo) return DEMO_PRODUCTS.filter(p => p.brand === brand);
+  return safe('getAllProductsByBrand', async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select(PRODUCT_TILE_COLUMNS)
+      .eq('brand', brand)
+      .eq('status', 'published')
+      // In-stock products first so the landing doesn't lead with sold-outs,
+      // then newest within each stock bucket. Postgres `nulls last` keeps
+      // products with track_inventory=false (the "always available" set) at
+      // the top alongside genuinely-stocked rows.
+      .order('stock', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Product[];
+  }, []);
+}
+
+/** Every distinct brand in the catalogue, mapped to its slug + product count.
+ *  Powers the /brand/[slug] route generation, the sitemap, and the index of
+ *  brands shown at /brand. */
+export interface BrandSummary {
+  brand: string;
+  slug: string;
+  productCount: number;
+  /** First in-stock product image — used as the brand-tile thumbnail. */
+  sampleImage: string | null;
+}
+
+export function brandSlug(brand: string): string {
+  return brand
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    // Drop apostrophes (both straight ' and curly ’) FIRST so possessive
+    // brand names produce clean slugs: "Palmer's" → "palmers" (not
+    // "palmer-s") and "Ghana's Best" → "ghanas-best".
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export async function getAllBrands(): Promise<BrandSummary[]> {
+  const summarise = (products: Pick<Product, 'brand' | 'image_url'>[]): BrandSummary[] => {
+    const map = new Map<string, { count: number; image: string | null }>();
+    for (const p of products) {
+      if (!p.brand) continue;
+      const existing = map.get(p.brand);
+      if (existing) {
+        existing.count++;
+        if (!existing.image && p.image_url) existing.image = p.image_url;
+      } else {
+        map.set(p.brand, { count: 1, image: p.image_url ?? null });
+      }
+    }
+    return [...map.entries()]
+      .map(([brand, { count, image }]) => ({
+        brand,
+        slug: brandSlug(brand),
+        productCount: count,
+        sampleImage: image,
+      }))
+      .filter(b => b.slug)          // drop brands whose slug normalises away
+      .sort((a, b) => b.productCount - a.productCount);
+  };
+
+  if (isDemo) return summarise(DEMO_PRODUCTS);
+  return safe('getAllBrands', async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand, image_url')
+      .eq('status', 'published');
+    if (error) throw error;
+    return summarise((data ?? []) as Pick<Product, 'brand' | 'image_url'>[]);
+  }, summarise(DEMO_PRODUCTS));
+}
+
+/** Lookup a brand by its URL slug. Slug → brand name is reversible only by
+ *  scanning every brand and slugifying each; we accept that cost (the
+ *  catalogue has <100 brands) for the readability win at the URL. */
+export async function getBrandBySlug(slug: string): Promise<BrandSummary | null> {
+  const all = await getAllBrands();
+  return all.find(b => b.slug === slug) ?? null;
+}
+
 // Tile-projection for the blog index. P0-2 finding in the 2026-05-19
 // launch audit: /blog was shipping 1.95 MB of HTML, ~1.76 MB of which
 // was the full WP body of every post embedded in the RSC payload — the

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const displayName = brandPlusName(product.brand, product.name);
   const autoTitle = `${displayName}${product.variant ? ` — ${product.variant}` : ''}`;
   const autoDescription = product.short_description?.trim()
-    ?? (product.description?.trim().slice(0, 160) || `Buy ${displayName} in the UK. £${product.price.toLocaleString()}. Fast COD delivery nationwide.`);
+    ?? (product.description?.trim().slice(0, 160) || `Buy ${displayName} in the UK. £${product.price.toLocaleString()}. Free UK delivery over £15.`);
   // Migration 081: admin-controlled overrides win when set; otherwise fall
   // back to the auto-templated values so existing rows keep working.
   const title = product.seo_title?.trim() || autoTitle;
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     path: `/product/${product.slug}`,
     image,
     type: 'product',
-    keywords: [product.brand, stripBrandPrefix(product.brand, product.name), product.category, 'Pakistan', 'COD']
+    keywords: [product.brand, stripBrandPrefix(product.brand, product.name), product.category, 'UK', 'Hair Care', 'Body Care']
       .filter((s): s is string => Boolean(s)),
   });
 }

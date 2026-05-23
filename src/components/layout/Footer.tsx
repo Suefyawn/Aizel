@@ -39,7 +39,7 @@ const SHOP_LINKS = [
   // defined in lib/category-taxonomy.ts.
   { label: 'Hair Care',    href: '/shop?taxon=hair' },
   { label: 'Body Care',    href: '/shop?taxon=body' },
-  { label: 'Styling',      href: '/shop?taxon=styling' },
+  { label: 'Shop by Brand', href: '/brand' },
   { label: 'All Products', href: '/shop' },
 ];
 

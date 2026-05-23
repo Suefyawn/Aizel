@@ -220,9 +220,10 @@ function wpPatternRedirect(pathname: string, params: URLSearchParams): string | 
   const blogPage = pathname.match(/^\/blog\/page\/(\d+)\/?$/);
   if (blogPage) return `/blog?page=${blogPage[1]}`;
 
-  // /category/<slug>/ + /product-category/<slug>/ + /brand/<slug>/
-  //   → /shop?category=<slug>
-  const cat = pathname.match(/^\/(?:product-category|category|brand)\/([^/]+)\/?$/);
+  // /category/<slug>/ + /product-category/<slug>/ → /shop?category=<slug>
+  // (Note: /brand/<slug> is no longer redirected — it now serves its own
+  // brand landing page at src/app/brand/[slug]/page.tsx.)
+  const cat = pathname.match(/^\/(?:product-category|category)\/([^/]+)\/?$/);
   if (cat) return `/shop?category=${encodeURIComponent(cat[1])}`;
 
   // /author/<name>/<page?>/ → /blog (we don't have author archives)

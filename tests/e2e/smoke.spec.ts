@@ -78,6 +78,32 @@ test.describe('Storefront — golden path', () => {
     const hasPost = await page.locator('a[href^="/blog/"]').count();
     expect(hasPost).toBeGreaterThan(0);
   });
+
+  test('brand index lists every demo brand', async ({ page }) => {
+    await page.goto('/brand');
+    await expect(page).toHaveTitle(/brand/i);
+    // Demo data covers Cantu, ApHogee, Kuza, Dabur, KeraCare, Eco Style,
+    // got2b, Palmer's, Ghana's Best, Vaseline, Ebin, ORS. Spot-check three.
+    await expect(page.locator('a[href="/brand/cantu"]')).toBeVisible();
+    await expect(page.locator('a[href="/brand/aphogee"]')).toBeVisible();
+    await expect(page.locator('a[href="/brand/palmers"]')).toBeVisible();
+  });
+
+  test('brand landing page renders for a known brand', async ({ page }) => {
+    await page.goto('/brand/cantu');
+    await expect(page.getByRole('heading', { name: /^Cantu$/ })).toBeVisible();
+    // At least one product tile linking to /product/...
+    const tiles = await page.locator('a[href^="/product/"]').count();
+    expect(tiles).toBeGreaterThan(0);
+  });
+
+  test('unknown brand 404s rather than redirecting away', async ({ page }) => {
+    // Regression: a pre-existing legacy proxy rule used to rewrite
+    // /brand/<anything> → /shop?category=<anything>, breaking the new
+    // brand landing routes. This test guards against re-introducing it.
+    const res = await page.goto('/brand/this-brand-does-not-exist');
+    expect(res?.status()).toBe(404);
+  });
 });
 
 test.describe('Storefront — infrastructure', () => {
