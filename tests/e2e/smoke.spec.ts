@@ -1,29 +1,128 @@
 import { test, expect } from '@playwright/test';
 
-// Golden-path smoke tests. Phase 6.8. These run against a live dev server
-// (started automatically per playwright.config.ts) or PLAYWRIGHT_BASE_URL.
+// Golden-path smoke tests for the Aizel storefront. These run against a
+// live dev server (started automatically per playwright.config.ts) or
+// against $PLAYWRIGHT_BASE_URL when set (e.g. a Vercel preview deploy).
+//
+// Coverage rationale: each test catches a specific rebrand-critical
+// regression. If any of these go red after a change, the storefront isn't
+// shippable until the assertion is restored.
 
-test('homepage renders Yellow Pink branding', async ({ page }) => {
-  await page.goto('/');
-  await expect(page).toHaveTitle(/Yellow Pink/);
+test.describe('Storefront — golden path', () => {
+  test('homepage renders Aizel hair-care branding', async ({ page }) => {
+    await page.goto('/');
+    // The HTML <title> uses the SITE_NAME template — proves the rebrand is
+    // wired through the metadata helpers and not just in the JSX.
+    await expect(page).toHaveTitle(/Aizel/);
+    // Hero headline copy — guards against the demo settings + HeroSection
+    // defaults drifting.
+    await expect(page.getByRole('heading', { name: /Hair you love/i })).toBeVisible();
+    // £15 free-shipping threshold is the single biggest pricing change from
+    // the YellowPink era. If it ever reverts, the customer-facing copy
+    // would tell the wrong story.
+    await expect(page.locator('body')).toContainText(/Free UK delivery/i);
+    await expect(page.locator('body')).toContainText(/£15/);
+  });
+
+  test('header nav uses the new hair-and-body taxonomy', async ({ page }) => {
+    await page.goto('/');
+    const nav = page.locator('nav[aria-label="Primary"]');
+    await expect(nav.getByRole('link', { name: /^Hair Care$/i })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /^Body Care$/i })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /^Styling & Tools$/i })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /^Grooming$/i })).toBeVisible();
+    // Belt-and-braces against a Wellness / Makeup regression.
+    await expect(nav.getByText(/Wellness/i)).toHaveCount(0);
+    await expect(nav.getByText(/Makeup/i)).toHaveCount(0);
+  });
+
+  test('shop page lists products with GBP prices', async ({ page }) => {
+    await page.goto('/shop');
+    await expect(page).toHaveTitle(/Aizel/);
+    // At least one product card rendered (in demo mode this comes from
+    // DEMO_PRODUCTS; in live mode from Supabase).
+    const prices = page.locator('text=/£\\d/');
+    await expect(prices.first()).toBeVisible();
+    // PKR should never appear anywhere on the storefront.
+    await expect(page.locator('body')).not.toContainText('PKR');
+  });
+
+  test('shop?taxon=hair filters to hair products', async ({ page }) => {
+    await page.goto('/shop?taxon=hair');
+    await expect(page).toHaveTitle(/Aizel/);
+    // The collection page should render at least one product tile.
+    const hasProduct = await page.locator('a[href^="/product/"]').count();
+    expect(hasProduct).toBeGreaterThan(0);
+  });
+
+  test('checkout page shows card option and £15 threshold messaging', async ({ page }) => {
+    await page.goto('/checkout');
+    await expect(page).toHaveTitle(/Checkout/i);
+    // We don't try to actually transact — just verify the rebrand-critical
+    // surface is intact: card is the primary method, JazzCash/Easypaisa
+    // are gone.
+    await expect(page.locator('body')).toContainText(/Credit \/ Debit Card/i);
+    await expect(page.locator('body')).not.toContainText(/JazzCash/i);
+    await expect(page.locator('body')).not.toContainText(/Easypaisa/i);
+  });
+
+  test('track page renders the lookup form', async ({ page }) => {
+    await page.goto('/track');
+    await expect(page.getByRole('heading', { name: /track/i }).first()).toBeVisible();
+  });
+
+  test('blog index renders the Aizel journal', async ({ page }) => {
+    await page.goto('/blog');
+    await expect(page).toHaveTitle(/Aizel/);
+    // Default-mode posts are seeded by demo-data.ts — at least one card.
+    const hasPost = await page.locator('a[href^="/blog/"]').count();
+    expect(hasPost).toBeGreaterThan(0);
+  });
 });
 
-test('shop page loads and lists products', async ({ page }) => {
-  await page.goto('/shop');
-  await expect(page).toHaveTitle(/Yellow Pink/);
+test.describe('Storefront — infrastructure', () => {
+  test('robots.txt is served', async ({ page }) => {
+    const res = await page.goto('/robots.txt');
+    expect(res?.ok()).toBe(true);
+    const body = await page.content();
+    // robots.txt minimum: a User-Agent declaration. We don't assert the
+    // domain because robots.txt is served from the origin and doesn't need
+    // to mention it; SITE_URL coverage lives on the sitemap/manifest tests.
+    expect(body).toMatch(/User-Agent:/i);
+  });
+
+  test('sitemap.xml is served', async ({ page }) => {
+    const res = await page.goto('/sitemap.xml');
+    expect(res?.ok()).toBe(true);
+  });
+
+  test('llms.txt mentions the hair-and-body positioning', async ({ page }) => {
+    const res = await page.goto('/llms.txt');
+    expect(res?.ok()).toBe(true);
+    const body = await page.content();
+    expect(body).toMatch(/Hair Care/i);
+    expect(body).toMatch(/Body Care/i);
+    // llms.txt should never expose admin / api surfaces as primary pages.
+    expect(body).not.toMatch(/^\s*\/admin\b/im);
+  });
+
+  test('manifest is served with the hair-care branding', async ({ page }) => {
+    const res = await page.goto('/manifest.webmanifest');
+    expect(res?.ok()).toBe(true);
+    const text = await res?.text();
+    expect(text).toMatch(/"name":\s*"Aizel"/);
+    expect(text).toMatch(/"lang":\s*"en-GB"/);
+  });
 });
 
-test('robots.txt is served', async ({ page }) => {
-  const res = await page.goto('/robots.txt');
-  expect(res?.ok()).toBe(true);
-});
-
-test('sitemap.xml is served', async ({ page }) => {
-  const res = await page.goto('/sitemap.xml');
-  expect(res?.ok()).toBe(true);
-});
-
-test('track page renders the form', async ({ page }) => {
-  await page.goto('/track');
-  await expect(page.getByRole('heading', { name: /track order/i })).toBeVisible();
+test.describe('Storefront — accessibility skeleton', () => {
+  test('skip link is the first focusable element', async ({ page }) => {
+    await page.goto('/');
+    // The skip link is .skip-link in layout.tsx, first DOM-order focusable.
+    // Tab once and confirm it's focused. (Headless Chromium starts focus on
+    // <body>; the first Tab moves to the first focusable.)
+    await page.keyboard.press('Tab');
+    const focused = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focused?.toLowerCase()).toContain('skip to main content');
+  });
 });
