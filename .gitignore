@@ -54,6 +54,7 @@ next-env.d.ts
 inventory/_*.html
 inventory/_*.json
 inventory/_*.mjs
+inventory/_*.png
 inventory/*.csv
 
 # Local rebrand history note (one-off — references the old YellowPink SHA)
