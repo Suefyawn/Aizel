@@ -9,7 +9,7 @@
 const PH_PROJECT_ID = 429225;
 const PH_BASE = 'https://us.posthog.com';
 const SENTRY_ORG = 'trellee';
-const SENTRY_PROJECT = 'yellowpink';
+const SENTRY_PROJECT = 'aizel';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

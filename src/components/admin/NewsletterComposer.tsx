@@ -77,7 +77,7 @@ export function NewsletterComposer({ activeCount }: { activeCount: number }) {
           onChange={e => setBody(e.target.value)}
           maxLength={20000}
           rows={12}
-          placeholder={'Hi there,\n\nHere’s what’s new this fortnight…\n\nShop the latest: https://aizel.vercel.app/shop'}
+          placeholder={'Hi there,\n\nHere’s what’s new this fortnight…\n\nShop the latest: https://aizel.co.uk/shop'}
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
         />
       </label>

@@ -1,5 +1,5 @@
 // ============================================================================
-// YellowPink service worker — minimal, hand-written.
+// Aizel service worker — minimal, hand-written.
 //
 // Strategy:
 //   • Storefront pages (HTML)           → network-first with cached fallback.
