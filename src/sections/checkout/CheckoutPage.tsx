@@ -251,7 +251,9 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
           shipping,
           total: beforeRewards,                  // pre-rewards order total — points decrement separately
           items: cartItems,
-          status: 'pending',
+          // Card orders sit in payment_pending until Stripe's webhook confirms.
+          // COD / bank / gift_card start directly in `pending` (the staff queue).
+          status: payMethod === 'card' ? 'payment_pending' : 'pending',
           user_id: user?.id || '',
           coupon_code: cartCoupon?.code || '',
           discount_amount: discount,
