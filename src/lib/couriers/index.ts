@@ -1,23 +1,23 @@
 // ============================================================================
-// Pakistan courier registry + adapter resolver.
+// UK courier registry + adapter resolver.
 //
-// Each PK courier has:
+// Each courier has:
 //   (a) A CourierProfile — display name + the public tracking-URL builder
 //       used by the /track page so customers can deep-link to the courier's
 //       site.
-//   (b) Optionally, an API-backed CourierAdapter (see types.ts + tcs.ts)
-//       that can book + cancel + track via HTTP. Adapters are looked up via
-//       getAdapter(id); merchants without API credentials fall back to the
-//       manual tracking-number workflow.
+//   (b) Optionally, an API-backed CourierAdapter (see types.ts) that can
+//       book + cancel + track via HTTP. The previous codebase shipped a TCS
+//       (Pakistan) adapter; no UK adapter is wired yet, so the booking
+//       flow falls back to manual tracking-number entry for every courier
+//       below until a Royal Mail / DPD / Evri integration is added.
 //
-// To add another courier (Leopards / M&P / BlueEx):
+// To add a UK adapter (e.g. Royal Mail Shipping API or DPD WebShipper):
 //   1. Create src/lib/couriers/<name>.ts implementing CourierAdapter.
 //   2. Import + add to ADAPTERS below.
 //   3. Document its required env vars in the file header.
 // ============================================================================
 
 import type { CourierAdapter } from './types';
-import { tcs } from './tcs';
 
 export interface CourierProfile {
   id: string;
@@ -25,26 +25,51 @@ export interface CourierProfile {
   trackingUrl: (n: string) => string;
 }
 
+/**
+ * UK couriers we actively offer in admin. Order roughly mirrors
+ * the volume a small UK D2C retailer would see:
+ *   • Royal Mail Tracked 24/48 — the default for small parcels.
+ *   • Royal Mail Special Delivery — high-value / signed-for next day.
+ *   • DPD — > 2 kg parcels, next-day with hour-window tracking.
+ *   • Evri — light parcels at the cheapest rate.
+ *   • Yodel — bulk / Sunday delivery.
+ *   • Parcelforce — heavier / international.
+ *   • Other — manual catch-all for one-off carriers.
+ *
+ * Tracking-URL builders are all the canonical public pages — clicking
+ * "Open courier page" on /track deep-links straight to the carrier's
+ * status view.
+ */
 export const COURIERS: Record<string, CourierProfile> = {
-  TCS: {
-    id: 'TCS',
-    name: 'TCS',
-    trackingUrl: (n) => `https://www.tcsexpress.com/track/${encodeURIComponent(n)}`,
+  RoyalMail: {
+    id: 'RoyalMail',
+    name: 'Royal Mail',
+    trackingUrl: (n) => `https://www.royalmail.com/track-your-item#/tracking-results/${encodeURIComponent(n)}`,
   },
-  Leopards: {
-    id: 'Leopards',
-    name: 'Leopards Courier',
-    trackingUrl: (n) => `https://www.leopardscourier.com/leopards/tracking?tracking_number=${encodeURIComponent(n)}`,
+  RoyalMailSpecial: {
+    id: 'RoyalMailSpecial',
+    name: 'Royal Mail Special Delivery',
+    trackingUrl: (n) => `https://www.royalmail.com/track-your-item#/tracking-results/${encodeURIComponent(n)}`,
   },
-  'M&P': {
-    id: 'M&P',
-    name: 'M&P',
-    trackingUrl: (n) => `https://www.mulphilog.com/tracking?cnno=${encodeURIComponent(n)}`,
+  DPD: {
+    id: 'DPD',
+    name: 'DPD',
+    trackingUrl: (n) => `https://track.dpd.co.uk/parcels/${encodeURIComponent(n)}`,
   },
-  BlueEx: {
-    id: 'BlueEx',
-    name: 'BlueEx',
-    trackingUrl: (n) => `https://www.blue-ex.com/tracking/${encodeURIComponent(n)}`,
+  Evri: {
+    id: 'Evri',
+    name: 'Evri',
+    trackingUrl: (n) => `https://www.evri.com/track/parcel/${encodeURIComponent(n)}`,
+  },
+  Yodel: {
+    id: 'Yodel',
+    name: 'Yodel',
+    trackingUrl: (n) => `https://www.yodel.co.uk/tracking/${encodeURIComponent(n)}`,
+  },
+  Parcelforce: {
+    id: 'Parcelforce',
+    name: 'Parcelforce',
+    trackingUrl: (n) => `https://www.parcelforce.com/portal/pw/track?trackNumber=${encodeURIComponent(n)}`,
   },
   Other: {
     id: 'Other',
@@ -56,11 +81,12 @@ export const COURIERS: Record<string, CourierProfile> = {
 export const COURIER_LIST = Object.values(COURIERS);
 
 // ─── API adapter map ───────────────────────────────────────────────────────
-// Only couriers with a real adapter live here. Look up via getAdapter(id);
-// returns null if the courier is manual-only or the env isn't configured.
-const ADAPTERS: Record<string, CourierAdapter> = {
-  TCS: tcs,
-};
+// Empty until a UK courier adapter is wired. The legacy TCS adapter is no
+// longer registered here — it stays in src/lib/couriers/tcs.ts for the
+// edge-function shipping webhook to import directly during the transition,
+// but storefront / admin code paths route through getAdapter() and so will
+// fall back to manual tracking until a Royal Mail / DPD adapter ships.
+const ADAPTERS: Record<string, CourierAdapter> = {};
 
 /**
  * Returns the live API adapter for a courier id, or null if:
@@ -84,8 +110,12 @@ export function configuredAdapterIds(): string[] {
 
 export function courierTrackingUrl(courier: string | null | undefined, tracking: string): string | null {
   if (!courier) return null;
+  // First try an exact id match; fall back to a fuzzy contains so that legacy
+  // free-text courier strings (e.g. "Royal Mail Tracked 24") resolve to the
+  // base Royal Mail profile.
   const profile = COURIERS[courier]
-    ?? Object.values(COURIERS).find(p => courier.toLowerCase().includes(p.id.toLowerCase()));
+    ?? Object.values(COURIERS).find(p => courier.toLowerCase().includes(p.id.toLowerCase()))
+    ?? Object.values(COURIERS).find(p => courier.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
   return profile ? profile.trackingUrl(tracking) : null;
 }
 

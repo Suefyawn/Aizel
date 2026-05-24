@@ -29,12 +29,12 @@ export default async function SettingsLoyaltyPage({ searchParams }: { searchPara
           <Divider />
           <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
             <div>
-              <label style={lbl}>Points per £spent</label>
-              <input name="loyalty_points_per_pkr" type="number" step="0.01" min={0} defaultValue={g('loyalty_points_per_pkr', '0.1')} style={inp} />
+              <label style={lbl}>Points per £ spent</label>
+              <input name="loyalty_points_per_gbp" type="number" step="0.01" min={0} defaultValue={g('loyalty_points_per_gbp', '0.1')} style={inp} />
             </div>
             <div>
-              <label style={lbl}>£per point at redemption</label>
-              <input name="loyalty_pkr_per_point" type="number" step="0.01" min={0} defaultValue={g('loyalty_pkr_per_point', '1')} style={inp} />
+              <label style={lbl}>£ per point at redemption</label>
+              <input name="loyalty_gbp_per_point" type="number" step="0.01" min={0} defaultValue={g('loyalty_gbp_per_point', '1')} style={inp} />
             </div>
             <div>
               <label style={lbl}>Welcome points (signup)</label>

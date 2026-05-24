@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function ThankYouPage({ searchParams }: { searchParams: Promise<{ order?: string }> }) {
   const { order } = await searchParams;
-  const orderNumber = order ?? 'YP-??????';
+  const orderNumber = order ?? 'AZ-??????';
 
   // For a bank-transfer order, show the accounts to pay into. Look up the
   // order's pay method (orders RLS blocks anon — service-role read).

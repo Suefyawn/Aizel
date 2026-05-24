@@ -33,17 +33,12 @@ const statusMessages: Record<string, string> = {
   refunded:        'This order has been refunded.',
 };
 
-// Quick courier tracking URL builders for the most common PK carriers.
+// Quick courier tracking URL builders for the most common UK carriers.
+// Delegates to the central registry in src/lib/couriers/index.ts so this
+// page and the admin order-detail view always resolve to the same URL.
+import { courierTrackingUrl as resolveCourierUrl } from '@/lib/couriers';
 function courierTrackingUrl(courier: string | undefined, tracking: string): string | null {
-  if (!courier) return null;
-  const c = courier.toLowerCase();
-  if (c.includes('tcs'))      return `https://www.tcsexpress.com/track/${encodeURIComponent(tracking)}`;
-  if (c.includes('leopard'))  return `https://www.leopardscourier.com/leopards/tracking?tracking_number=${encodeURIComponent(tracking)}`;
-  if (c.includes('m&p') || c.includes('mp'))
-                              return `https://www.mulphilog.com/tracking?cnno=${encodeURIComponent(tracking)}`;
-  if (c.includes('bluex') || c.includes('blueex'))
-                              return `https://www.blue-ex.com/tracking/${encodeURIComponent(tracking)}`;
-  return null;
+  return resolveCourierUrl(courier ?? null, tracking);
 }
 
 const RATE_LIMIT_WINDOW = 60_000;
@@ -109,7 +104,7 @@ export default function TrackPage() {
             id="track-order"
             value={orderNumber}
             onChange={e => setOrderNumber(e.target.value)}
-            placeholder="Order number — e.g. YP-A1B2C3"
+            placeholder="Order number — e.g. AZ-A1B2C3"
             required
             autoCapitalize="characters"
             autoComplete="off"
@@ -159,7 +154,12 @@ export default function TrackPage() {
 
         {order && (
           <div style={{ background: 'white', borderRadius: 16, border: '1px solid var(--line)', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-            <div style={{ padding: '24px 28px', background: 'var(--cream)', borderBottom: '1px solid var(--line)' }}>
+            <div style={{
+              // `--cream` was an undefined YellowPink-era variable; this card
+              // was rendering with no background. `--paper2` is the Aizel
+              // pale-paper surface used elsewhere for inset blocks.
+              padding: '24px 28px', background: 'var(--paper2)', borderBottom: '1px solid var(--line)',
+            }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '1.25rem', color: 'var(--ink-900)', marginBottom: 4 }}>{order.order_number}</div>

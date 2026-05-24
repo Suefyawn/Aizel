@@ -19,10 +19,10 @@ const lbl: React.CSSProperties = {
   color: '#374151', marginBottom: 5,
 };
 
-// PK mobile: optional +92 / 0092 / 0 prefix, then 3xxxxxxxxx. Mirrors
-// `pkPhoneSchema` in src/lib/validators.ts — kept duplicated client-side so
-// we can show inline feedback without an extra round-trip.
-const PK_PHONE = /^(\+92|0092|0)?3\d{9}$/;
+// UK phone: optional +44 / 0044 / 0 prefix, then a mobile (7…) or landline
+// (1/2/3…). Mirrors normaliseUKPhone() in src/lib/notifications/twilio.ts so
+// inline validation matches what Twilio will accept downstream.
+const UK_PHONE = /^(?:\+?44|0044|0)(7\d{9}|[123]\d{8,9})$/;
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -66,7 +66,7 @@ export default function ProfilePage() {
   }, [firstName, lastName, phone, originalSnap]);
 
   const phoneNormalised = phone.replace(/\s+/g, '');
-  const phoneValid = phone === '' || PK_PHONE.test(phoneNormalised);
+  const phoneValid = phone === '' || UK_PHONE.test(phoneNormalised);
   const canSave = hydrated && dirty && phoneValid && !saving;
 
   if (loading || !user) {
@@ -121,7 +121,10 @@ export default function ProfilePage() {
 
         <div style={{ background: 'white', borderRadius: 16, padding: '32px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid var(--line)' }}>
           <div style={{
-            marginBottom: 24, padding: '12px 16px', background: 'var(--cream)',
+            // `--cream` was a YellowPink-era variable that no longer exists,
+            // so this card was rendering with no background. `--paper2` is
+            // the Aizel pale-paper surface for inset info blocks.
+            marginBottom: 24, padding: '12px 16px', background: 'var(--paper2)',
             borderRadius: 8, fontSize: '0.875rem', color: 'var(--ink-500)',
           }}>
             Email: <strong style={{ color: 'var(--ink-900)' }}>{user.email}</strong>
@@ -147,11 +150,11 @@ export default function ProfilePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} className="duo-grid">
               <div>
                 <label htmlFor="profile-fname" style={lbl}>First name</label>
-                <input id="profile-fname" autoComplete="given-name" value={firstName} onChange={e => setFirstName(e.target.value)} style={inp} placeholder="Aisha" />
+                <input id="profile-fname" autoComplete="given-name" value={firstName} onChange={e => setFirstName(e.target.value)} style={inp} placeholder="Maya" />
               </div>
               <div>
                 <label htmlFor="profile-lname" style={lbl}>Last name</label>
-                <input id="profile-lname" autoComplete="family-name" value={lastName} onChange={e => setLastName(e.target.value)} style={inp} placeholder="Khan" />
+                <input id="profile-lname" autoComplete="family-name" value={lastName} onChange={e => setLastName(e.target.value)} style={inp} placeholder="Okoye" />
               </div>
             </div>
             <div>

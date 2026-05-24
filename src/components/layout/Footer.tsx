@@ -127,7 +127,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
 
           <div>
             <Overline style={{ color: 'rgba(255, 255, 255,0.4)', display: 'block', marginBottom: 16 }}>Newsletter</Overline>
-            <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', marginBottom: 12 }}>Sign up for health tips & exclusive offers.</p>
+            <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', marginBottom: 12 }}>Hair-care edits, restocks & subscriber-only offers — twice a month, never spammy.</p>
             <NewsletterSignup source="footer" variant="dark" />
           </div>
         </div>

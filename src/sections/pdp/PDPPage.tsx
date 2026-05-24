@@ -630,7 +630,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               Why this product earns a spot in your routine
             </h2>
             <p className="body-text" style={{ color: 'var(--ink-700)', margin: 0 }}>
-              Every product is tested for every skin tone, sourced from authorised distributors, and shipped across the UK with tracked delivery.
+              Every product is curated for Afro & textured hair, sourced from authorised UK distributors, and shipped Royal Mail Tracked across the UK.
             </p>
           </div>
 
@@ -642,10 +642,10 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
             }}
           >
             {[
-              { icon: '✓', label: '100% authentic', sub: 'Imported direct from authorised distributors' },
-              { icon: '◐', label: 'Tested locally', sub: 'For every skin tone' },
-              { icon: '◎', label: 'UK delivery', sub: 'Free over £15, fast tracked shipping' },
-              { icon: '↩', label: '7-day returns', sub: 'On unopened items, no questions asked' },
+              { icon: '✓', label: '100% authentic', sub: 'Direct from authorised UK distributors' },
+              { icon: '◐', label: 'Built for textured hair', sub: 'Curated for type 3 & type 4 curls' },
+              { icon: '◎', label: 'Royal Mail Tracked', sub: 'Free UK delivery over £15' },
+              { icon: '↩', label: '14-day returns', sub: 'UK Consumer Contracts Regs · unopened items' },
             ].map(t => (
               <div
                 key={t.label}

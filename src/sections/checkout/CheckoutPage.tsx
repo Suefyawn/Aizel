@@ -153,8 +153,11 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
     const phone = formData.phone.trim().replace(/\s/g, '');
     if (!phone) {
       e.phone = 'Required';
-    } else if (!/^(\+92|0092|0)?3\d{9}$/.test(phone)) {
-      e.phone = 'Enter a valid UK phone number (e.g. 07123456789)';
+    // UK mobile (11 digits starting 07…, or +44 7…) or UK landline (01/02/03).
+    // Pattern mirrors normaliseUKPhone() in src/lib/notifications/twilio.ts so
+    // anything we let through validation will also serialise cleanly for SMS.
+    } else if (!/^(?:\+?44|0044|0)(7\d{9}|[123]\d{8,9})$/.test(phone)) {
+      e.phone = 'Enter a valid UK phone number (e.g. 07123 456789 or +44 7123 456789)';
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       e.email = 'Enter a valid email address';

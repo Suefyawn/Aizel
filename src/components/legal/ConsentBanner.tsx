@@ -17,8 +17,13 @@ export function ConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [analytics, setAnalytics] = useState(true);
-  const [marketing, setMarketing] = useState(true);
+  // Defaults are OFF for analytics + marketing — UK GDPR + the EDPB opinion
+  // on cookie banners both require non-essential categories to be opt-in,
+  // not pre-ticked. The user opts in via "Accept all" (or by ticking the
+  // boxes individually inside the customise panel). The previous default
+  // of `true` was effectively pre-consent, which is invalid.
+  const [analytics, setAnalytics] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   // Mount-time gate so we don't render the banner during SSR — the consent
   // state lives in document.cookie (external), and only the client side
@@ -66,7 +71,14 @@ export function ConsentBanner() {
         <Link href="/privacy" className="underline" style={{ color: 'var(--ink-900)' }}>
           Privacy & cookie policy
         </Link>
-        .
+        . You can change your mind any time, and you have the right to complain to the{' '}
+        <a
+          href="https://ico.org.uk/make-a-complaint/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+          style={{ color: 'var(--ink-900)' }}
+        >ICO</a>.
       </p>
 
       {expanded && (

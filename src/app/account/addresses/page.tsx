@@ -9,7 +9,11 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { createAddress, updateAddress, deleteAddress, setDefaultAddress } from './actions';
 import type { Address } from '@/types';
 
-const PROVINCES = ['Punjab', 'Sindh', 'KPK', 'Balochistan', 'Islamabad', 'AJK', 'Gilgit-Baltistan'];
+// UK nations + a "Crown Dependencies" catch-all for Channel Islands / IoM
+// shoppers (which often need different shipping rules). The DB column is
+// still called `province` for backwards-compatibility with existing rows;
+// the customer-facing label below reads "County / Region".
+const PROVINCES = ['England', 'Scotland', 'Wales', 'Northern Ireland', 'Channel Islands', 'Isle of Man'];
 
 const inp: React.CSSProperties = {
   width: '100%', padding: '10px 12px',
@@ -63,31 +67,34 @@ function AddressForm({
         </div>
         <div>
           <label htmlFor="addr-phone" style={lbl}>Phone *</label>
-          <input id="addr-phone" name="phone" type="tel" autoComplete="tel" required placeholder="+92 300 1234567" defaultValue={initial?.phone ?? ''} style={inp} />
+          <input id="addr-phone" name="phone" type="tel" autoComplete="tel" required placeholder="07123 456789" defaultValue={initial?.phone ?? ''} style={inp} />
         </div>
         <div>
           <label htmlFor="addr-line1" style={lbl}>Address Line 1 *</label>
-          <input id="addr-line1" name="line1" autoComplete="address-line1" required style={inp} placeholder="House/flat, street" defaultValue={initial?.line1 ?? ''} />
+          <input id="addr-line1" name="line1" autoComplete="address-line1" required style={inp} placeholder="House/flat name or number, street" defaultValue={initial?.line1 ?? ''} />
         </div>
         <div>
           <label htmlFor="addr-line2" style={lbl}>Address Line 2</label>
-          <input id="addr-line2" name="line2" autoComplete="address-line2" style={inp} placeholder="Area, landmark" defaultValue={initial?.line2 ?? ''} />
+          <input id="addr-line2" name="line2" autoComplete="address-line2" style={inp} placeholder="Area, neighbourhood (optional)" defaultValue={initial?.line2 ?? ''} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           <div>
-            <label htmlFor="addr-city" style={lbl}>City *</label>
-            <input id="addr-city" name="city" autoComplete="address-level2" required defaultValue={initial?.city ?? ''} style={inp} />
+            <label htmlFor="addr-city" style={lbl}>City / Town *</label>
+            <input id="addr-city" name="city" autoComplete="address-level2" required defaultValue={initial?.city ?? ''} style={inp} placeholder="London" />
           </div>
           <div>
-            <label htmlFor="addr-province" style={lbl}>Province</label>
+            <label htmlFor="addr-province" style={lbl}>Country / Region</label>
             <select id="addr-province" name="province" autoComplete="address-level1" defaultValue={initial?.province ?? ''} style={inp}>
               <option value="">Select</option>
               {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="addr-zip" style={lbl}>Postal Code</label>
-            <input id="addr-zip" name="zip" autoComplete="postal-code" inputMode="numeric" defaultValue={initial?.zip ?? ''} style={inp} />
+            <label htmlFor="addr-zip" style={lbl}>Postcode *</label>
+            {/* `inputMode="text"` (default) — UK postcodes are alphanumeric
+                (SW1A 1AA), not pure-digit; the previous `numeric` value
+                surfaced the wrong keyboard on phones. */}
+            <input id="addr-zip" name="zip" autoComplete="postal-code" required defaultValue={initial?.zip ?? ''} style={inp} placeholder="SW1A 1AA" />
           </div>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem', color: 'var(--ink-700)' }}>
