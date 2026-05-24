@@ -56,7 +56,7 @@ export default async function WhatsAppHelpPage() {
         <h2 style={h2}>Step 1 — install WhatsApp Business on the merchant phone</h2>
         <ol style={ol}>
           <li>{'Download WhatsApp Business from the Play Store or App Store. It is separate from the regular WhatsApp app — both can coexist if the merchant number is on a different SIM.'}</li>
-          <li>{'Open the app and verify the merchant phone number (the same number you put in NEXT_PUBLIC_WHATSAPP_NUMBER, including the +92 country code).'}</li>
+          <li>{'Open the app and verify the merchant phone number (the same number you put in NEXT_PUBLIC_WHATSAPP_NUMBER, including the +44 country code).'}</li>
           <li>{'Fill in the business profile: name Aizel, address, hours, website (https://aizel.co.uk), category Beauty & Personal Care.'}</li>
         </ol>
       </section>

@@ -45,7 +45,7 @@ function ZoneFields({ zone, rate }: { zone?: Zone; rate?: Rate | null }) {
       <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
         <div>
           <label style={lbl}>Zone name</label>
-          <input name="name" defaultValue={zone?.name ?? ''} required style={inp} placeholder="e.g. Karachi" />
+          <input name="name" defaultValue={zone?.name ?? ''} required style={inp} placeholder="e.g. UK Mainland · Highlands & Islands · Northern Ireland" />
         </div>
         <div>
           <label style={lbl}>Sort order</label>
@@ -101,14 +101,22 @@ export default async function SettingsShippingPage({ searchParams }: { searchPar
           <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
               <label style={lbl}>Default shipping rate (GBP)</label>
-              <input name="default_shipping_rate" type="number" min={0} defaultValue={g('default_shipping_rate', '200')} style={inp} />
+              {/* Was 200 (PKR-scale). UK Royal Mail Tracked 24 small parcel
+                  is c. £3.95 — defaulting to £4 keeps a fresh install
+                  shippable from day one. */}
+              <input name="default_shipping_rate" type="number" step="0.01" min={0} defaultValue={g('default_shipping_rate', '4')} style={inp} />
             </div>
             <div>
               <label style={lbl}>Free shipping threshold (GBP)</label>
-              <input name="free_shipping_threshold" type="number" min={0} defaultValue={g('free_shipping_threshold', '2500')} style={inp} />
+              {/* Was 2500 (PKR-scale, c. £7). Matches the £15 threshold the
+                  storefront promises in the announcement bar + footer + PDP. */}
+              <input name="free_shipping_threshold" type="number" min={0} defaultValue={g('free_shipping_threshold', '15')} style={inp} />
             </div>
             <div>
-              <label style={lbl}>Tax rate (%)</label>
+              <label style={lbl}>VAT rate (%)</label>
+              {/* UK standard VAT is 20% — but most personal-care goods are
+                  zero-rated and the merchant has to declare anyway, so we
+                  default to 0 and let the operator set it. */}
               <input name="tax_rate_percent" type="number" step="0.01" min={0} max={100} defaultValue={g('tax_rate_percent', '0')} style={inp} />
             </div>
             <div>
@@ -126,7 +134,7 @@ export default async function SettingsShippingPage({ searchParams }: { searchPar
           Shipping zones
         </h2>
         <p style={{ margin: '0 0 16px', fontSize: '0.875rem', color: '#6b7280' }}>
-          One named region per zone with its own rate. Checkout picks the first matching zone based on the customer&apos;s province.
+          One named region per zone with its own rate. Checkout picks the first matching zone based on the customer&apos;s country / region.
         </p>
       </div>
 

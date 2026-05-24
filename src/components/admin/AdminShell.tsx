@@ -203,7 +203,7 @@ export function AdminShell({
           .adm-modal { max-width: calc(100vw - 16px) !important; max-height: calc(100vh - 32px); overflow-y: auto; padding: 16px !important; }
           .adm-modal-grid { grid-template-columns: 1fr !important; }
 
-          /* Header brand on a phone should keep "Pink" visible without
+          /* Header brand on a phone should keep "Aizel" visible without
            * spilling under the bell. */
           .adm-topbar h1, .adm-topbar > span { font-size: 0.875rem !important; }
 

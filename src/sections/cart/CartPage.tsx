@@ -143,7 +143,13 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
               }
             </div>
             <div style={{ height: 4, background: 'var(--paper2)', borderRadius: 'var(--radius-pill)', overflow: 'hidden', maxWidth: 400 }}>
-              <div style={{ height: '100%', width: `${progress * 100}%`, background: 'linear-gradient(90deg, var(--brand-yellow), var(--brand-pink))', borderRadius: 'var(--radius-pill)', transition: 'width 400ms ease-out' }} />
+              <div style={{
+                height: '100%', width: `${progress * 100}%`,
+                // Pure Aizel purple — was a gold→purple gradient, the most
+                // YellowPink-feeling visual on the cart row.
+                background: 'linear-gradient(90deg, var(--brand-pink), var(--brand-pink-cta))',
+                borderRadius: 'var(--radius-pill)', transition: 'width 400ms ease-out',
+              }} />
             </div>
           </div>
 
@@ -259,7 +265,9 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
                 <span className="h3 tabular-nums">£{(total + shipping).toLocaleString()}</span>
               </div>
               <button className="btn-primary" style={{ width: '100%' }} onClick={() => router.push('/checkout')}>Proceed to Checkout</button>
-              <p className="small-text" style={{ textAlign: 'center', marginTop: 12, color: 'var(--ink-500)' }}>COD available nationwide</p>
+              <p className="small-text" style={{ textAlign: 'center', marginTop: 12, color: 'var(--ink-500)' }}>
+                Card · PayPal · Apple Pay · Klarna · VAT included
+              </p>
               {/* Help-on-WhatsApp link — last-mile catch for the visitor who's
                   on the cart but hesitating. Hides when no number set. */}
               {(() => {

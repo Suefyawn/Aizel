@@ -5,7 +5,10 @@ import { getBrowserClient } from '@/lib/supabase-browser';
 import type { Order, OrderStatus } from '@/types';
 
 function toCSV(orders: Order[]): string {
-  const headers = ['Order #', 'Date', 'Name', 'Email', 'Phone', 'City', 'Province', 'Address', 'Payment', 'Status', 'Subtotal', 'Discount', 'Shipping', 'Total', 'Tracking #', 'Coupon'];
+  // UK-friendly column names — was ZIP/Province (US/Canada vocabulary). The
+  // VAT column reads from `tax_amount` so accountants can reconcile the
+  // export against HMRC submissions without dropping into the DB.
+  const headers = ['Order #', 'Date', 'Name', 'Email', 'Phone', 'City / Town', 'Country / Region', 'Postcode', 'Address', 'Payment', 'Status', 'Subtotal', 'Discount', 'Shipping', 'VAT', 'Total', 'Tracking #', 'Coupon'];
   const rows = orders.map(o => [
     o.order_number,
     o.created_at ? new Date(o.created_at).toISOString().split('T')[0] : '',
@@ -14,12 +17,16 @@ function toCSV(orders: Order[]): string {
     o.phone,
     o.city,
     o.province ?? '',
+    o.zip ?? '',
     o.address.replace(/,/g, ';'),
     o.pay_method.toUpperCase(),
     o.status ?? 'pending',
     o.subtotal,
     o.discount_amount ?? 0,
     o.shipping,
+    // `tax_amount` may be missing on orders predating the VAT column; fall
+    // back to 0 so the export stays a clean rectangular CSV.
+    (o as Order & { tax_amount?: number }).tax_amount ?? 0,
     o.total,
     o.tracking_number ?? '',
     o.coupon_code ?? '',

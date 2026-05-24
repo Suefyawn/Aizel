@@ -298,8 +298,10 @@ const chipLink = (active: boolean): React.CSSProperties => ({
   padding: '6px 12px',
   borderRadius: 6,
   border: '1px solid ' + (active ? '#4A1A6B' : '#e5e7eb'),
-  background: active ? '#fce7f3' : 'white',
-  color: active ? '#9d174d' : '#374151',
+  // Pale-purple wash + deep purple text — was magenta/fuchsia (Tailwind
+  // YellowPink-era leftover) on an admin chip.
+  background: active ? '#EDE9FE' : 'white',
+  color: active ? '#4A1A6B' : '#374151',
   textDecoration: 'none',
   fontWeight: active ? 700 : 500,
 });

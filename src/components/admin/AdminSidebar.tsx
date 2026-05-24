@@ -109,7 +109,7 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
           <div style={{ color: '#f9fafb', fontSize: '0.8125rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {session.name}
           </div>
-          <div style={{ color: session.isOwner ? '#f9a8d4' : '#a5b4fc', fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ color: session.isOwner ? '#D4A437' : '#a5b4fc', fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             {session.isOwner ? 'Owner' : (session.roleName ?? 'Staff')}
           </div>
         </div>
@@ -142,10 +142,12 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
                   padding: '12px 20px',
                   minHeight: 44,
                   color: active ? '#f9fafb' : '#9ca3af',
-                  background: active ? 'rgba(249,168,212,0.1)' : 'transparent',
+                  // Active row tint + border use Aizel purple (was pink-300/400
+                  // — Tailwind YellowPink-era leftovers).
+                  background: active ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
                   textDecoration: 'none', fontSize: '0.875rem',
                   fontWeight: active ? 600 : 400,
-                  borderLeft: `3px solid ${active ? '#f472b6' : 'transparent'}`,
+                  borderLeft: `3px solid ${active ? '#8B5CF6' : 'transparent'}`,
                   transition: 'all 0.15s',
                 }}>
                   <span style={{ fontSize: '1rem', opacity: active ? 1 : 0.6 }}>{icon}</span>

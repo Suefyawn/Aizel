@@ -417,7 +417,10 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16 }}>
               <span className="tabular-nums" style={{ fontSize: '1.5rem', fontWeight: 600 }}>£{displayPrice.toLocaleString()}</span>
               {(displayOriginal ?? 0) > displayPrice && (
-                <span className="tabular-nums" style={{ textDecoration: 'line-through', color: 'var(--brand-pink-text)', fontSize: '1rem' }}>
+                // Muted ink for the strikethrough — was purple (brand-pink-text)
+                // which competed with the "you save" signal and confused the
+                // colour role. Strikethroughs read clearer in a quiet grey.
+                <span className="tabular-nums" style={{ textDecoration: 'line-through', color: 'var(--ink-500)', fontSize: '1rem' }}>
                   £{(displayOriginal ?? 0).toLocaleString()}
                 </span>
               )}
@@ -450,7 +453,9 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               </div>
               <button onClick={handleAdd} disabled={ctaDisabled} className="btn-primary" style={{
                 flex: 1,
-                background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--brand-yellow)' : 'var(--brand-pink)',
+                // Success-green flash on add (was gold — read as a YellowPink
+                // signal on the most-clicked CTA on the site).
+                background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--success)' : 'var(--brand-pink)',
                 transition: 'background 100ms ease-out',
                 cursor: ctaDisabled ? 'not-allowed' : 'pointer',
               }}>
@@ -768,7 +773,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           className="btn-primary"
           style={{
             flex: 1, minWidth: 0, padding: '12px 16px',
-            background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--brand-yellow)' : 'var(--brand-pink-cta)',
+            background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--success)' : 'var(--brand-pink-cta)',
             cursor: ctaDisabled ? 'not-allowed' : 'pointer',
             transition: 'background 100ms ease-out',
           }}

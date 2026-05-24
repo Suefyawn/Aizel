@@ -89,7 +89,7 @@ export function ProductImage({ src, alt, style, className, sizes = DEFAULT_SIZES
       role="presentation"
       style={{
         width: '100%', height: '100%',
-        background: gradientFor(placeholderLabel || 'YP'),
+        background: gradientFor(placeholderLabel || 'AZ'),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: 'rgba(17,24,39,0.45)',
         fontFamily: 'var(--font-display, Georgia, serif)',
@@ -100,7 +100,7 @@ export function ProductImage({ src, alt, style, className, sizes = DEFAULT_SIZES
         ...style,
       }}
     >
-      {initialsOf(placeholderLabel || 'YP')}
+      {initialsOf(placeholderLabel || 'AZ')}
     </div>
   );
 }

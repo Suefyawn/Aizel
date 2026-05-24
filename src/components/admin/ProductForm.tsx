@@ -160,12 +160,14 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
             <div style={{ ...row3, marginBottom: 16 }}>
               <div style={fieldWrap}>
                 <label style={lbl}>Price (GBP) *</label>
-                <input name="price" type="number" required min={0} defaultValue={product?.price} style={inp} placeholder="2400"
+                {/* `step="0.01"` lets the operator type £14.99 / £24.99 etc.
+                    Previous defaults (2400 / 3000) were PKR-scale. */}
+                <input name="price" type="number" step="0.01" required min={0} defaultValue={product?.price} style={inp} placeholder="14.99"
                   onChange={e => setPrice(Number(e.target.value) || 0)} />
               </div>
               <div style={fieldWrap}>
                 <label style={lbl}>Original Price (GBP)</label>
-                <input name="original_price" type="number" min={0} defaultValue={product?.original_price ?? ''} style={inp} placeholder="3000" />
+                <input name="original_price" type="number" step="0.01" min={0} defaultValue={product?.original_price ?? ''} style={inp} placeholder="19.99" />
                 <span style={hint}>Set higher than price to show a strikethrough sale.</span>
               </div>
               <div style={fieldWrap}>
@@ -342,7 +344,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
               <label style={lbl}>SEO description</label>
               <textarea name="seo_description" defaultValue={product?.seo_description ?? ''} rows={2} maxLength={220}
                 style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }}
-                placeholder="One-paragraph pitch with the keyword + COD/Pakistan signal." />
+                placeholder="One-paragraph pitch with the keyword + UK delivery signal." />
               <span style={hint}>Auto-default: description / generic. ≤160 chars ideal.</span>
             </div>
           </Section>

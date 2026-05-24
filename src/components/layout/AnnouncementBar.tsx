@@ -16,7 +16,11 @@ export function AnnouncementBar({ text, bgColor }: { text: string; bgColor: stri
     }}>
       {parts.map((part, i) =>
         /^£/.test(part) ? (
-          <span key={i} style={{ borderBottom: '2px solid var(--brand-yellow)', paddingBottom: 1 }}>{part}</span>
+          // Gold underline → soft white underline. The bar background is
+          // already a dark brand surface, so a white-tinted underline keeps
+          // the £-amount visually prominent without injecting gold into the
+          // header chrome (which read as the YellowPink palette returning).
+          <span key={i} style={{ borderBottom: '2px solid rgba(255,255,255,0.55)', paddingBottom: 1 }}>{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )

@@ -472,9 +472,11 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
 
               {/* Loyalty points redemption (only when signed in with balance) */}
               {loyalty && loyalty.points_balance > 0 && (
-                <div style={{ marginBottom: 12, padding: '8px 10px', background: '#fffbeb', borderRadius: 6, border: '1px solid #fde68a' }}>
+                // Pale-purple tinted box — was warm cream (#fffbeb) + amber
+                // border, the last cream surface on the checkout page.
+                <div style={{ marginBottom: 12, padding: '8px 10px', background: '#F5EFF8', borderRadius: 6, border: '1px solid #E2D2EB' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ fontSize: '0.75rem', color: '#92400e', fontWeight: 600 }}>★ {loyalty.points_balance.toLocaleString()} points available</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--brand-pink-cta)', fontWeight: 600 }}>★ {loyalty.points_balance.toLocaleString()} points available</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <input
                         aria-label="Points to redeem"
@@ -486,7 +488,7 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
                           setPointsRedeem(typeof n === 'number' ? n : 0);
                         }}
                         placeholder="0"
-                        style={{ width: 70, padding: '4px 6px', fontSize: '0.75rem', border: '1px solid #fde68a', borderRadius: 4, outline: 'none', background: 'white', fontFamily: 'monospace' }}
+                        style={{ width: 70, padding: '4px 6px', fontSize: '0.75rem', border: '1px solid #E2D2EB', borderRadius: 4, outline: 'none', background: 'white', fontFamily: 'monospace' }}
                       />
                       <button onClick={() => {
                         const max = Math.min(loyalty.points_balance, beforeRewards);

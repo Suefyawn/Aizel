@@ -111,7 +111,7 @@ export default async function DashboardPage() {
   const ordersToFulfill = (statusCounts.pending ?? 0) + (statusCounts.processing ?? 0);
 
   const stats = [
-    { label: 'Revenue · last 30 days', value: fmt(revenue30d), icon: '₨', color: '#10b981', href: '/admin/analytics' },
+    { label: 'Revenue · last 30 days', value: fmt(revenue30d), icon: '£', color: '#10b981', href: '/admin/analytics' },
     { label: 'Orders to fulfill', value: ordersToFulfill, icon: '◎', color: '#4A1A6B', href: '/admin/orders' },
     { label: 'New customers · 30 days', value: newCustomerCount ?? 0, icon: '◉', color: '#6366f1', href: '/admin/users' },
     { label: 'Low stock items', value: lowStockCount ?? 0, icon: '⧉', color: '#f59e0b', href: '/admin/inventory' },

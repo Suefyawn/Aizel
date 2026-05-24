@@ -29,7 +29,7 @@ const lbl: React.CSSProperties = {
 };
 
 export function ShipmentBookingForm({ orderId, apiAdapters, shipment }: Props) {
-  const [courier, setCourier] = useState<string>(apiAdapters[0] ?? 'TCS');
+  const [courier, setCourier] = useState<string>(apiAdapters[0] ?? 'RoyalMail');
   const [mode, setMode] = useState<'auto' | 'manual'>(apiAdapters.length > 0 ? 'auto' : 'manual');
   const [bookState, bookAction, bookPending] = useActionState(bookShipment, null);
   const [manualState, manualAction, manualPending] = useActionState(createShipment, null);
@@ -192,7 +192,10 @@ export function ShipmentBookingForm({ orderId, apiAdapters, shipment }: Props) {
               id="tracking-number"
               name="tracking_number"
               required
-              placeholder="e.g. 779412326902"
+              // Royal Mail Tracked format (e.g. LE123456789GB); DPD / Evri
+              // use their own formats — the field is just free-text storage
+              // so any courier's tracking number pastes in cleanly.
+              placeholder="e.g. LE123456789GB"
               style={{ ...inp, fontFamily: 'monospace' }}
             />
           </div>

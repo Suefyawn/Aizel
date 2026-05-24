@@ -76,7 +76,7 @@ export default async function VendorsPage() {
           </div>
           <div>
             <label style={lbl}>WhatsApp number</label>
-            <input name="phone" required placeholder="+92 300 1234567" style={{ ...inp, width: 170 }} />
+            <input name="phone" required placeholder="+44 7700 900000" style={{ ...inp, width: 170 }} />
           </div>
           <div>
             <label style={lbl}>Commission % we keep</label>

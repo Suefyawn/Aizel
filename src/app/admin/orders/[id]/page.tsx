@@ -408,7 +408,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <dd style={dd}>{o.address}</dd>
             <dt style={dt}>City</dt>
             <dd style={dd}>{o.city}{o.province ? `, ${o.province}` : ''}</dd>
-            {o.zip && <><dt style={dt}>ZIP</dt><dd style={dd}>{o.zip}</dd></>}
+            {o.zip && <><dt style={dt}>Postcode</dt><dd style={dd}>{o.zip}</dd></>}
           </dl>
         </div>
       </div>
