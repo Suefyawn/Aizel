@@ -43,15 +43,18 @@ export function MiniCart() {
         role="dialog"
         aria-modal={cartOpen}
         aria-label="Shopping cart"
-        // The drawer stays in the DOM (so the slide-in animates) but when
-        // closed it must be removed from the accessibility + tab order.
-        // `inert` does both in one go (HTML5 attribute, well-supported
-        // 2023+) and avoids the aria-hidden-on-focusable violation that
-        // `aria-hidden={!cartOpen}` causes — focusable buttons inside an
-        // aria-hidden subtree fail WCAG 4.1.2.
-        // Cast via spread because React 19's types haven't surfaced
-        // `inert` as a typed prop yet.
-        {...(cartOpen ? {} : { inert: '' as unknown as boolean })}
+        // The drawer stays in the DOM so the slide-in animates, but when
+        // closed it must be out of the accessibility tree + tab order.
+        // `inert` does both at once and avoids the aria-hidden-on-
+        // focusable violation an `aria-hidden={!cartOpen}` would cause
+        // (focusable buttons inside an aria-hidden subtree fail WCAG 4.1.2).
+        //
+        // React 19 wants `inert={true}` — the legacy empty-string spelling
+        // now logs a console warning. We spread so the attribute is OMITTED
+        // when the drawer is open (rather than `inert=false`), keeping the
+        // DOM clean. Cast through a loose Record because React 19's JSX
+        // types still describe `inert` as the empty-string literal.
+        {...((cartOpen ? {} : { inert: true }) as Record<string, unknown>)}
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, width: 400, maxWidth: '90vw',
           background: 'var(--paper)', boxShadow: 'var(--shadow-1)',

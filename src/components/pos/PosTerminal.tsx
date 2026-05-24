@@ -1,8 +1,13 @@
 'use client';
 
-import { useMemo, useRef, useState, useTransition, useEffect } from 'react';
+import { useMemo, useRef, useState, useTransition, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { completePosSale } from '@/app/admin/pos/actions';
+import {
+  parkSale, listHeldSales, resumeSale, discardHeldSale,
+  type HeldSaleSummary,
+} from '@/app/admin/pos/held-actions';
+import { CashDrawerSheet } from './CashDrawerSheet';
 
 export interface PosProduct {
   id: string;
@@ -54,7 +59,78 @@ export function PosTerminal({ products, cashier, session }: Props) {
   const [customerEmail, setCustomerEmail] = useState('');
   const [tenderOpen, setTenderOpen] = useState(false);
   const [lastSale, setLastSale] = useState<{ order_number: string; change: number } | null>(null);
+  const [heldOpen, setHeldOpen] = useState(false);
+  const [heldList, setHeldList] = useState<HeldSaleSummary[]>([]);
+  const [heldCount, setHeldCount] = useState<number>(0);
+  const [parkBusy, startParkTransition] = useTransition();
+  const [parkError, setParkError] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement | null>(null);
+
+  // Refresh the held count on mount + after every park/resume so the
+  // top-bar badge stays accurate without polling.
+  const refreshHeldCount = useCallback(async () => {
+    const list = await listHeldSales().catch(() => []);
+    setHeldList(list);
+    setHeldCount(list.length);
+  }, []);
+  useEffect(() => { void refreshHeldCount(); }, [refreshHeldCount]);
+
+  function handlePark() {
+    setParkError(null);
+    if (cart.length === 0) return;
+    const label = window.prompt('Label this sale (e.g. "Lady in red coat")');
+    if (label === null) return;       // user hit cancel
+    const trimmed = label.trim();
+    if (!trimmed) { setParkError('A label is required so you can find this hold later.'); return; }
+
+    startParkTransition(async () => {
+      const result = await parkSale({
+        label: trimmed,
+        cart_discount: clampedDiscount,
+        customer_email: customerEmail || undefined,
+        items: cart.map(l => ({
+          product_id: l.product_id,
+          name: l.name, brand: l.brand,
+          unit_price: l.unit_price, list_price: l.list_price,
+          qty: l.qty,
+          variant: l.variant, image_url: l.image_url ?? undefined, slug: l.slug ?? undefined,
+        })),
+      });
+      if (!result.ok) { setParkError(result.error ?? 'Could not park sale'); return; }
+      clearSale();
+      await refreshHeldCount();
+    });
+  }
+
+  function handleResume(id: string) {
+    startParkTransition(async () => {
+      const result = await resumeSale(id);
+      if (!result.ok || !result.sale) { setParkError(result.error ?? 'Could not resume sale'); return; }
+      const { items, cart_discount, customer_email } = result.sale.cart;
+      setCart(items.map(it => ({
+        product_id: it.product_id,
+        name: it.name, brand: it.brand,
+        unit_price: it.unit_price, list_price: it.list_price,
+        qty: it.qty,
+        variant: it.variant ?? null,
+        image_url: it.image_url ?? null,
+        slug: it.slug ?? null,
+      })));
+      setCartDiscount(cart_discount ?? 0);
+      setCustomerEmail(customer_email ?? '');
+      setHeldOpen(false);
+      await refreshHeldCount();
+    });
+  }
+
+  function handleDiscard(id: string) {
+    if (!window.confirm('Discard this held sale? This cannot be undone.')) return;
+    startParkTransition(async () => {
+      await discardHeldSale(id);
+      await refreshHeldCount();
+    });
+  }
 
   // Keep focus on the search field at all times so a keyboard-wedge
   // barcode scanner just works — the scanner types fast then hits Enter,
@@ -131,7 +207,14 @@ export function PosTerminal({ products, cashier, session }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <TopBar cashier={cashier} session={session} onExit={() => router.push('/admin/dashboard')} />
+      <TopBar
+        cashier={cashier}
+        session={session}
+        onExit={() => router.push('/admin/dashboard')}
+        heldCount={heldCount}
+        onHeldClick={() => setHeldOpen(true)}
+        onTillClick={() => setDrawerOpen(true)}
+      />
 
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
         {/* ── Left half — cart ─────────────────────────────────────────── */}
@@ -224,23 +307,46 @@ export function PosTerminal({ products, cashier, session }: Props) {
               }}
             />
 
-            <button
-              type="button"
-              disabled={cart.length === 0}
-              onClick={() => setTenderOpen(true)}
-              style={{
-                width: '100%', marginTop: 12,
-                padding: '18px',
-                background: cart.length === 0 ? '#2A2A2D' : '#6B2C91',
-                color: cart.length === 0 ? '#6B7280' : '#fff',
-                border: 'none', borderRadius: 10,
-                fontSize: '1.125rem', fontWeight: 700,
-                cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
-                letterSpacing: '0.02em',
-              }}
-            >
-              {cart.length === 0 ? 'Add items to start' : `Tender ${fmtGBP(total)}`}
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button
+                type="button"
+                disabled={cart.length === 0 || parkBusy}
+                onClick={handlePark}
+                title="Park this sale so you can ring up another customer first"
+                style={{
+                  flex: 1, padding: '18px',
+                  background: 'transparent',
+                  color: cart.length === 0 ? '#4B5563' : '#9CA3AF',
+                  border: '1px solid ' + (cart.length === 0 ? '#2A2A2D' : '#4B5563'),
+                  borderRadius: 10,
+                  fontSize: '0.9375rem', fontWeight: 600,
+                  cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {parkBusy ? '…' : 'Park sale'}
+              </button>
+              <button
+                type="button"
+                disabled={cart.length === 0}
+                onClick={() => setTenderOpen(true)}
+                style={{
+                  flex: 2, padding: '18px',
+                  background: cart.length === 0 ? '#2A2A2D' : '#6B2C91',
+                  color: cart.length === 0 ? '#6B7280' : '#fff',
+                  border: 'none', borderRadius: 10,
+                  fontSize: '1.125rem', fontWeight: 700,
+                  cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {cart.length === 0 ? 'Add items to start' : `Tender ${fmtGBP(total)}`}
+              </button>
+            </div>
+            {parkError && (
+              <div role="alert" style={{ marginTop: 10, padding: '8px 10px', background: '#7F1D1D', color: '#FECACA', borderRadius: 6, fontSize: '0.8125rem' }}>
+                {parkError}
+              </div>
+            )}
           </footer>
         </section>
 
@@ -323,6 +429,26 @@ export function PosTerminal({ products, cashier, session }: Props) {
         </section>
       </div>
 
+      {heldOpen && (
+        <HeldSalesSheet
+          list={heldList}
+          busy={parkBusy}
+          onResume={handleResume}
+          onDiscard={handleDiscard}
+          onClose={() => setHeldOpen(false)}
+        />
+      )}
+
+      {drawerOpen && (
+        <CashDrawerSheet
+          session={session}
+          onClose={() => setDrawerOpen(false)}
+          // Bounce the page to re-fetch the session — cleanest way to
+          // get a fresh session object onto the terminal after open/close.
+          onShiftChanged={() => router.refresh()}
+        />
+      )}
+
       {tenderOpen && (
         <TenderModal
           total={total}
@@ -360,10 +486,13 @@ export function PosTerminal({ products, cashier, session }: Props) {
 
 // ─── Sub-components ────────────────────────────────────────────────────
 
-function TopBar({ cashier, session, onExit }: {
+function TopBar({ cashier, session, onExit, heldCount, onHeldClick, onTillClick }: {
   cashier: { id: string; name: string };
   session: PosSession | null;
   onExit: () => void;
+  heldCount: number;
+  onHeldClick: () => void;
+  onTillClick: () => void;
 }) {
   return (
     <header style={{
@@ -378,18 +507,127 @@ function TopBar({ cashier, session, onExit }: {
       </div>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 14, alignItems: 'center', fontSize: '0.8125rem', color: '#9CA3AF' }}>
         <span>{cashier.name}</span>
-        {session ? (
-          <span style={{ padding: '2px 10px', background: '#1F1F22', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#34D399' }}>
-            Till open · float {fmtGBP(session.opening_float)}
-          </span>
-        ) : (
-          <span style={{ padding: '2px 10px', background: '#1F1F22', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#FBBF24' }}>
-            No till open
-          </span>
-        )}
+        {/* Held-sales button — clickable when there's anything on hold,
+            disabled-look otherwise. Badge surfaces the count so the
+            cashier doesn't forget about a parked transaction. */}
+        <button
+          type="button"
+          onClick={onHeldClick}
+          disabled={heldCount === 0}
+          style={{
+            background: heldCount > 0 ? '#1F1F22' : 'transparent',
+            border: '1px solid ' + (heldCount > 0 ? '#4B5563' : '#2A2A2D'),
+            borderRadius: 20, padding: '4px 12px',
+            color: heldCount > 0 ? '#F5F5F7' : '#4B5563',
+            fontSize: '0.75rem', fontWeight: 700,
+            cursor: heldCount > 0 ? 'pointer' : 'not-allowed',
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          Held
+          {heldCount > 0 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              minWidth: 18, height: 18, padding: '0 5px',
+              background: '#6B2C91', color: '#fff', borderRadius: 9,
+              fontSize: '0.625rem', fontWeight: 700,
+            }}>
+              {heldCount}
+            </span>
+          )}
+        </button>
+        {/* Till badge — clickable on both states (open the drawer sheet
+            to count, log cash-in/out, or close; or to open a new shift). */}
+        <button
+          type="button"
+          onClick={onTillClick}
+          style={{
+            background: '#1F1F22',
+            border: '1px solid ' + (session ? '#065F46' : '#92400E'),
+            borderRadius: 20, padding: '4px 12px',
+            fontSize: '0.6875rem', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+            color: session ? '#34D399' : '#FBBF24',
+            cursor: 'pointer',
+          }}
+        >
+          {session ? `Till open · float ${fmtGBP(session.opening_float)}` : 'Open till'}
+        </button>
         <button onClick={onExit} style={ghostButtonStyle('#9CA3AF')}>Exit</button>
       </div>
     </header>
+  );
+}
+
+function HeldSalesSheet({ list, busy, onResume, onDiscard, onClose }: {
+  list: HeldSaleSummary[];
+  busy: boolean;
+  onResume: (id: string) => void;
+  onDiscard: (id: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+        display: 'flex', justifyContent: 'flex-end',
+        zIndex: 100,
+      }}
+    >
+      <aside
+        onClick={e => e.stopPropagation()}
+        role="dialog" aria-modal="true" aria-label="Held sales"
+        style={{
+          width: 'min(460px, 92vw)', height: '100vh',
+          background: '#161618',
+          borderLeft: '1px solid #2A2A2D',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <header style={{ padding: '18px 20px', borderBottom: '1px solid #2A2A2D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#F5F5F7' }}>
+            Held sales <span style={{ color: '#6B7280', fontWeight: 500 }}>({list.length})</span>
+          </h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: '#9CA3AF', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+        </header>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {list.length === 0 ? (
+            <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
+              No held sales — park a cart from the till to see it here.
+            </div>
+          ) : list.map(h => (
+            <div key={h.id} style={{
+              padding: '16px 20px', borderBottom: '1px solid #2A2A2D',
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#F5F5F7', marginBottom: 4 }}>
+                  {h.label}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                  {h.item_count} item{h.item_count === 1 ? '' : 's'} · {new Date(h.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+                <div style={{ marginTop: 6, fontSize: '0.9375rem', fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>
+                  {fmtGBP(h.total)}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                <button
+                  type="button" disabled={busy} onClick={() => onResume(h.id)}
+                  style={{ padding: '8px 12px', background: '#10B981', border: 'none', borderRadius: 6, color: '#fff', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', minHeight: 32 }}
+                >Resume</button>
+                <button
+                  type="button" disabled={busy} onClick={() => onDiscard(h.id)}
+                  style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #4B5563', borderRadius: 6, color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', minHeight: 32 }}
+                >Discard</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+    </div>
   );
 }
 
