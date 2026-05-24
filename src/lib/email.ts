@@ -41,10 +41,11 @@ const SEND_TIMEOUT_MS = 12000;
 // could hang an email send — and a newsletter blast — indefinitely, which
 // is exactly the admin-UI freeze the post-launch QA flagged.
 const DB_TIMEOUT_MS = 8000;
-// Variable names kept for backwards compatibility with existing email
-// templates. Hex values now reflect the Aizel purple + gold palette.
-const BRAND_PINK = '#6B2C91';
-const BRAND_YELLOW = '#D4A437';
+// Aizel brand palette tokens used across the email templates. Names match
+// the storefront CSS-var convention (--brand-pink === purple, --brand-yellow
+// === gold) so a developer touching one surface intuits the other.
+const BRAND_PINK = '#6B2C91';     // purple — primary accent / CTAs
+const BRAND_YELLOW = '#D4A437';   // gold — top-edge stripe
 const PAPER = '#FFFFFF';
 const INK = '#111827';
 const INK_700 = '#374151';
@@ -75,7 +76,12 @@ function escapeHtml(s: string): string {
 }
 
 function money(n: number): string {
-  return `£${n.toLocaleString()}`;
+  // Always 2 decimal places + UK thousands grouping. The previous
+  // `.toLocaleString()` defaulted to the runtime's locale (US in most CI)
+  // and dropped trailing zeros so £12.5 / £1,200 / £12.50 / £1,200.00
+  // could appear inconsistently on the same email — the receipt looked
+  // unprofessional and reconciliation against Stripe broke.
+  return `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 // Build the unsubscribe link for a given recipient. Marketing emails (the
@@ -598,7 +604,7 @@ export async function sendReviewRequestEmail(args: {
   const html = shell(`
     <h2 style="margin:0 0 12px;font-size:20px;color:${INK};font-family:Georgia,serif;font-weight:500">How did it go?</h2>
     <p style="margin:0 0 14px">Hi ${escapeHtml(args.first_name ?? 'there')} — your order <strong>${escapeHtml(args.order_number)}</strong> landed a few days ago, so you've had a chance to try it out.</p>
-    <p style="margin:0 0 18px">A quick, honest review helps other shoppers in Pakistan choose well — and it only takes a minute.</p>
+    <p style="margin:0 0 18px">A quick, honest review helps the next UK shopper pick well — and it only takes a minute.</p>
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 8px">${rows}</table>
     <p style="margin:22px 0 0;color:${MUTED};font-size:12px;line-height:1.5">
       Approved reviews earn loyalty points — a small thank-you for sharing.

@@ -65,6 +65,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    // Site handle for the brand attribution on shared cards. If the
+    // merchant takes a different @, override TWITTER_HANDLE in Vercel env.
+    site: process.env.TWITTER_HANDLE || '@aizeluk',
   },
   alternates: {
     canonical: SITE_URL,

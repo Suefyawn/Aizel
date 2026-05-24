@@ -33,7 +33,7 @@ export async function GET() {
 
   lines.push('## Key facts');
   lines.push('- Market: United Kingdom (GBP currency, free UK delivery over £15)');
-  lines.push('- Payment: Card (Visa, Mastercard, Amex), PayPal, Bank Transfer');
+  lines.push('- Payment: Card (Visa, Mastercard, Amex) via Stripe Checkout; Apple Pay + Google Pay supported in Stripe; Klarna available where eligible');
   lines.push('- Shipping: 2–3 working days via Royal Mail / DPD');
   lines.push('- Returns: 14 days from delivery on unopened items');
   lines.push('- Categories: Hair Care, Body Care, Styling & Tools, Grooming');

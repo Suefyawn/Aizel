@@ -235,7 +235,10 @@ export function productLd(
     '@type': 'MerchantReturnPolicy',
     applicableCountry: 'GB',
     returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-    merchantReturnDays: 7,
+    // 14 days is the statutory minimum cancellation window under the UK
+    // Consumer Contracts (Information, Cancellation and Additional Charges)
+    // Regulations 2013 for distance sales. The previous 7 was non-compliant.
+    merchantReturnDays: 14,
     returnMethod: 'https://schema.org/ReturnByMail',
     returnFees: 'https://schema.org/FreeReturn',
   };

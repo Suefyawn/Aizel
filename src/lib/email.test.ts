@@ -25,9 +25,9 @@ vi.mock('@sentry/nextjs', () => ({
 import { fromDomain, sendNewOrderEmail } from './email';
 
 const ORDER = {
-  order_number: 'YP-TEST-1',
+  order_number: 'AZ-TEST-1',
   first_name: 'Test', last_name: 'Customer',
-  phone: '07123456789', city: 'Karachi',
+  phone: '07123456789', city: 'Manchester',
   total: 1000, pay_method: 'cod',
   items: [{ name: 'Widget', qty: 1, price: 1000 }],
 };

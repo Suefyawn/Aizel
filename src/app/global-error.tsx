@@ -19,7 +19,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
 
   return (
     <html lang="en">
-      <body style={{ fontFamily: 'sans-serif', margin: 0, background: '#faf5ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
+      <body style={{ fontFamily: 'sans-serif', margin: 0, background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
         <div style={{ textAlign: 'center', maxWidth: 420 }}>
           {isStale ? (
             <>

@@ -121,6 +121,18 @@ async function sendRaw({ toRaw, body, context }: SendInput): Promise<Result> {
 // is composed so the order number + tracking link survive within one
 // segment when possible.
 
+// `Aizel:` prefix makes the carrier-side lock-screen preview show the
+// brand identity (UK SMS clients pin the prefix to the notification
+// title). Saves the brand 13 chars of body but is well worth it.
+const BRAND_PREFIX = 'Aizel: ';
+
+// Strip the URL scheme from a tracking link so we save 8 chars per SMS
+// segment — Twilio bills per 160-char segment and SITE_URL already adds
+// a comfortable 20+ characters once we factor in the path.
+function shortUrl(u: string): string {
+  return u.replace(/^https?:\/\//, '');
+}
+
 export async function sendOrderPlacedSms(args: {
   phone: string;
   firstName?: string;
@@ -128,7 +140,7 @@ export async function sendOrderPlacedSms(args: {
   total: number;
 }): Promise<Result> {
   const greet = args.firstName ? `Hi ${args.firstName}, ` : '';
-  const body = `${greet}thanks for your Aizel order ${args.orderNumber} (£${args.total.toFixed(2)}). Track it at ${SITE_URL}/track`;
+  const body = `${BRAND_PREFIX}${greet}thanks for your order ${args.orderNumber} (£${args.total.toFixed(2)}). Track: ${shortUrl(SITE_URL)}/track`;
   return sendRaw({ toRaw: args.phone, body, context: { orderNumber: args.orderNumber, kind: 'order.placed' } });
 }
 
@@ -143,11 +155,11 @@ export async function sendOrderShippedSms(args: {
   const greet = args.firstName ? `Hi ${args.firstName}, ` : '';
   const carrier = args.courier ? ` via ${args.courier}` : '';
   const track = args.trackingUrl
-    ? ` Track: ${args.trackingUrl}`
+    ? ` Track: ${shortUrl(args.trackingUrl)}`
     : args.trackingNumber
       ? ` Tracking #: ${args.trackingNumber}`
       : '';
-  const body = `${greet}your Aizel order ${args.orderNumber} is on its way${carrier}.${track}`;
+  const body = `${BRAND_PREFIX}${greet}your order ${args.orderNumber} is on its way${carrier}.${track}`;
   return sendRaw({ toRaw: args.phone, body, context: { orderNumber: args.orderNumber, kind: 'order.shipped' } });
 }
 
@@ -157,7 +169,10 @@ export async function sendOrderDeliveredSms(args: {
   orderNumber: string;
 }): Promise<Result> {
   const greet = args.firstName ? `Hi ${args.firstName}, ` : '';
-  const body = `${greet}your Aizel order ${args.orderNumber} has been delivered. Loved it? Leave a review at ${SITE_URL}/account/orders`;
+  // The review-request CTA tips this message from purely transactional
+  // into a soft marketing send, so it carries a STOP opt-out per UK ICO
+  // PECR guidance. The transactional templates above don't need one.
+  const body = `${BRAND_PREFIX}${greet}your order ${args.orderNumber} has been delivered. Loved it? Review at ${shortUrl(SITE_URL)}/account/orders · Reply STOP to opt out`;
   return sendRaw({ toRaw: args.phone, body, context: { orderNumber: args.orderNumber, kind: 'order.delivered' } });
 }
 
@@ -169,6 +184,6 @@ export async function sendNewOrderStaffSms(args: {
   total: number;
   itemCount: number;
 }): Promise<Result> {
-  const body = `New Aizel order ${args.orderNumber} — ${args.itemCount} item${args.itemCount === 1 ? '' : 's'}, £${args.total.toFixed(2)}. ${SITE_URL}/admin/orders`;
+  const body = `${BRAND_PREFIX}new order ${args.orderNumber} — ${args.itemCount} item${args.itemCount === 1 ? '' : 's'}, £${args.total.toFixed(2)}. ${shortUrl(SITE_URL)}/admin/orders`;
   return sendRaw({ toRaw: args.phone, body, context: { orderNumber: args.orderNumber, kind: 'admin.new_order' } });
 }
