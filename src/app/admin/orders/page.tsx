@@ -63,7 +63,7 @@ async function OrdersPageInner({
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Orders</h1>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {/* "+ New order" lands the operator on the manual-order form
-              for phone orders, gifts, or vendor / store-credit issuance. */}
+              for phone orders, gifts, or store-credit issuance. */}
           <Link href="/admin/orders/new" style={{
             padding: '8px 16px', background: '#4A1A6B', color: 'white',
             borderRadius: 7, textDecoration: 'none',

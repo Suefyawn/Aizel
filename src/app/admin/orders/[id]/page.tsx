@@ -6,8 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { OrderStatusForm } from '@/components/admin/OrderStatusForm';
 import { PrintInvoiceButton } from '@/components/admin/PrintInvoiceButton';
 import { ShipmentBookingForm } from '@/components/admin/ShipmentBookingForm';
-import { VendorDispatch } from '@/components/admin/VendorDispatch';
-import { setOrderConfirmed } from '@/app/admin/vendor-actions';
+import { setOrderConfirmed } from '@/app/admin/order-confirmation-actions';
 import { whatsappUrlForCustomer as waUrlForCustomer } from '@/lib/whatsapp';
 import { brandPlusName } from '@/lib/product-display';
 import { configuredAdapterIds } from '@/lib/couriers';
@@ -47,9 +46,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   if (session && !session.isOwner && !session.permissions.includes('orders.view')) {
     return <NoAccess section="Orders" />;
   }
-  // orders.edit gates the mutating widgets below (confirmation, vendor
-  // dispatch, shipment booking, status update). A view-only staffer still
-  // sees the full read-only order detail.
+  // orders.edit gates the mutating widgets below (confirmation toggle,
+  // shipment booking, status update). A view-only staffer still sees the
+  // full read-only order detail.
   const canEdit = !session || session.isOwner || session.permissions.includes('orders.edit');
   const { id } = await params;
   const { data: order } = await supabaseAdmin().from('orders').select('*').eq('id', id).single();
@@ -80,26 +79,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     .order('created_at', { ascending: true });
   const events = (eventRows ?? []) as OrderEventRow[];
 
-  // Active vendors for the dispatch picker.
-  const { data: vendorRows } = await supabaseAdmin()
-    .from('vendors')
-    .select('id, name, phone')
-    .eq('active', true)
-    .order('name');
-  const vendors = (vendorRows ?? []) as Array<{ id: string; name: string; phone: string }>;
-
   // Refund summary — what's been paid + refunded so far + what's left.
   // Used by the RefundPanel to render the live remaining balance.
   const refundSummary = await loadRefundSummary(o.id!);
   const stripeReady = stripeIsConfigured();
-
-  // Vendor settlement (margin / payout) for this order, if it has been
-  // dispatched to a vendor.
-  const { data: settlementRow } = await supabaseAdmin()
-    .from('vendor_settlements')
-    .select('gross_amount, vendor_cost, our_margin, amount_due, due_to, status')
-    .eq('order_id', id)
-    .maybeSingle();
 
   // Customer history block — lifetime orders + total spend for the same
   // (user_id OR phone OR email). Cheap query — admin-only view, no caching
@@ -134,23 +117,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const dl: React.CSSProperties = { display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px', margin: 0 };
   const dt: React.CSSProperties = { fontSize: '0.8125rem', color: '#6b7280', fontWeight: 500 };
   const dd: React.CSSProperties = { fontSize: '0.875rem', color: '#111827', margin: 0 };
-
-  // Prefilled WhatsApp message the owner forwards to the chosen vendor.
-  const vendorMessage = [
-    `Aizel — Order ${o.order_number}`,
-    '',
-    ...items.map(it => {
-      const v = it.variant_label ?? it.variant;
-      return `• ${it.qty}× ${brandPlusName(it.brand, it.name)}${v ? ` (${v})` : ''}`;
-    }),
-    '',
-    'Deliver to:',
-    `${o.first_name} ${o.last_name}`,
-    `${o.address}, ${o.city}${o.province ? `, ${o.province}` : ''}`,
-    `Phone: ${o.phone}`,
-    '',
-    `Total: ${fmt(o.total)} · ${payLabel[o.pay_method] ?? o.pay_method}`,
-  ].join('\n');
 
   return (
     <div id="order-detail-page" className="adm-page" style={{ padding: '32px 36px' }}>
@@ -281,85 +247,39 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Confirmation & vendor dispatch — edit-gated */}
+      {/* Customer confirmation — edit-gated */}
       {canEdit && (
       <div style={{ ...section, marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Confirmation &amp; vendor</h2>
+        <h2 style={{ margin: '0 0 4px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Customer confirmation</h2>
         <p style={{ margin: '0 0 16px', fontSize: '0.8125rem', color: '#6b7280' }}>
-          Confirm the order with the customer on WhatsApp (button at the top), mark it confirmed here, then forward it to a vendor.
+          For phone or WhatsApp orders, confirm details with the customer first, then mark it confirmed here before picking and packing.
         </p>
-        <div className="adm-analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {/* Customer confirmation */}
+        {o.confirmed_at ? (
           <div>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#374151', marginBottom: 6 }}>Customer confirmation</div>
-            {o.confirmed_at ? (
-              <div>
-                <span style={{
-                  display: 'inline-block', padding: '4px 10px', borderRadius: 6,
-                  background: '#f0fdf4', color: '#16a34a', fontSize: '0.8125rem', fontWeight: 600,
-                }}>
-                  ✓ Confirmed {fmtDate(o.confirmed_at)}
-                </span>
-                <form action={setOrderConfirmed.bind(null, o.id!, false)} style={{ marginTop: 8 }}>
-                  <button type="submit" style={{
-                    padding: '6px 12px', background: 'transparent', border: '1px solid #d1d5db',
-                    borderRadius: 6, color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                  }}>
-                    Mark unconfirmed
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <form action={setOrderConfirmed.bind(null, o.id!, true)}>
-                <button type="submit" style={{
-                  padding: '9px 16px', background: '#4A1A6B', color: 'white', border: 'none',
-                  borderRadius: 7, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
-                }}>
-                  Mark customer-confirmed
-                </button>
-              </form>
-            )}
+            <span style={{
+              display: 'inline-block', padding: '4px 10px', borderRadius: 6,
+              background: '#f0fdf4', color: '#16a34a', fontSize: '0.8125rem', fontWeight: 600,
+            }}>
+              ✓ Confirmed {fmtDate(o.confirmed_at)}
+            </span>
+            <form action={setOrderConfirmed.bind(null, o.id!, false)} style={{ marginTop: 8 }}>
+              <button type="submit" style={{
+                padding: '6px 12px', background: 'transparent', border: '1px solid #d1d5db',
+                borderRadius: 6, color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+              }}>
+                Mark unconfirmed
+              </button>
+            </form>
           </div>
-          {/* Vendor dispatch */}
-          <VendorDispatch
-            orderId={o.id!}
-            vendors={vendors}
-            currentVendorId={o.vendor_id ?? null}
-            vendorSentAt={o.vendor_sent_at ?? null}
-            message={vendorMessage}
-          />
-        </div>
-        {settlementRow && (
-          <div style={{
-            marginTop: 16, padding: '12px 14px', borderRadius: 8,
-            background: '#f9fafb', border: '1px solid #e5e7eb',
-            display: 'flex', flexWrap: 'wrap', gap: 20, fontSize: '0.8125rem',
-          }}>
-            <div>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' }}>Vendor cost</div>
-              <div style={{ fontWeight: 600, color: '#111827' }}>£{Math.round(settlementRow.vendor_cost).toLocaleString()}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' }}>Our margin</div>
-              <div style={{ fontWeight: 700, color: '#16a34a' }}>£{Math.round(settlementRow.our_margin).toLocaleString()}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' }}>
-                {settlementRow.due_to === 'us' ? 'Vendor pays you' : 'You pay vendor'}
-              </div>
-              <div style={{ fontWeight: 700, color: settlementRow.due_to === 'us' ? '#16a34a' : '#dc2626' }}>
-                £{Math.round(settlementRow.amount_due).toLocaleString()}
-                <span style={{ fontWeight: 600, color: '#9ca3af', marginLeft: 6 }}>
-                  · {settlementRow.status === 'settled' ? 'settled' : 'pending'}
-                </span>
-              </div>
-            </div>
-            <div style={{ alignSelf: 'center', marginLeft: 'auto' }}>
-              <Link href="/admin/vendors" style={{ color: '#4A1A6B', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
-                Manage payouts →
-              </Link>
-            </div>
-          </div>
+        ) : (
+          <form action={setOrderConfirmed.bind(null, o.id!, true)}>
+            <button type="submit" style={{
+              padding: '9px 16px', background: '#4A1A6B', color: 'white', border: 'none',
+              borderRadius: 7, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
+            }}>
+              Mark customer-confirmed
+            </button>
+          </form>
         )}
       </div>
       )}

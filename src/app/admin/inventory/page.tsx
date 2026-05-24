@@ -273,7 +273,7 @@ export default async function InventoryPage({
         </div>
         <div>
           <label htmlFor="note" style={lbl}>Note (optional)</label>
-          <input id="note" name="note" type="text" maxLength={200} placeholder="e.g. Vendor delivery PO-2025-04" style={inp} />
+          <input id="note" name="note" type="text" maxLength={200} placeholder="e.g. Restock PO-2025-04" style={inp} />
         </div>
         <button type="submit" style={btn}>Log change</button>
       </form>

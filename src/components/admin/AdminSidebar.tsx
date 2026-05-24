@@ -19,19 +19,27 @@ type NavItem = {
 
 type NavGroup = { label: string; items: NavItem[] };
 
+// Nav order reflects who Aizel actually is now: a single-brand UK retailer
+// that runs an in-house catalogue across a website AND a brick-and-mortar
+// shop. The Trade group surfaces the till and its back-office view RIGHT
+// AFTER the dashboards, ahead of the e-commerce ops — because once the
+// store's open, the till is what the cashier looks at most. Sell stays
+// for the catalogue + online-orders work, but without the Vendors item
+// (Aizel doesn't drop-ship; everything's stocked in-house).
 const GROUPS: NavGroup[] = [
   { label: 'Insights', items: [
     { href: '/admin/dashboard', label: 'Dashboard', icon: '▣', permissionsAny: ['analytics','analytics_traffic','analytics_errors'] },
     { href: '/admin/analytics', label: 'Analytics', icon: '◐', permission: 'analytics' },
   ]},
+  { label: 'Trade', items: [
+    { href: '/admin/pos',           label: 'POS Till',       icon: '⌖', permission: 'pos.operate' },
+    { href: '/admin/pos/dashboard', label: 'POS Dashboard',  icon: '◑', permission: 'pos.operate' },
+  ]},
   { label: 'Sell', items: [
     { href: '/admin/orders',    label: 'Orders',    icon: '◎', permission: 'orders.view' },
     { href: '/admin/products',  label: 'Products',  icon: '◈', permission: 'products.view' },
     { href: '/admin/inventory', label: 'Inventory', icon: '⧉', permission: 'products.view' },
-    { href: '/admin/vendors',   label: 'Vendors',   icon: '▦', permission: 'orders.view' },
     { href: '/admin/returns',   label: 'Returns',   icon: '↩', permission: 'returns' },
-    { href: '/admin/pos',           label: 'POS Till',       icon: '⌖', permission: 'pos.operate' },
-    { href: '/admin/pos/dashboard', label: 'POS Dashboard',  icon: '◑', permission: 'pos.operate' },
   ]},
   { label: 'People', items: [
     { href: '/admin/users',     label: 'Customers', icon: '◉', permission: 'customers.view' },

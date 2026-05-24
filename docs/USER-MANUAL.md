@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 24 May 2026 — POS till + Stripe Terminal added.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section.*
 
 ---
 
@@ -165,7 +165,6 @@ together. Here's what each link is for:
 | **POS Dashboard** | Back-office view of the till — today's takings, hourly heatmap, tender split (cash vs card), top SKUs, recent transactions, and the open-shifts table. |
 | **Products** | The catalogue. Create, edit, publish, archive, and delete products; manage variants, images, pricing, and descriptions. Bulk price tools and CSV import are here — including the eBay importer at `npm run import:ebay`. Each product now carries an optional SKU and barcode for till scanning. |
 | **Inventory** | Stock levels. See low-stock items and adjust stock counts. POS sales deduct from the same stock counts as web orders so you never oversell across channels. |
-| **Vendors** | Your suppliers/fulfilment partners. Add vendors and track what you owe or are owed (settlements). |
 | **Returns** | Customer return requests awaiting your approval, and refund processing. |
 
 **People** — customers and incentives
@@ -205,16 +204,12 @@ the order. It opens WhatsApp with a message pre-filled with their items,
 address, and total. Once they confirm, click **Mark customer-confirmed** to
 record it. Card-paid orders skip this step.
 
-**Step 2 — Send it to a vendor (if you fulfil through one).**
-In the *Confirmation & vendor* section, pick a vendor. A ready-to-send WhatsApp
-message appears with the items and delivery address — forward it to the vendor.
-
-**Step 3 — Book the shipment.**
+**Step 2 — Book the shipment.**
 In the *Shipment* section, record the courier (Royal Mail or DPD by default)
 and tracking number. If a courier API is configured a one-click "book pickup"
 button is available; otherwise enter the courier and tracking number manually.
 
-**Step 4 — Move the order through its statuses.**
+**Step 3 — Move the order through its statuses.**
 Use the **Update Order** control to change the order's status as it progresses:
 
 - **Order received** → the order is placed and awaiting preparation.
@@ -226,10 +221,6 @@ Use the **Update Order** control to change the order's status as it progresses:
 Each change is recorded in the order's **timeline**, and the customer is emailed
 automatically at the key steps (for example, a shipping email with their
 tracking number when you mark the order *Shipped*).
-
-**Step 5 — Settle with the vendor (if used).**
-If the order went to a vendor, a settlement summary shows the vendor cost, your
-margin, and who owes whom. Mark it **settled** once that payment is done.
 
 **The rest of the order page** also shows the customer's details (with a
 "repeat customer" badge and lifetime spend if applicable), the shipping address,
@@ -363,10 +354,9 @@ These are the labels shown throughout the admin (the order list, filters, the or
 
 ### Glossary
 
-- **Order number** — the customer-facing code for an order, e.g. `AZ-A1B2C3`.
+- **Order number** — the customer-facing code for an order, e.g. `AZ-A1B2C3`. POS sales use the `AZ-P…` prefix.
 - **Variant** — a specific version of a product, such as a size or scent.
-- **Vendor** — a supplier or fulfilment partner an order can be dispatched to.
-- **Settlement** — the money owed between you and a vendor for an order.
+- **Shift** — a single cashier's session at the POS till, between opening the float and closing it.
 - **Coupon** — a discount code a customer enters at checkout.
 - **Segment** — a saved group of customers used for targeting.
 - **Permission** — a capability that controls which admin sections a staff

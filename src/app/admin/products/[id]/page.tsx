@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { VariantsSection } from '@/components/admin/VariantsSection';
 import { ProductInventoryHistory } from '@/components/admin/ProductInventoryHistory';
-import type { Product, ProductAttribute, AttributeValue, ProductVariant, Vendor } from '@/types';
+import type { Product, ProductAttribute, AttributeValue, ProductVariant } from '@/types';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 
@@ -68,12 +68,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const product = rawProduct as Product;
 
   const { attributes, variants } = await loadAttributesAndVariants(product.id);
-  // vendors RLS has no policy — read with the service role.
-  const { data: vendorData } = await supabaseAdmin().from('vendors').select('*').order('name');
 
   return (
     <>
-      <ProductForm product={product} vendors={(vendorData ?? []) as Vendor[]} />
+      <ProductForm product={product} />
       <div className="adm-page" style={{ padding: '0 36px 32px' }}>
         <VariantsSection
           productId={product.id}

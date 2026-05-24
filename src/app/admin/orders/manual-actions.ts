@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 // ============================================================================
 // Create a manual order from the admin. Used for phone orders, gift
-// purchases, vendor returns / store-credit issuance — anything that didn't
+// purchases, store-credit issuance — anything that didn't
 // come through the customer-facing checkout but needs a real order row so
 // it reaches the dispatch queue, the analytics, and the customer's order
 // history.

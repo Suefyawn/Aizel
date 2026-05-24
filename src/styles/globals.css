@@ -763,24 +763,6 @@ form[role='search']:focus-within {
   .adm-orders-search { min-width: 0 !important; flex: 1 1 100% !important; }
 }
 
-/* Vendors settlement-terms cell — the global .adm-table-cards mobile
- * rule sets `text-align: right` on every cell so two-input rows stack
- * cleanly. But the vendor settlement form has a 4-element inline form
- * (commission % + label + select + button) that we want left-aligned
- * and wrapping naturally; right-align stacks them on top of each
- * other. */
-@media (max-width: 767px) {
-  .adm-vendor-settlement {
-    justify-content: flex-start !important;
-    width: 100% !important;
-  }
-  td:has(> .adm-vendor-settlement) {
-    text-align: left !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-}
-
 /* AdminSidebar 1024–1280 px tight zone — the desktop 240 px sidebar
  * leaves a narrow content column on laptops. Pull it down to the same
  * 200 px the 768–1024 rule uses; group labels still fit and the
@@ -792,7 +774,7 @@ form[role='search']:focus-within {
 
 /* Admin data tables → stacked cards on phones.
  *
- * The Orders, Products, Vendors, Users, Blog, Coupons, Segments, Audit and
+ * The Orders, Products, Users, Blog, Coupons, Segments, Audit and
  * Team tables all carry `.adm-table-cards` and a `data-label` on every body
  * cell. On a phone a 6–7 column table overflows the viewport; here each row
  * collapses into a bordered card, the header row is hidden, and every cell

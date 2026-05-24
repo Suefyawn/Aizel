@@ -66,8 +66,8 @@ export const PERMISSION_META: Record<Permission, {
 }> = {
   // Commerce
   'orders.view':     { label: 'Orders — View',     icon: '◎', desc: 'View customer orders and their details.',                          group: 'commerce' },
-  'orders.edit':     { label: 'Orders — Manage',   icon: '◎', desc: 'Update status, fulfil, confirm, and dispatch orders; manage vendors.', group: 'commerce' },
-  'orders.delete':   { label: 'Orders — Delete',   icon: '◎', desc: 'Delete vendor records and other order-related data.',               group: 'commerce' },
+  'orders.edit':     { label: 'Orders — Manage',   icon: '◎', desc: 'Update order status, confirm with customers, book shipments, issue refunds.', group: 'commerce' },
+  'orders.delete':   { label: 'Orders — Delete',   icon: '◎', desc: 'Delete orders and related records.',                                  group: 'commerce' },
   'products.view':   { label: 'Products — View',   icon: '◈', desc: 'Browse the product catalogue and stock levels.',                    group: 'commerce' },
   'products.edit':   { label: 'Products — Edit',   icon: '◈', desc: 'Create and edit products, variants, and stock.',                     group: 'commerce' },
   'products.delete': { label: 'Products — Delete', icon: '◈', desc: 'Delete products from the catalogue.',                                group: 'commerce' },

@@ -64,12 +64,8 @@ export const productInputSchema = z.object({
                     v => (v == null ? true : v === 'true' || v === true || v === 'on'),
                     z.boolean(),
                   ),
-  // Sourcing vendor + per-unit cost. The form submits '' for "no vendor" and
-  // an empty cost; both normalise to null.
-  vendor_id:      z.preprocess(
-                    v => (v === '' || v == null ? null : v),
-                    z.string().uuid().nullable(),
-                  ),
+  // Optional unit cost for margin reporting. The form submits '' when blank;
+  // normalise to null. DB column is still called `vendor_cost` (legacy).
   vendor_cost:    z.preprocess(
                     v => (v === '' || v == null ? null : v),
                     positiveNumber.nullable(),

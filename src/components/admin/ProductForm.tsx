@@ -5,7 +5,7 @@ import { createProduct, updateProduct } from '@/app/admin/actions';
 import { ImageUpload } from './ImageUpload';
 import { KeyBenefitsEditor, FaqEditor } from './ProductContentEditors';
 import { TAXONS } from '@/lib/category-taxonomy';
-import type { Product, Vendor } from '@/types';
+import type { Product } from '@/types';
 
 function toSlug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -45,7 +45,7 @@ function Section({ title, desc, first, children }: {
   );
 }
 
-export function ProductForm({ product, vendors = [] }: { product?: Product; vendors?: Vendor[] }) {
+export function ProductForm({ product }: { product?: Product }) {
   const isEdit = Boolean(product);
   const boundAction = isEdit ? updateProduct.bind(null, product!.id) : createProduct;
   const [state, action, pending] = useActionState(boundAction, null);
@@ -53,24 +53,17 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
   const [name, setName] = useState(product?.name ?? '');
   const [slug, setSlug] = useState(product?.slug ?? '');
   const [trackInv, setTrackInv] = useState(product?.track_inventory !== false);
-  // Tracked so the vendor margin readout updates as the owner edits.
+  // Tracked so the live margin readout updates as the owner edits.
   const [price, setPrice] = useState<number>(product?.price ?? 0);
-  const [vendorId, setVendorId] = useState(product?.vendor_id ?? '');
-  const [vendorCost, setVendorCost] = useState(product?.vendor_cost != null ? String(product.vendor_cost) : '');
+  // Unit cost (what Aizel paid for this product). Optional — when set,
+  // the margin readout shows gross margin per unit + %.
+  const [unitCost, setUnitCost] = useState(product?.vendor_cost != null ? String(product.vendor_cost) : '');
 
-  // Margin preview: explicit per-product cost wins; otherwise derive the cost
-  // from the selected vendor's commission %.
-  const selectedVendor = vendors.find(v => v.id === vendorId) ?? null;
-  const costNum = vendorCost.trim() !== '' ? Number(vendorCost) : null;
-  let marginInfo: { cost: number; margin: number; basis: string } | null = null;
-  if (vendorId && price > 0) {
-    if (costNum != null && Number.isFinite(costNum)) {
-      marginInfo = { cost: costNum, margin: price - costNum, basis: 'per-product cost' };
-    } else if (selectedVendor?.commission_pct != null) {
-      const margin = price * (selectedVendor.commission_pct / 100);
-      marginInfo = { cost: price - margin, margin, basis: `${selectedVendor.commission_pct}% commission` };
-    }
-  }
+  const costNum = unitCost.trim() !== '' ? Number(unitCost) : null;
+  const marginInfo: { cost: number; margin: number; pct: number } | null =
+    costNum != null && Number.isFinite(costNum) && price > 0
+      ? { cost: costNum, margin: price - costNum, pct: ((price - costNum) / price) * 100 }
+      : null;
 
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
@@ -202,56 +195,48 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
             </label>
           </Section>
 
-          {/* ── Vendor & sourcing ──────────────────────────────────────── */}
-          <Section title="Vendor & sourcing" desc="Link the product to a supplier to track cost, margin and payouts.">
+          {/* ── Cost & margin ─────────────────────────────────────────────
+              Optional cost-per-unit input so the owner sees gross margin
+              alongside retail price. Posted under the legacy `vendor_cost`
+              form field name so the existing server action + DB column
+              continue to work without a migration. */}
+          <Section title="Cost & margin" desc="Optional — what you paid for one unit. Shows the live gross margin against the retail price above.">
             <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
-                <label style={lbl}>Vendor</label>
-                <select name="vendor_id" value={vendorId} onChange={e => setVendorId(e.target.value)} style={inp}>
-                  <option value="">— None (own stock) —</option>
-                  {vendors.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}{v.commission_pct != null ? ` · ${v.commission_pct}% commission` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={fieldWrap}>
-                <label style={lbl}>Vendor cost (GBP)</label>
+                <label style={lbl}>Unit cost (GBP)</label>
                 <input
                   name="vendor_cost" type="number" min={0} step="0.01"
-                  value={vendorCost} onChange={e => setVendorCost(e.target.value)}
-                  style={inp} placeholder="Leave blank to use the vendor's commission %"
-                  disabled={!vendorId}
+                  value={unitCost} onChange={e => setUnitCost(e.target.value)}
+                  style={inp} placeholder="e.g. 4.20"
                 />
-                <span style={hint}>What you pay the vendor per unit. Overrides the commission %.</span>
+                <span style={hint}>Used for margin reporting only — never shown to the customer.</span>
+              </div>
+              <div style={fieldWrap}>
+                <label style={lbl}>Live margin</label>
+                <div style={{
+                  padding: '10px 12px', borderRadius: 7,
+                  background: marginInfo ? '#f0fdf4' : '#f9fafb',
+                  border: `1px solid ${marginInfo ? '#bbf7d0' : '#e5e7eb'}`,
+                  fontSize: '0.875rem', minHeight: 38,
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }}>
+                  {marginInfo ? (
+                    <>
+                      <strong style={{ color: '#16a34a', fontVariantNumeric: 'tabular-nums' }}>
+                        £{marginInfo.margin.toFixed(2)}
+                      </strong>
+                      <span style={{ color: '#6b7280', fontSize: '0.8125rem' }}>
+                        · {marginInfo.pct.toFixed(0)}% of price
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ color: '#9ca3af', fontSize: '0.8125rem' }}>
+                      Set both retail price and unit cost to see the margin.
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-            {vendorId && (
-              <div style={{
-                marginTop: 4, padding: '12px 14px', borderRadius: 8,
-                background: marginInfo ? '#f0fdf4' : '#fffbeb',
-                border: `1px solid ${marginInfo ? '#bbf7d0' : '#fde68a'}`,
-                fontSize: '0.8125rem',
-              }}>
-                {marginInfo ? (
-                  <>
-                    <strong style={{ color: '#16a34a' }}>
-                      Margin: £{Math.round(marginInfo.margin).toLocaleString()}
-                    </strong>
-                    <span style={{ color: '#6b7280' }}>
-                      {' '}· cost £{Math.round(marginInfo.cost).toLocaleString()}
-                      {price > 0 ? ` · ${Math.round((marginInfo.margin / price) * 100)}% of price` : ''}
-                      {' '}({marginInfo.basis})
-                    </span>
-                  </>
-                ) : (
-                  <span style={{ color: '#92400e' }}>
-                    Set a vendor cost above, or a commission % on the vendor, to see the margin.
-                  </span>
-                )}
-              </div>
-            )}
           </Section>
 
           {/* ── Link / slug ────────────────────────────────────────────── */}

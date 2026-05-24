@@ -43,8 +43,8 @@ export default async function NewOrderPage() {
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>New manual order</h1>
       </div>
       <p style={{ margin: '0 0 24px', fontSize: '0.8125rem', color: '#6b7280' }}>
-        For phone orders, gifts, or vendor / store-credit issuance — anything
-        that didn&apos;t come through the customer checkout but needs an order
+        For phone orders, gifts, or store-credit issuance — anything that
+        didn&apos;t come through the customer checkout but needs an order
         row so it reaches dispatch + analytics. Status starts at <strong>Pending</strong>;
         no payment is captured. Customer email is sent only when you tick the box below.
       </p>

@@ -76,9 +76,9 @@ export async function bulkTagProducts(ids: string[], tag: string | null): Promis
  *                    product's current stock. Used after a delivery
  *                    arrives or shrinkage / damage is being recorded.
  *
- * Products with `track_inventory=false` are skipped — their stock is
- * managed externally (vendor consignment) and we'd be lying if we wrote
- * a number against them.
+ * Products with `track_inventory=false` are skipped — they're always
+ * sellable (services, made-to-order, etc.) so writing a stock number
+ * against them would be misleading.
  */
 export async function bulkAdjustStock(
   ids: string[],

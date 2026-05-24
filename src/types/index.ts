@@ -50,12 +50,12 @@ export interface Product {
   tag?: string;
   slug: string;
   stock: number;
-  /** When false, inventory is managed externally (e.g. a third-party vendor):
-   *  the product is always sellable and its stock count is not tracked. */
+  /** When false, the product is always sellable and its stock count is
+   *  not tracked (services, made-to-order, etc.). */
   track_inventory?: boolean;
-  /** Sourcing vendor (nullable — own-stock products have none). */
-  vendor_id?: string | null;
-  /** Per-unit cost paid to the vendor; overrides the vendor's commission %. */
+  /** Per-unit cost. Used for margin reporting only — never customer-facing.
+   *  The legacy column name `vendor_cost` is kept so the DB column doesn't
+   *  need a rename migration. */
   vendor_cost?: number | null;
   image_url?: string;
   description?: string;
@@ -253,41 +253,6 @@ export interface Order {
   /** Set when staff mark the customer as having confirmed the order
    *  (typically over WhatsApp). NULL = not yet confirmed. */
   confirmed_at?: string | null;
-  /** Vendor this order was dispatched to for fulfilment. */
-  vendor_id?: string | null;
-  /** Set when staff forward the order to the assigned vendor. */
-  vendor_sent_at?: string | null;
-}
-
-/** A supplier the store dispatches confirmed orders to (over WhatsApp). */
-export interface Vendor {
-  id: string;
-  name: string;
-  /** WhatsApp number — any format; normalised when building the wa.me link. */
-  phone: string;
-  notes?: string | null;
-  active: boolean;
-  /** Default % of the sale price Aizel keeps on this vendor's products. */
-  commission_pct?: number | null;
-  /** Who collects the customer payment, and therefore who owes whom. */
-  settlement_direction?: 'vendor_collects' | 'we_collect';
-  created_at?: string;
-}
-
-/** Financial split for one order dispatched to one vendor. */
-export interface VendorSettlement {
-  id: string;
-  order_id: string;
-  vendor_id: string;
-  gross_amount: number;
-  vendor_cost: number;
-  our_margin: number;
-  direction: 'vendor_collects' | 'we_collect';
-  amount_due: number;
-  due_to: 'us' | 'vendor';
-  status: 'pending' | 'settled';
-  settled_at?: string | null;
-  created_at?: string;
 }
 
 /** A bank / mobile-wallet account customers transfer to for "Bank Transfer"

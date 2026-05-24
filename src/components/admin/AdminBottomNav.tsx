@@ -14,10 +14,15 @@ interface NavSlot {
   permission?: Permission;
 }
 
+// POS Till sits in the 2nd slot (after Home) on mobile because a manager
+// on the shop floor needs one-tap access to ring up a customer — that's
+// the highest-frequency phone action. Products gets pushed into the More
+// drawer; product edits aren't a phone-first task and Stock is the more
+// useful catalogue surface on small screens.
 const SLOTS: NavSlot[] = [
   { href: '/admin/dashboard', label: 'Home',     icon: '▣' },
+  { href: '/admin/pos',       label: 'Till',     icon: '⌖', permission: 'pos.operate' },
   { href: '/admin/orders',    label: 'Orders',   icon: '◎', permission: 'orders.view' },
-  { href: '/admin/products',  label: 'Products', icon: '◈', permission: 'products.view' },
   { href: '/admin/inventory', label: 'Stock',    icon: '⧉', permission: 'products.view' },
 ];
 
