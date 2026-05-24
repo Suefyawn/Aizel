@@ -338,23 +338,6 @@ a.underline,
 /* Selection */
 ::selection { background: var(--brand-yellow); color: var(--ink-900); }
 
-/* Animations */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* Footer marquee — auto-pauses on hover and respects prefers-reduced-motion.
- * Previously inlined on the element, which forced screenshot tools / Lighthouse
- * audits to wait forever for the page to "settle". */
-.footer-marquee {
-  animation: marquee 30s linear infinite;
-  will-change: transform;
-}
-.footer-marquee:hover { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) {
-  .footer-marquee { animation: none; transform: none; }
-}
 /* Page-level entry animation, applied via `.fade-in` to `<main>` on most
  * routes. We deliberately use ONLY opacity here — no transform — because a
  * transform on a parent element creates a new containing block for any

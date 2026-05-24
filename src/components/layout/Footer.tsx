@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { LogoMark } from '@/components/ui/LogoMark';
 import { LogoWordmark } from '@/components/ui/LogoWordmark';
 import { Overline } from '@/components/ui/Overline';
 import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
@@ -67,29 +66,12 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
       aria-label="Site footer"
       style={{ background: 'var(--ink-900)', color: 'var(--paper)', padding: '64px 0 32px', position: 'relative', overflow: 'hidden' }}
     >
-      <div style={{ position: 'absolute', bottom: 20, right: 30, opacity: 0.04 }}>
-        <LogoMark size={200} />
-      </div>
+      {/* Removed: an oversized LogoMark watermark + an italic-serif scrolling
+          marquee that both read as YellowPink-era decorative chrome. The
+          footer wordmark column below carries the brand identity; the
+          payment-method strip + © line close the footer cleanly without
+          either. */}
       <div className="container">
-        {/* Marquee — paused on hover + when prefers-reduced-motion is set
-            (see .footer-marquee in globals.css). aria-hidden so screen
-            readers don't read the scrolling text. */}
-        <div
-          aria-hidden="true"
-          style={{ borderBottom: '1px solid rgba(255, 255, 255,0.1)', paddingBottom: 32, marginBottom: 40, overflow: 'hidden', whiteSpace: 'nowrap' }}
-        >
-          <div
-            className="footer-marquee"
-            style={{
-              display: 'inline-block',
-              fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontStyle: 'italic',
-              color: 'rgba(255, 255, 255,0.2)',
-            }}
-          >
-            {Array(6).fill('Aizel · Hair & Body Care · UK · ').join('')}
-          </div>
-        </div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
           <div>
             <div style={{ marginBottom: 24 }}><LogoWordmark color="var(--paper)" /></div>
