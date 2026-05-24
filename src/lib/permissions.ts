@@ -24,6 +24,11 @@ export type Permission =
   | 'customers.delete'
   | 'coupons'
   | 'returns'
+  // In-store register — gates /admin/pos + every POS server action.
+  // Separate from orders.edit so a back-office orders manager doesn't
+  // automatically get till access (and vice-versa: a counter cashier
+  // doesn't get to edit refunded statuses on web orders).
+  | 'pos.operate'
 
   // ── Content + marketing ──
   | 'blog'
@@ -45,7 +50,7 @@ export const ALL_PERMISSIONS: Permission[] = [
   'orders.view', 'orders.edit', 'orders.delete',
   'products.view', 'products.edit', 'products.delete',
   'customers.view', 'customers.edit', 'customers.delete',
-  'coupons', 'returns',
+  'coupons', 'returns', 'pos.operate',
   'blog', 'promos', 'reviews', 'newsletter',
   'analytics', 'analytics_traffic', 'analytics_errors', 'analytics_refresh',
   'settings',
@@ -71,6 +76,7 @@ export const PERMISSION_META: Record<Permission, {
   'customers.delete': { label: 'Customers — Delete', icon: '◉', desc: 'Delete customer accounts.',                                        group: 'commerce' },
   coupons:   { label: 'Coupons',    icon: '◇', desc: 'Issue and manage discount codes.',             group: 'commerce' },
   returns:   { label: 'Returns',    icon: '↩', desc: 'Approve / reject customer return requests.',   group: 'commerce' },
+  'pos.operate': { label: 'Point of Sale', icon: '⌖', desc: 'Open the till, ring up walk-in customers, count the drawer, and run the Z-report.', group: 'commerce' },
 
   // Content + marketing
   blog:    { label: 'Blog',    icon: '✦', desc: 'Write and publish editorial posts.',                group: 'content' },
