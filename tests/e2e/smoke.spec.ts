@@ -132,6 +132,17 @@ test.describe('Storefront — golden path', () => {
     await expect(page.getByRole('heading', { name: /track/i }).first()).toBeVisible();
   });
 
+  test('hair quiz renders the first question', async ({ page }) => {
+    // Marketing-relevant route: drives high-intent traffic into a curated
+    // PLP. If the question renderer breaks, the entire acquisition funnel
+    // we point the /quiz footer link at is dead.
+    await page.goto('/quiz');
+    await expect(page.getByRole('heading', { name: /Build your routine/i })).toBeVisible();
+    await expect(page.getByText(/Question 1 of/i)).toBeVisible();
+    // First question should expose its radio answers.
+    await expect(page.getByRole('radio').first()).toBeVisible();
+  });
+
   test('blog index renders the Aizel journal', async ({ page }) => {
     await page.goto('/blog');
     await expect(page).toHaveTitle(/Aizel/);

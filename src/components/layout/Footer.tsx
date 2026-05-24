@@ -38,10 +38,11 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 const SHOP_LINKS = [
   // Taxon URLs match the nav: ?taxon=<key> expands to the category set
   // defined in lib/category-taxonomy.ts.
-  { label: 'Hair Care',    href: '/shop?taxon=hair' },
-  { label: 'Body Care',    href: '/shop?taxon=body' },
+  { label: 'Hair Care',     href: '/shop?taxon=hair' },
+  { label: 'Body Care',     href: '/shop?taxon=body' },
   { label: 'Shop by Brand', href: '/brand' },
-  { label: 'All Products', href: '/shop' },
+  { label: 'All Products',  href: '/shop' },
+  { label: 'Hair Quiz',     href: '/quiz' },
 ];
 
 const COMPANY_LINKS = [
