@@ -21,10 +21,17 @@ interface LedgerRow {
   created_at: string;
 }
 
-interface ProductLite { id: string; name: string; brand: string | null; stock: number; track_inventory?: boolean }
+interface ProductLite { id: string; name: string; brand: string | null; stock: number; track_inventory?: boolean; created_at?: string | null }
 interface OrderLite { id: string; order_number: string }
 
 const LOW_STOCK_THRESHOLD = 5;
+// A product is "dead stock" when it's sitting in stock, has been on the
+// shelves long enough that we can't blame "still launching", and hasn't
+// shifted a unit in the same window. The 90-day cut-off matches Aizel's
+// 6-8 week consumable cycle plus a margin — anything older than that is
+// genuinely not pulling its weight.
+const DEAD_STOCK_DAYS = 90;
+const DEAD_STOCK_MS = DEAD_STOCK_DAYS * 86_400_000;
 
 const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
   import:       { bg: '#eef2ff', fg: '#3730a3' },
@@ -65,11 +72,21 @@ export default async function InventoryPage({
   if (productFilter) ledgerQuery = ledgerQuery.eq('product_id', productFilter);
   if (reasonFilter && reasonFilter !== 'all') ledgerQuery = ledgerQuery.eq('reason', reasonFilter);
 
-  // Pull every product so the manual-adjustment form has a dropdown.
-  // 109 SKUs today — well under any sane limit.
-  const [{ data: ledgerData }, { data: productData }] = await Promise.all([
+  // Dead-stock window — anything older than this is a candidate; anything
+  // sold inside the window is exempt from the "dead stock" tag.
+  const deadStockCutoff = new Date(Date.now() - DEAD_STOCK_MS).toISOString();
+
+  // Pull every product so the manual-adjustment form has a dropdown +
+  // every 'order' ledger row inside the dead-stock window so we can
+  // figure out who has shifted units recently. 109 SKUs today — well
+  // under any sane limit; ledger query is bounded by date so it scales.
+  const [{ data: ledgerData }, { data: productData }, { data: recentSales }] = await Promise.all([
     ledgerQuery,
-    admin.from('products').select('id, name, brand, stock, track_inventory').order('name'),
+    admin.from('products').select('id, name, brand, stock, track_inventory, created_at').order('name'),
+    admin.from('inventory_ledger')
+      .select('product_id')
+      .eq('reason', 'order')
+      .gte('created_at', deadStockCutoff),
   ]);
   const rows = (ledgerData ?? []) as LedgerRow[];
   const allProducts = (productData ?? []) as ProductLite[];
@@ -83,11 +100,30 @@ export default async function InventoryPage({
   const outOfStock = products.filter(p => p.stock <= 0);
   const lowStock = products.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD);
   const healthyCount = products.length - outOfStock.length - lowStock.length;
-  // "Needs attention" is the default view; the owner can switch to the full list.
-  const showAll = view === 'all';
+  // Dead stock = in stock + older than the cut-off + no sale in the window.
+  // We also filter out products with no created_at (very old rows from a
+  // pre-migration era) to avoid a flood of false positives on first run.
+  const recentlySoldIds = new Set(
+    ((recentSales ?? []) as Array<{ product_id: string | null }>)
+      .map(r => r.product_id).filter((v): v is string => !!v),
+  );
+  const deadStockList = products
+    .filter(p => p.stock > 0)
+    .filter(p => p.created_at && new Date(p.created_at).getTime() < Date.now() - DEAD_STOCK_MS)
+    .filter(p => !recentlySoldIds.has(p.id))
+    .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''));
+
+  // "Needs attention" is the default view; the owner can switch to all
+  // products or to the dead-stock view.
+  const currentView: 'attention' | 'all' | 'dead' =
+    view === 'all' ? 'all' : view === 'dead' ? 'dead' : 'attention';
   const stockList = [...products].sort((a, b) => a.stock - b.stock);
   const attentionList = stockList.filter(p => p.stock <= LOW_STOCK_THRESHOLD);
-  const visibleStock = showAll ? stockList : attentionList;
+  const visibleStock = currentView === 'all'
+    ? stockList
+    : currentView === 'dead'
+      ? deadStockList
+      : attentionList;
 
   // Resolve order ids to order numbers for the rows that link to an order.
   const orderIds = Array.from(new Set(rows.map(r => r.order_id).filter((v): v is string => Boolean(v))));
@@ -111,10 +147,15 @@ export default async function InventoryPage({
       )}
 
       {/* ─── Stock summary ──────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }} className="adm-stat-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }} className="adm-stat-grid">
         {[
           { label: 'Out of stock', value: outOfStock.length, bg: '#fef2f2', fg: '#dc2626', bd: '#fecaca' },
           { label: `Low stock (≤ ${LOW_STOCK_THRESHOLD})`, value: lowStock.length, bg: '#fffbeb', fg: '#d97706', bd: '#fde68a' },
+          // Dead stock highlights cash sitting on the shelf — surface
+          // it in the headline grid so the operator notices it without
+          // hunting through tabs. Purple tint to read "decision needed"
+          // rather than the green/yellow/red urgency scale.
+          { label: `Dead stock (${DEAD_STOCK_DAYS}d, 0 sales)`, value: deadStockList.length, bg: '#F5EFF8', fg: '#4A1A6B', bd: '#E2D2EB' },
           { label: 'Healthy', value: healthyCount, bg: '#f0fdf4', fg: '#16a34a', bd: '#bbf7d0' },
         ].map(s => (
           <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: 10, padding: '16px 20px' }}>
@@ -126,18 +167,23 @@ export default async function InventoryPage({
 
       {/* ─── Stock levels table ─────────────────────────────────────────── */}
       <div style={{ background: 'white', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden', marginBottom: 24 }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>
-            {showAll ? 'All products' : 'Needs attention'}
+            {currentView === 'all' ? 'All products'
+              : currentView === 'dead' ? `Dead stock — no sale in ${DEAD_STOCK_DAYS}+ days`
+              : 'Needs attention'}
           </h2>
           <div style={{ display: 'flex', gap: 8, fontSize: '0.8125rem' }}>
-            <Link href="/admin/inventory" style={chipLink(!showAll)}>Needs attention</Link>
-            <Link href="/admin/inventory?view=all" style={chipLink(showAll)}>All products</Link>
+            <Link href="/admin/inventory"            style={chipLink(currentView === 'attention')}>Needs attention</Link>
+            <Link href="/admin/inventory?view=dead"  style={chipLink(currentView === 'dead')}>Dead stock</Link>
+            <Link href="/admin/inventory?view=all"   style={chipLink(currentView === 'all')}>All products</Link>
           </div>
         </div>
         {visibleStock.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>
-            Every product is in stock. Nothing needs restocking.
+            {currentView === 'dead'
+              ? `Nothing sitting idle — every in-stock product has shifted a unit in the last ${DEAD_STOCK_DAYS} days.`
+              : 'Every product is in stock. Nothing needs restocking.'}
           </div>
         ) : (
           <div style={{ maxHeight: 440, overflowY: 'auto' }}>
@@ -152,6 +198,14 @@ export default async function InventoryPage({
               <tbody>
                 {visibleStock.map(p => {
                   const badge = stockBadge(p.stock);
+                  // In the dead-stock view, surface "X days on shelf" in
+                  // place of the in-stock/low/out badge — the badge would
+                  // always read "In stock" for every dead-stock row (by
+                  // definition: dead stock means stock > 0) so it'd be
+                  // dead weight. Days-on-shelf is the operator's lever.
+                  const ageDays = p.created_at
+                    ? Math.floor((Date.now() - new Date(p.created_at).getTime()) / 86_400_000)
+                    : null;
                   return (
                     <tr key={p.id} style={{ borderTop: '1px solid #f3f4f6' }}>
                       <td style={td}>
@@ -163,9 +217,15 @@ export default async function InventoryPage({
                         {p.stock}
                       </td>
                       <td style={td}>
-                        <span style={{ background: badge.bg, color: badge.fg, padding: '2px 8px', borderRadius: 6, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          {badge.label}
-                        </span>
+                        {currentView === 'dead' && ageDays !== null ? (
+                          <span style={{ background: '#F5EFF8', color: '#4A1A6B', padding: '2px 8px', borderRadius: 6, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            {ageDays} days on shelf
+                          </span>
+                        ) : (
+                          <span style={{ background: badge.bg, color: badge.fg, padding: '2px 8px', borderRadius: 6, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            {badge.label}
+                          </span>
+                        )}
                       </td>
                       <td style={{ ...td, textAlign: 'right' }}>
                         <Link href={`/admin/products/${p.id}`} style={{ color: '#4A1A6B', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
