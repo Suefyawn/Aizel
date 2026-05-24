@@ -7,6 +7,8 @@ import { ORDER_STATUS_LABELS, type Order, type AdminUser, type OrderStatus } fro
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import { CustomerGDPRPanel } from '@/components/admin/CustomerGDPRPanel';
+import { TierBadge } from '@/components/ui/TierBadge';
+import { tierFor } from '@/lib/loyalty-tiers';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
@@ -123,6 +125,13 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             </h2>
             <p style={{ margin: '0 0 16px', fontSize: '0.875rem', color: '#6b7280' }}>{user.email}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Tier — derived from the customer's lifetime delivered
+                  spend that we've already calculated for the stats card
+                  below. Single source of truth in lib/loyalty-tiers.ts. */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                <span style={{ color: '#6b7280' }}>Tier</span>
+                <TierBadge tier={tierFor(totalSpend)} size="sm" />
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem' }}>
                 <span style={{ color: '#6b7280' }}>Phone</span>
                 <span style={{ color: '#374151', fontWeight: 500 }}>{user.phone ?? '—'}</span>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { TierStrip } from '@/components/account/TierStrip';
 
 export default function AccountPage() {
   const { user, loading, signOut } = useAuth();
@@ -39,7 +40,11 @@ export default function AccountPage() {
     <div className="container" style={{ padding: '48px var(--side)' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 500, margin: '0 0 8px' }}>My Account</h1>
-        <p style={{ color: 'var(--ink-500)', margin: '0 0 40px', fontSize: '0.9375rem' }}>{user.email}</p>
+        <p style={{ color: 'var(--ink-500)', margin: '0 0 24px', fontSize: '0.9375rem' }}>{user.email}</p>
+
+        {/* Tier strip — derived from lifetime delivered spend, no schema
+            change. Surfaces "£X to Gold" progress alongside the badge. */}
+        <TierStrip />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }} className="duo-grid">
           <Link href="/account/orders" style={{
