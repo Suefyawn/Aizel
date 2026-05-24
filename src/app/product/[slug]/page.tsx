@@ -12,7 +12,7 @@ export const revalidate = 300;
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProductBySlug, supabase, isDemo, getProductsByBrand, getProductsByTaxon } from '@/lib/supabase';
+import { getProductBySlug, supabase, isDemo, getProductsByBrand, getProductsByTaxon, getProducts } from '@/lib/supabase';
 import { PDPPage } from '@/sections/pdp/PDPPage';
 import { ReviewsSection } from '@/components/pdp/ReviewsSection';
 import { RecentlyViewed } from '@/components/pdp/RecentlyViewed';
@@ -22,6 +22,18 @@ import { pageMeta, jsonLd, productLd, breadcrumbLd, faqLd } from '@/lib/seo';
 import { isEnabled } from '@/lib/flags';
 import { brandPlusName, stripBrandPrefix } from '@/lib/product-display';
 import type { Product, ProductReview, ProductImage, ProductVariant, ProductAttribute, AttributeValue } from '@/types';
+
+// Pre-render every published PDP at build time so first-paint LCP stays
+// fast for organic-traffic landings. dynamicParams stays at its default
+// (true) so a newly-added admin product still serves via ISR without
+// blocking on a redeploy — the pattern Next 16 documents for an
+// evolving catalogue.
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  const products = await getProducts().catch(() => []);
+  return products
+    .filter(p => p.status !== 'archived' && p.status !== 'draft')
+    .map(p => ({ slug: p.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
