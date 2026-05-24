@@ -102,7 +102,12 @@ export function HeroSection({ settings }: { settings?: Partial<HeroSettings> }) 
           ) : (
             <GradientFallback />
           )}
-          <div aria-hidden="true" style={{ position: 'absolute', bottom: 0, left: 0, width: 6, height: 80, background: 'var(--brand-yellow)' }} />
+          {/* Editorial accent — anchors the hero corner in the Aizel purple.
+              Was the gold (--brand-yellow) for one rev but read as a
+              YellowPink hangover at that size; the primary brand colour
+              owns the hero, gold is reserved for smaller accents
+              (trust-strip rings, hover states, the skip-link outline). */}
+          <div aria-hidden="true" style={{ position: 'absolute', bottom: 0, left: 0, width: 6, height: 80, background: 'var(--brand-pink)' }} />
         </div>
       </div>
     </section>

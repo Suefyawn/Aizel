@@ -69,7 +69,7 @@ export function BlogPage({ posts }: { posts: BlogPost[] }) {
                 </div>
                 <div>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-                    <span style={{ padding: '3px 10px', background: 'var(--brand-yellow)', borderRadius: 'var(--radius-pill)', fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Featured</span>
+                    <span style={{ padding: '3px 10px', background: 'var(--brand-pink)', color: '#fff', borderRadius: 'var(--radius-pill)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Featured</span>
                     <Overline style={{ color: 'var(--ink-500)' }}>{featured.category}</Overline>
                   </div>
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 12 }}>{featured.title}</h2>

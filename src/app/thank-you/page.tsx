@@ -64,11 +64,13 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
             <Overline style={{ display: 'block', marginBottom: 16, color: 'var(--ink-500)' }}>What Happens Next</Overline>
             {[
               { step: '1', label: 'Preparing', desc: "We're packing your items with care." },
-              { step: '2', label: 'Shipped', desc: "You'll receive tracking via WhatsApp." },
-              { step: '3', label: 'Delivered', desc: 'Pay on delivery (COD) or already paid.' },
+              { step: '2', label: 'Shipped', desc: "Royal Mail Tracked — tracking lands by email once it's on the van." },
+              { step: '3', label: 'Delivered', desc: 'Usually within 2–3 working days across the UK.' },
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: i < 2 ? 16 : 0 }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--brand-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{s.step}</div>
+                {/* Brand-pink (purple) step badges with white digits — were
+                    gold and read as a YellowPink hangover at this size. */}
+                <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--brand-pink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{s.step}</div>
                 <div>
                   <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: 2 }}>{s.label}</div>
                   <div className="small-text">{s.desc}</div>

@@ -658,7 +658,9 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: 36, height: 36, borderRadius: 8,
-                    background: 'var(--brand-yellow)', color: 'var(--ink-900)',
+                    // Purple square in the Aizel brand colour — was gold and
+                    // read as a YellowPink hangover at this size.
+                    background: 'var(--brand-pink)', color: '#fff',
                     fontSize: '1.125rem', fontWeight: 700, marginBottom: 12,
                   }}
                 >{t.icon}</span>
