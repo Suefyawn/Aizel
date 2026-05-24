@@ -14,6 +14,7 @@ import {
   cancelTerminalPaymentIntent,
 } from '@/app/admin/pos/terminal-actions';
 import { searchPosCustomers, type PosCustomerResult } from '@/app/admin/pos/customer-actions';
+import { lookupOrderForReturn, processPosReturn } from '@/app/admin/pos/returns-actions';
 import { CashDrawerSheet } from './CashDrawerSheet';
 
 export interface PosProduct {
@@ -71,6 +72,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
   const [customerEmail, setCustomerEmail] = useState('');
   const [attachedCustomer, setAttachedCustomer] = useState<PosCustomerResult | null>(null);
   const [customerLookupOpen, setCustomerLookupOpen] = useState(false);
+  const [returnsOpen, setReturnsOpen] = useState(false);
   const [tenderOpen, setTenderOpen] = useState(false);
   const [lastSale, setLastSale] = useState<{ id: string; order_number: string; change: number } | null>(null);
   const [heldOpen, setHeldOpen] = useState(false);
@@ -239,6 +241,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
         heldCount={heldCount}
         onHeldClick={() => setHeldOpen(true)}
         onTillClick={() => setDrawerOpen(true)}
+        onReturnClick={() => setReturnsOpen(true)}
       />
 
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
@@ -530,6 +533,19 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
         />
       )}
 
+      {returnsOpen && (
+        <ReturnsSheet
+          sessionId={session?.id ?? null}
+          onClose={() => setReturnsOpen(false)}
+          onProcessed={() => {
+            setReturnsOpen(false);
+            // Refresh the page in the background so the till sees any
+            // stock-back updates (and the dashboard reflects the refund).
+            router.refresh();
+          }}
+        />
+      )}
+
       {drawerOpen && (
         <CashDrawerSheet
           session={session}
@@ -586,13 +602,14 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
 
 // ─── Sub-components ────────────────────────────────────────────────────
 
-function TopBar({ cashier, session, onExit, heldCount, onHeldClick, onTillClick }: {
+function TopBar({ cashier, session, onExit, heldCount, onHeldClick, onTillClick, onReturnClick }: {
   cashier: { id: string; name: string };
   session: PosSession | null;
   onExit: () => void;
   heldCount: number;
   onHeldClick: () => void;
   onTillClick: () => void;
+  onReturnClick: () => void;
 }) {
   return (
     <header style={{
@@ -607,6 +624,25 @@ function TopBar({ cashier, session, onExit, heldCount, onHeldClick, onTillClick 
       </div>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 14, alignItems: 'center', fontSize: '0.8125rem', color: '#9CA3AF' }}>
         <span>{cashier.name}</span>
+        {/* Returns — opens the in-store returns sheet. Always available
+            to the cashier even with an empty cart so a walk-in refund
+            doesn't need to go through the admin orders page. */}
+        <button
+          type="button"
+          onClick={onReturnClick}
+          style={{
+            background: 'transparent',
+            border: '1px solid #4B5563',
+            borderRadius: 20, padding: '4px 12px',
+            color: '#9CA3AF',
+            fontSize: '0.75rem', fontWeight: 700,
+            cursor: 'pointer',
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          ↩ Return
+        </button>
         {/* Held-sales button — clickable when there's anything on hold,
             disabled-look otherwise. Badge surfaces the count so the
             cashier doesn't forget about a parked transaction. */}
@@ -1197,6 +1233,264 @@ function CustomerLookupSheet({ onClose, onAttach }: {
             </button>
           ))}
         </div>
+      </aside>
+    </div>
+  );
+}
+
+// ── In-store returns sheet ────────────────────────────────────────────
+// Three states: idle (type/scan order #), loaded (pick which lines to
+// return + qty), processed (success splash with the refunded amount).
+// Server-side action verifies qty vs original sale, posts a negative
+// payment row, returns items to stock, journals to the cash drawer.
+type ReturnLookupOrder = NonNullable<Awaited<ReturnType<typeof lookupOrderForReturn>>['order']>;
+
+function ReturnsSheet({ sessionId, onClose, onProcessed }: {
+  sessionId: string | null;
+  onClose: () => void;
+  onProcessed: () => void;
+}) {
+  const [orderNumber, setOrderNumber] = useState('');
+  const [order, setOrder] = useState<ReturnLookupOrder | null>(null);
+  // Map line index → qty being returned.
+  const [pickedQty, setPickedQty] = useState<Record<number, number>>({});
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, startBusy] = useTransition();
+  const [done, setDone] = useState<{ amount: number } | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  function doLookup(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!orderNumber.trim()) return;
+    setError(null);
+    setOrder(null);
+    setPickedQty({});
+    startBusy(async () => {
+      const r = await lookupOrderForReturn(orderNumber);
+      if (!r.ok || !r.order) { setError(r.error ?? 'Lookup failed'); return; }
+      setOrder(r.order);
+    });
+  }
+
+  function setQty(idx: number, qty: number, max: number) {
+    setPickedQty(prev => ({ ...prev, [idx]: Math.max(0, Math.min(max, qty)) }));
+  }
+
+  const refundTotal = order
+    ? order.items.reduce((s, it, i) => s + (pickedQty[i] ?? 0) * it.price, 0)
+    : 0;
+  const hasPick = Object.values(pickedQty).some(q => q > 0);
+
+  function submit() {
+    if (!order || !hasPick) return;
+    setError(null);
+    startBusy(async () => {
+      const lines = order.items
+        .map((it, i) => ({
+          product_id: it.id,
+          name: it.name,
+          unit_price: it.price,
+          qty: pickedQty[i] ?? 0,
+        }))
+        .filter(l => l.qty > 0 && l.product_id);
+      const r = await processPosReturn({
+        order_id: order.id,
+        lines,
+        reason: reason.trim() || undefined,
+        session_id: sessionId,
+      });
+      if (!r.ok) { setError(r.error ?? 'Could not process the return'); return; }
+      setDone({ amount: r.refunded_amount ?? 0 });
+    });
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+        display: 'flex', justifyContent: 'flex-end',
+        zIndex: 100,
+      }}
+    >
+      <aside
+        onClick={e => e.stopPropagation()}
+        role="dialog" aria-modal="true" aria-label="Process a return"
+        style={{
+          width: 'min(520px, 96vw)', height: '100vh',
+          background: '#161618',
+          borderLeft: '1px solid #2A2A2D',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <header style={{ padding: '18px 20px', borderBottom: '1px solid #2A2A2D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#F5F5F7' }}>
+            Process a return
+          </h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: '#9CA3AF', fontSize: '1.5rem', cursor: 'pointer', minWidth: 44, minHeight: 44 }}>×</button>
+        </header>
+
+        {done ? (
+          // ── Success splash ─────────────────────────────────────────────
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center', gap: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#10B981', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#F5F5F7' }}>Return processed</h3>
+            <div style={{ background: '#1F1F22', borderRadius: 10, padding: '14px 18px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Cash to give back
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: '#10B981', fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
+                {fmtGBP(done.amount)}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onProcessed}
+              style={{
+                marginTop: 12, padding: '12px 28px', background: '#6B2C91', color: '#fff',
+                border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '0.9375rem',
+                cursor: 'pointer',
+              }}
+            >Done</button>
+          </div>
+        ) : (
+          <>
+            {/* ── Lookup bar ───────────────────────────────────────────── */}
+            <form onSubmit={doLookup} style={{ padding: '14px 20px', borderBottom: '1px solid #2A2A2D', display: 'flex', gap: 8 }}>
+              <input
+                ref={inputRef}
+                type="search"
+                value={orderNumber}
+                onChange={e => setOrderNumber(e.target.value)}
+                placeholder="Order number (e.g. AZ-P9X4Y2A)"
+                autoComplete="off"
+                style={{
+                  flex: 1, padding: '12px 14px',
+                  background: '#1F1F22', border: '1px solid #2A2A2D', borderRadius: 10,
+                  color: '#F5F5F7', fontSize: '1rem', outline: 'none',
+                  fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={busy || !orderNumber.trim()}
+                style={{
+                  padding: '12px 18px',
+                  background: orderNumber.trim() ? '#6B2C91' : '#2A2A2D',
+                  color: orderNumber.trim() ? '#fff' : '#6B7280',
+                  border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '0.9375rem',
+                  cursor: orderNumber.trim() ? 'pointer' : 'not-allowed',
+                }}
+              >Look up</button>
+            </form>
+
+            {error && (
+              <div role="alert" style={{ margin: '14px 20px 0', padding: '10px 12px', background: '#7F1D1D', color: '#FECACA', borderRadius: 6, fontSize: '0.8125rem' }}>
+                {error}
+              </div>
+            )}
+
+            {/* ── Order details + pickable lines ───────────────────────── */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {!order ? (
+                <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
+                  Scan or type the order number to start a return.
+                  {sessionId === null && (
+                    <p style={{ marginTop: 12, color: '#FBBF24', fontSize: '0.75rem' }}>
+                      No till shift is open — cash refunds will skip the cash-drawer journal. Open a shift first if you need that tracked.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div style={{ padding: '14px 20px', borderBottom: '1px solid #2A2A2D' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>
+                      {order.channel === 'pos' ? 'In-store sale' : 'Web order'}
+                    </div>
+                    <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#F5F5F7', fontSize: '0.9375rem' }}>
+                      {order.order_number}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: 2 }}>
+                      {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {' · '}
+                      {[order.first_name, order.last_name].filter(Boolean).join(' ') || 'Counter sale'}
+                      {' · '}
+                      {fmtGBP(order.total)} paid by {order.pay_method}
+                      {order.already_refunded > 0 && (
+                        <span style={{ color: '#FBBF24', marginLeft: 8 }}>· {fmtGBP(order.already_refunded)} already refunded</span>
+                      )}
+                    </div>
+                  </div>
+                  {order.items.map((it, i) => (
+                    <div key={i} style={{ padding: '14px 20px', borderBottom: '1px solid #2A2A2D', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {it.brand && (
+                          <div style={{ fontSize: '0.625rem', color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{it.brand}</div>
+                        )}
+                        <div style={{ color: '#F5F5F7', fontSize: '0.9375rem' }}>{it.name}</div>
+                        <div style={{ color: '#9CA3AF', fontSize: '0.75rem', marginTop: 2 }}>
+                          {fmtGBP(it.price)} × {it.qty} sold
+                        </div>
+                      </div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid #2A2A2D', borderRadius: 6, flexShrink: 0 }}>
+                        <button type="button" onClick={() => setQty(i, (pickedQty[i] ?? 0) - 1, it.qty)} style={stepperBtn}>−</button>
+                        <span style={{ width: 32, textAlign: 'center', color: '#F5F5F7', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                          {pickedQty[i] ?? 0}
+                        </span>
+                        <button type="button" onClick={() => setQty(i, (pickedQty[i] ?? 0) + 1, it.qty)} style={stepperBtn}>+</button>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+
+            {/* ── Footer: reason + submit ──────────────────────────────── */}
+            {order && (
+              <footer style={{ borderTop: '1px solid #2A2A2D', padding: '14px 20px', background: '#0F0F10' }}>
+                <input
+                  type="text"
+                  value={reason}
+                  onChange={e => setReason(e.target.value)}
+                  placeholder="Reason (optional — surfaces on the audit log)"
+                  maxLength={200}
+                  style={{
+                    width: '100%', padding: '10px 12px', marginBottom: 12,
+                    background: '#1F1F22', border: '1px solid #2A2A2D', borderRadius: 8,
+                    color: '#F5F5F7', fontSize: '0.875rem', outline: 'none',
+                  }}
+                />
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>Cash to refund</span>
+                  <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>
+                    {fmtGBP(refundTotal)}
+                  </strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={busy || !hasPick}
+                  style={{
+                    width: '100%', padding: 16,
+                    background: hasPick ? '#10B981' : '#2A2A2D',
+                    color: hasPick ? '#fff' : '#6B7280',
+                    border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '1rem',
+                    cursor: hasPick ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {busy ? 'Processing…' : `Refund ${fmtGBP(refundTotal)}`}
+                </button>
+              </footer>
+            )}
+          </>
+        )}
       </aside>
     </div>
   );
