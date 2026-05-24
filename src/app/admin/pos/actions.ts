@@ -58,6 +58,16 @@ const InputSchema = z.object({
   customer_email: z.string().email().or(z.literal('')).optional(),
   /** Optional — for receipt SMS. */
   customer_phone: z.string().max(30).optional(),
+  /** Optional — when the cashier looked the customer up in the till's
+   *  customer-finder and attached them to this sale, this is the
+   *  profile.id. Used to fill order.user_id so the sale shows up in
+   *  the customer's lifetime spend + recent orders. */
+  customer_id: z.string().uuid().nullable().optional(),
+  /** Optional — when a customer is attached, the cashier may have
+   *  picked them by name. Carry through for the order's display name
+   *  (instead of "Counter Sale"). */
+  customer_first_name: z.string().max(60).optional(),
+  customer_last_name:  z.string().max(60).optional(),
   /** Active drawer session, if open. NULL means we're ringing through
    *  with no till open — allowed (sale still recorded), but cash sales
    *  won't journal to pos_cash_events because there's no till to credit. */
@@ -155,8 +165,11 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
       // POS sales are delivered the moment they ring — the customer
       // walks out with the goods.
       status:       'delivered',
-      first_name:   'Counter',
-      last_name:    'Sale',
+      // When the cashier attached a customer, use their real name on the
+      // order row so it stops reading as "Counter Sale" in the orders
+      // list and the customer's history page actually identifies them.
+      first_name:   data.customer_first_name || 'Counter',
+      last_name:    data.customer_last_name  || 'Sale',
       phone:        data.customer_phone || 'in-store',
       email:        data.customer_email || null,
       address:      'In-store',
@@ -179,7 +192,7 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
         // Z-report + the order detail can show it later.
         discount_note: it.discount_note ?? null,
       })),
-      user_id: null,
+      user_id: data.customer_id ?? null,
     })
     .select('id')
     .single();

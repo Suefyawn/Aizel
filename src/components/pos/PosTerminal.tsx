@@ -13,6 +13,7 @@ import {
   retrievePaymentIntent,
   cancelTerminalPaymentIntent,
 } from '@/app/admin/pos/terminal-actions';
+import { searchPosCustomers, type PosCustomerResult } from '@/app/admin/pos/customer-actions';
 import { CashDrawerSheet } from './CashDrawerSheet';
 
 export interface PosProduct {
@@ -68,8 +69,10 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
   const [cartDiscount, setCartDiscount] = useState<number>(0);
   const [search, setSearch] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [attachedCustomer, setAttachedCustomer] = useState<PosCustomerResult | null>(null);
+  const [customerLookupOpen, setCustomerLookupOpen] = useState(false);
   const [tenderOpen, setTenderOpen] = useState(false);
-  const [lastSale, setLastSale] = useState<{ order_number: string; change: number } | null>(null);
+  const [lastSale, setLastSale] = useState<{ id: string; order_number: string; change: number } | null>(null);
   const [heldOpen, setHeldOpen] = useState(false);
   const [heldList, setHeldList] = useState<HeldSaleSummary[]>([]);
   const [heldCount, setHeldCount] = useState<number>(0);
@@ -197,6 +200,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
     setCartDiscount(0);
     setCustomerEmail('');
     setSearch('');
+    setAttachedCustomer(null);
   }
 
   // Submit on Enter when there's exactly one match (scanner workflow).
@@ -305,6 +309,61 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
 
           {/* ── Totals + tender CTA ─────────────────────────────────────── */}
           <footer style={{ borderTop: '1px solid #2A2A2D', padding: '14px 18px', background: '#0F0F10' }}>
+            {/* Customer pill — attached customer summary or "Add customer".
+                When attached we surface name + tier + lifetime spend so
+                the cashier can offer a tier perk on the spot. */}
+            <div style={{ marginBottom: 12 }}>
+              {attachedCustomer ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 8,
+                  background: '#1F1F22', border: '1px solid #2A2A2D',
+                }}>
+                  <span style={{
+                    width: 28, height: 28, borderRadius: '50%',
+                    background: '#6B2C91', color: '#fff',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0,
+                  }}>
+                    {(attachedCustomer.first_name?.[0] ?? attachedCustomer.email[0]).toUpperCase()}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#F5F5F7', fontSize: '0.875rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {[attachedCustomer.first_name, attachedCustomer.last_name].filter(Boolean).join(' ') || attachedCustomer.email}
+                    </div>
+                    <div style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>
+                      {attachedCustomer.tier.label} · {attachedCustomer.order_count} order{attachedCustomer.order_count === 1 ? '' : 's'} · {fmtGBP(attachedCustomer.lifetime_spend)} lifetime
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachedCustomer(null)}
+                    aria-label="Detach customer from this sale"
+                    style={{
+                      background: 'transparent', border: '1px solid #4B5563', borderRadius: 6,
+                      color: '#9CA3AF', fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+                      padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em',
+                      minHeight: 28,
+                    }}
+                  >Detach</button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCustomerLookupOpen(true)}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 8,
+                    background: 'transparent', border: '1px dashed #4B5563',
+                    color: '#9CA3AF', fontSize: '0.8125rem', fontWeight: 600,
+                    cursor: 'pointer', textAlign: 'left',
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: '1rem' }}>＋</span> Add customer
+                </button>
+              )}
+            </div>
+
             <Row label="Subtotal" value={fmtGBP(subtotal)} muted />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', fontSize: '0.8125rem', color: '#9CA3AF' }}>
               <span>Cart discount (£)</span>
@@ -318,9 +377,10 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
 
             <input
               type="email"
-              placeholder="Customer email for receipt (optional)"
+              placeholder={attachedCustomer ? `Receipt goes to ${attachedCustomer.email}` : 'Customer email for receipt (optional)'}
               value={customerEmail}
               onChange={e => setCustomerEmail(e.target.value)}
+              disabled={!!attachedCustomer}
               style={{
                 width: '100%', marginTop: 12, padding: '10px 12px',
                 background: '#1F1F22', border: '1px solid #2A2A2D', borderRadius: 8,
@@ -460,6 +520,16 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
         />
       )}
 
+      {customerLookupOpen && (
+        <CustomerLookupSheet
+          onClose={() => setCustomerLookupOpen(false)}
+          onAttach={(c) => {
+            setAttachedCustomer(c);
+            setCustomerLookupOpen(false);
+          }}
+        />
+      )}
+
       {drawerOpen && (
         <CashDrawerSheet
           session={session}
@@ -489,7 +559,15 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
                 discount_note: l.unit_price < l.list_price ? `Marked down from ${fmtGBP(l.list_price)}` : undefined,
               })),
               cart_discount: clampedDiscount,
-              customer_email: customerEmail || undefined,
+              // When a customer is attached, route the receipt to their
+              // on-file email + their first/last name + their user_id so
+              // the sale joins their lifetime history. The manual-entry
+              // email field is the fallback when no customer is attached.
+              customer_email: attachedCustomer?.email || customerEmail || undefined,
+              customer_phone: attachedCustomer?.phone ?? undefined,
+              customer_id:    attachedCustomer?.id ?? null,
+              customer_first_name: attachedCustomer?.first_name ?? undefined,
+              customer_last_name:  attachedCustomer?.last_name ?? undefined,
               session_id: session?.id ?? null,
               tenders,
             });
@@ -497,7 +575,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
               return { ok: false, error: result.error ?? 'Sale failed' };
             }
             setTenderOpen(false);
-            setLastSale({ order_number: result.order_number!, change: result.change ?? 0 });
+            setLastSale({ id: result.order_id!, order_number: result.order_number!, change: result.change ?? 0 });
             return { ok: true };
           }}
         />
@@ -992,7 +1070,139 @@ function TerminalStatusDot({ stage }: { stage: 'minting' | 'pushing' | 'waiting'
   );
 }
 
-function CompletedView({ order, onNewSale }: { order: { order_number: string; change: number }; onNewSale: () => void }) {
+// ── Customer lookup sheet — slides in from the right, search ≥ 2 chars
+// fires the server action and renders matches. Tap a result to attach.
+function CustomerLookupSheet({ onClose, onAttach }: {
+  onClose: () => void;
+  onAttach: (c: PosCustomerResult) => void;
+}) {
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState<PosCustomerResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // Debounced search — 250ms after the cashier stops typing.
+  useEffect(() => {
+    if (q.trim().length < 2) { setResults([]); setError(null); return; }
+    const handle = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const rows = await searchPosCustomers({ q });
+        setResults(rows);
+      } catch {
+        setError('Lookup failed — try again.');
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [q]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+        display: 'flex', justifyContent: 'flex-end',
+        zIndex: 100,
+      }}
+    >
+      <aside
+        onClick={e => e.stopPropagation()}
+        role="dialog" aria-modal="true" aria-label="Attach customer to sale"
+        style={{
+          width: 'min(460px, 92vw)', height: '100vh',
+          background: '#161618',
+          borderLeft: '1px solid #2A2A2D',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <header style={{ padding: '18px 20px', borderBottom: '1px solid #2A2A2D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#F5F5F7' }}>Attach a customer</h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: '#9CA3AF', fontSize: '1.5rem', cursor: 'pointer', minWidth: 44, minHeight: 44 }}>×</button>
+        </header>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #2A2A2D' }}>
+          <input
+            ref={inputRef}
+            type="search"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="Name, email, or phone…"
+            autoComplete="off"
+            style={{
+              width: '100%', padding: '12px 14px',
+              background: '#1F1F22', border: '1px solid #2A2A2D', borderRadius: 10,
+              color: '#F5F5F7', fontSize: '1rem', outline: 'none',
+            }}
+          />
+          <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#9CA3AF' }}>
+            Attached customers get their lifetime spend updated and the receipt emailed automatically.
+          </p>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {error && (
+            <div role="alert" style={{ margin: 16, padding: '10px 12px', background: '#7F1D1D', color: '#FECACA', borderRadius: 6, fontSize: '0.8125rem' }}>
+              {error}
+            </div>
+          )}
+          {q.trim().length < 2 ? (
+            <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
+              Type at least 2 characters to search.
+            </div>
+          ) : loading ? (
+            <div style={{ padding: 32, textAlign: 'center', color: '#9CA3AF', fontSize: '0.875rem' }}>
+              Searching…
+            </div>
+          ) : results.length === 0 ? (
+            <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
+              No customers match &ldquo;{q}&rdquo;. Ring the sale through anyway — the customer can still get an emailed receipt by typing their address in the field below the cart total.
+            </div>
+          ) : results.map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => onAttach(c)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                padding: '14px 20px', borderBottom: '1px solid #2A2A2D',
+                background: 'transparent', border: 'none', borderBottomColor: '#2A2A2D',
+                color: '#F5F5F7', textAlign: 'left', cursor: 'pointer',
+                minHeight: 64,
+              }}
+            >
+              <span style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: '#6B2C91', color: '#fff',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '0.9375rem', flexShrink: 0,
+              }}>
+                {(c.first_name?.[0] ?? c.email[0]).toUpperCase()}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {[c.first_name, c.last_name].filter(Boolean).join(' ') || c.email}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#9CA3AF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {c.email}{c.phone ? ` · ${c.phone}` : ''}
+                </div>
+                <div style={{ fontSize: '0.6875rem', color: '#6B2C91', fontWeight: 700, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {c.tier.label} · {c.order_count} order{c.order_count === 1 ? '' : 's'} · {fmtGBP(c.lifetime_spend)} lifetime
+                </div>
+              </div>
+              <span style={{ color: '#6B2C91', fontSize: '1.25rem', fontWeight: 700, flexShrink: 0 }}>＋</span>
+            </button>
+          ))}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function CompletedView({ order, onNewSale }: { order: { id: string; order_number: string; change: number }; onNewSale: () => void }) {
   return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{
@@ -1021,13 +1231,34 @@ function CompletedView({ order, onNewSale }: { order: { order_number: string; ch
             </div>
           </div>
         )}
-        <button onClick={onNewSale} style={{
-          width: '100%', padding: 18, background: '#6B2C91', color: '#fff',
-          border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '1.125rem',
-          cursor: 'pointer',
-        }}>
-          New sale
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={onNewSale} style={{
+            width: '100%', padding: 18, background: '#6B2C91', color: '#fff',
+            border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '1.125rem',
+            cursor: 'pointer',
+          }}>
+            New sale
+          </button>
+          {/* Open the order's invoice in a new tab for the cashier to
+              print on the till's USB printer (browser print → 80mm receipt
+              paper). Orders detail page already has a print stylesheet so
+              the invoice card is what prints. */}
+          <a
+            href={`/admin/orders/${order.id}?print=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              width: '100%', padding: '14px 18px',
+              background: 'transparent', border: '1px solid #4B5563',
+              borderRadius: 10, color: '#9CA3AF', textDecoration: 'none',
+              fontWeight: 600, fontSize: '0.9375rem',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxSizing: 'border-box',
+            }}
+          >
+            🖨 Print receipt
+          </a>
+        </div>
       </div>
     </div>
   );

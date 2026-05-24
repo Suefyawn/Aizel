@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { OrderStatusForm } from '@/components/admin/OrderStatusForm';
 import { PrintInvoiceButton } from '@/components/admin/PrintInvoiceButton';
+import { Suspense } from 'react';
+import { AutoPrintOnLoad } from '@/components/admin/AutoPrintOnLoad';
 import { ShipmentBookingForm } from '@/components/admin/ShipmentBookingForm';
 import { setOrderConfirmed } from '@/app/admin/order-confirmation-actions';
 import { whatsappUrlForCustomer as waUrlForCustomer } from '@/lib/whatsapp';
@@ -120,6 +122,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div id="order-detail-page" className="adm-page" style={{ padding: '32px 36px' }}>
+      {/* When the page was opened from the POS "Print receipt" flow
+          (?print=1), auto-fire window.print() once hydrated. Wrapped in
+          Suspense because useSearchParams suspends during SSG. */}
+      <Suspense fallback={null}>
+        <AutoPrintOnLoad />
+      </Suspense>
       {/* Print styles — printing this page outputs ONLY the invoice card.
           Every other block is a direct child of #order-detail-page, so one
           rule hides them all (and stays correct as sections are added). */}
