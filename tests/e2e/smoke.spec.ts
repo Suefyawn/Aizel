@@ -76,9 +76,14 @@ test.describe('Storefront — golden path', () => {
   test('shop?taxon=hair filters to hair products', async ({ page }) => {
     await page.goto('/shop?taxon=hair');
     await expect(page).toHaveTitle(/Aizel/);
-    // The collection page should render at least one product tile.
-    const hasProduct = await page.locator('a[href^="/product/"]').count();
-    expect(hasProduct).toBeGreaterThan(0);
+    // The collection page should render at least one product tile. Under
+    // parallel-worker load the dev server's first response on this route
+    // can win the race against the initial paint, so wait for the first
+    // tile to materialise before counting (auto-retrying assertion) — a
+    // bare .count() would race the empty initial DOM.
+    const tiles = page.locator('a[href^="/product/"]');
+    await expect(tiles.first()).toBeVisible();
+    expect(await tiles.count()).toBeGreaterThan(0);
   });
 
   test('shop page exposes the industry-standard sort menu', async ({ page }) => {
