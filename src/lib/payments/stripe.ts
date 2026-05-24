@@ -195,3 +195,76 @@ export function verifyWebhookEvent(rawBody: string | Buffer, signatureHeader: st
   if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
   return client().webhooks.constructEvent(rawBody, signatureHeader, secret);
 }
+
+// ─── Refunds ───────────────────────────────────────────────────────────────
+// Stripe's standardised refund reasons. We pass them through unchanged so
+// the Stripe dashboard's "Reason" column stays canonical.
+export type StripeRefundReason =
+  | 'duplicate'              // operator created two orders by accident
+  | 'fraudulent'             // suspected fraud
+  | 'requested_by_customer'; // standard customer-initiated refund
+
+export interface RefundInput {
+  /** The Checkout Session id we stored in payments.txn_ref. */
+  checkoutSessionId: string;
+  /** Amount in GBP to refund. Pass undefined to refund the remaining
+   *  balance on the underlying PaymentIntent (Stripe handles partial
+   *  history server-side). */
+  amount?: number;
+  /** Optional Stripe-standard refund reason. */
+  reason?: StripeRefundReason;
+  /** Free-text staff note — written to the refund metadata so it shows
+   *  up next to the refund in the Stripe dashboard for audit. */
+  note?: string;
+}
+
+export interface RefundResult {
+  /** Stripe refund id (`re_…`). Persist to payments.txn_ref so the
+   *  refund.created webhook can dedupe its insert. */
+  refundId: string;
+  /** Amount actually refunded, in GBP (Stripe converts from pence). */
+  amount: number;
+  /** Stripe refund status — typically 'succeeded' for card refunds, but
+   *  bank-transfer-style methods can return 'pending'. */
+  status: NonNullable<Stripe.Refund['status']>;
+}
+
+/**
+ * Issue a refund against a previous Checkout Session.
+ *
+ * We re-fetch the session to read the canonical PaymentIntent id rather
+ * than trusting the raw_payload stored at session.completed time — Stripe
+ * occasionally rewrites payment_intent on later events (e.g. after a
+ * dispute) and we want the latest.
+ *
+ * Throws on:
+ *   • Stripe-side failures (no PI on the session, already-refunded
+ *     amount, network)
+ *   • Caller asking for an amount > available — Stripe rejects with
+ *     `charge_already_refunded` which we surface verbatim.
+ */
+export async function refundCheckoutSession(input: RefundInput): Promise<RefundResult> {
+  const c = client();
+  const session = await c.checkout.sessions.retrieve(input.checkoutSessionId);
+  const piRaw = session.payment_intent;
+  const paymentIntentId = typeof piRaw === 'string' ? piRaw : piRaw?.id;
+  if (!paymentIntentId) {
+    throw new Error('Checkout session has no payment_intent — nothing to refund');
+  }
+
+  const params: Stripe.RefundCreateParams = {
+    payment_intent: paymentIntentId,
+    reason: input.reason,
+    metadata: input.note ? { staff_note: input.note.slice(0, 500) } : undefined,
+  };
+  if (typeof input.amount === 'number') {
+    params.amount = toPence(input.amount);
+  }
+
+  const refund = await c.refunds.create(params);
+  return {
+    refundId: refund.id,
+    amount: (refund.amount ?? 0) / 100,
+    status: refund.status ?? 'succeeded',
+  };
+}

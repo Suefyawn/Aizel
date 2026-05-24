@@ -15,6 +15,9 @@ import { ORDER_STATUS_LABELS } from '@/types';
 import type { Order, CartItem, OrderStatus } from '@/types';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
+import { RefundPanel } from '@/components/admin/RefundPanel';
+import { loadRefundSummary } from '@/app/admin/refund-actions';
+import { isConfigured as stripeIsConfigured } from '@/lib/payments/stripe';
 
 interface OrderEventRow {
   id: string;
@@ -84,6 +87,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     .eq('active', true)
     .order('name');
   const vendors = (vendorRows ?? []) as Array<{ id: string; name: string; phone: string }>;
+
+  // Refund summary — what's been paid + refunded so far + what's left.
+  // Used by the RefundPanel to render the live remaining balance.
+  const refundSummary = await loadRefundSummary(o.id!);
+  const stripeReady = stripeIsConfigured();
 
   // Vendor settlement (margin / payout) for this order, if it has been
   // dispatched to a vendor.
@@ -354,6 +362,20 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         )}
       </div>
+      )}
+
+      {/* Refund panel — only useful when there's a card payment to refund;
+          the component self-renders "nothing to refund" copy when the
+          gateway is COD/bank or when Stripe isn't configured, so safe
+          to mount unconditionally rather than tangling the parent
+          render in conditionals. */}
+      {(refundSummary.paid > 0 || refundSummary.refunded > 0) && (
+        <RefundPanel
+          orderId={o.id!}
+          summary={refundSummary}
+          canRefund={canEdit}
+          stripeConfigured={stripeReady}
+        />
       )}
 
       <div className="adm-analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
