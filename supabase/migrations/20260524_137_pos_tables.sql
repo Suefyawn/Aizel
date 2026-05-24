@@ -17,6 +17,32 @@
 -- through the existing staff-auth cookie, not through Supabase Auth.
 -- ============================================================================
 
+-- ─── 0. SKU + barcode on products (POS scanning prerequisite) ─────────────
+-- POS terminals expect a keyboard-wedge scanner to type a barcode + Enter
+-- into the search field. Without a column to scan against, every lookup
+-- has to be by product name — too slow for a busy till.
+--
+-- SKU is internal (operator-assigned, format up to them); barcode is
+-- the canonical EAN/UPC/GTIN printed on the box. Both are nullable
+-- because most current catalogue rows have neither — backfill as the
+-- operator's hand-scanner walks the shelves.
+alter table public.products
+  add column if not exists sku     text,
+  add column if not exists barcode text;
+
+-- Unique index on barcode WHERE NOT NULL — two products can't share an
+-- EAN, but plenty of products will have NULL during the backfill phase.
+create unique index if not exists products_barcode_unique
+  on public.products (barcode)
+  where barcode is not null;
+
+-- SKU is an internal label; we don't enforce uniqueness because some
+-- operators use the brand-name SKU as-is and there's nothing wrong with
+-- "Cantu Hydrating" being a SKU on two pack-size variants.
+create index if not exists products_sku_idx
+  on public.products (sku)
+  where sku is not null;
+
 -- ─── 1. Tag orders + payments with the channel / tender it came from ──────
 alter table public.orders
   add column if not exists channel text not null default 'web'

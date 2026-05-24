@@ -76,6 +76,10 @@ export interface Product {
   // paraben-free, mineral-oil-free) so the filter URL stays short and
   // server-side matching is a single Postgres text[] && operator.
   free_from?: string[] | null;
+  // Migration 137 — POS scanning. SKU is the operator's internal code;
+  // barcode is the EAN/UPC/GTIN printed on the box.
+  sku?: string | null;
+  barcode?: string | null;
   // Migration 081 — admin-controlled SEO + content fields.
   seo_title?: string | null;
   seo_description?: string | null;
