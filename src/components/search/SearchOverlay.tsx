@@ -131,7 +131,15 @@ export function SearchOverlay({ trending, categories }: SearchOverlayProps = {})
         role="dialog"
         aria-modal={searchOpen}
         aria-label="Search"
-        aria-hidden={!searchOpen}
+        // `inert` instead of `aria-hidden` — same fix as MiniCart. The
+        // search panel stays in the DOM (so the slide-down animates) but
+        // when closed it must be out of the a11y tree AND the tab order.
+        // `aria-hidden={true}` alone failed WCAG 4.1.2 (aria-hidden-focus)
+        // because the close button + the input remained focusable. `inert`
+        // does both at once. React 19 wants `inert={true}` literally —
+        // we spread so the attribute is OMITTED when open (not set to
+        // `inert={false}`), keeping the DOM clean.
+        {...((searchOpen ? {} : { inert: true }) as Record<string, unknown>)}
         style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         background: 'var(--paper)', zIndex: 301,

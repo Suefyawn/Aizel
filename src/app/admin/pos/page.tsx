@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { PosTerminal, type PosProduct, type PosSession } from '@/components/pos/PosTerminal';
+import { isTerminalConfigured } from './terminal-actions';
 
 export default async function PosPage() {
   // Permission gate first — POS is sensitive (cash + payments) so we
@@ -63,6 +64,10 @@ export default async function PosPage() {
     opened_at: openSession.opened_at,
   } : null;
 
+  // Probe Stripe Terminal config server-side so the client can decide
+  // whether to show the "Tap card" tender option. Cheap — reads env only.
+  const terminalEnabled = await isTerminalConfigured();
+
   // The till uses its own dark, full-screen chrome — wrap inline rather
   // than via a layout file because the layout would also wrap the
   // back-office /admin/pos/dashboard route, which wants the standard
@@ -73,6 +78,7 @@ export default async function PosPage() {
         products={products}
         cashier={{ id: session.id, name: session.name }}
         session={activeSession}
+        terminalEnabled={terminalEnabled}
       />
     </div>
   );

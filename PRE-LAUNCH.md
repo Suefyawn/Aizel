@@ -124,7 +124,34 @@ Apply at [klarna.com/uk/business/](https://klarna.com/uk/business/). Once
 approved, copy your client ID into Vercel as `NEXT_PUBLIC_KLARNA_CLIENT_ID`
 to enable the "3 instalments of £X" line under PDP prices.
 
-### 3.3 PayPal (optional)
+### 3.3 Stripe Terminal (optional — for in-store POS)
+
+If you're running the `/admin/pos` till alongside the web shop, Stripe
+Terminal turns your chip-and-PIN reader into a connected card terminal:
+
+1. In Stripe Dashboard → **More → Terminal → Locations**, create a
+   Location (one per physical shop). Copy the ID (`tml_…`) into Vercel
+   as `STRIPE_TERMINAL_LOCATION_ID`.
+2. Order a BBPOS WisePOS E or Verifone P400 from Stripe (UK only ships
+   to your business address; allow 3–5 days).
+3. Pair the reader against the Location from the Stripe Dashboard's
+   reader-registration flow, then copy its ID (`tmr_…`) into Vercel as
+   `STRIPE_TERMINAL_READER_ID`. The till pushes every PaymentIntent to
+   this reader over the REST API — no browser SDK needed; the reader
+   handles tap/insert/contactless on its own screen.
+4. The POS will surface a third "Tap card" tender alongside Cash and
+   Manual card. Without both env vars set, the Tap card tab is hidden
+   and the cashier sees only Cash + Manual card (operator keys it on
+   their existing terminal then marks the order paid).
+
+**✅ verify:** in `/admin/pos`, start a sale → press Tender — you
+should see three tabs (Cash · Tap card · Manual card). Pick **Tap
+card**, hit **Send to reader**, tap a test card on the reader: the dot
+pulses purple while waiting, turns green on success, and the sale
+auto-completes with the PI id stored in `payments.txn_ref` for later
+reconciliation.
+
+### 3.4 PayPal (optional)
 
 If you want PayPal alongside Stripe: get
 `PAYPAL_CLIENT_ID` + `PAYPAL_CLIENT_SECRET` from

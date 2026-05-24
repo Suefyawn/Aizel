@@ -7,6 +7,12 @@ import {
   parkSale, listHeldSales, resumeSale, discardHeldSale,
   type HeldSaleSummary,
 } from '@/app/admin/pos/held-actions';
+import {
+  createTerminalPaymentIntent,
+  processOnReader,
+  retrievePaymentIntent,
+  cancelTerminalPaymentIntent,
+} from '@/app/admin/pos/terminal-actions';
 import { CashDrawerSheet } from './CashDrawerSheet';
 
 export interface PosProduct {
@@ -49,9 +55,14 @@ interface Props {
   products: PosProduct[];
   cashier: { id: string; name: string };
   session: PosSession | null;
+  /** True when STRIPE_SECRET_KEY + STRIPE_TERMINAL_LOCATION_ID +
+   *  STRIPE_TERMINAL_READER_ID are all set. Controls whether the
+   *  TenderModal exposes a "Tap card" tab backed by the chip-and-PIN
+   *  reader. When false the cashier sees Cash + Manual card only. */
+  terminalEnabled: boolean;
 }
 
-export function PosTerminal({ products, cashier, session }: Props) {
+export function PosTerminal({ products, cashier, session, terminalEnabled }: Props) {
   const router = useRouter();
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartDiscount, setCartDiscount] = useState<number>(0);
@@ -207,6 +218,16 @@ export function PosTerminal({ products, cashier, session }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Keyframes for the Terminal status dot. Inline so the POS surface
+          remains a single file — pasting into globals.css would couple the
+          till to the storefront stylesheet for no benefit. */}
+      <style>{`
+        @keyframes aizel-pos-pulse {
+          0%   { box-shadow: 0 0 0 0   rgba(107, 44, 145, 0.6); }
+          70%  { box-shadow: 0 0 0 18px rgba(107, 44, 145, 0);   }
+          100% { box-shadow: 0 0 0 0   rgba(107, 44, 145, 0);   }
+        }
+      `}</style>
       <TopBar
         cashier={cashier}
         session={session}
@@ -452,6 +473,7 @@ export function PosTerminal({ products, cashier, session }: Props) {
       {tenderOpen && (
         <TenderModal
           total={total}
+          terminalEnabled={terminalEnabled}
           onClose={() => setTenderOpen(false)}
           onComplete={async (tenders) => {
             const result = await completePosSale({
@@ -649,24 +671,129 @@ function Row({ label, value, muted, big }: { label: string; value: string; muted
   );
 }
 
-function TenderModal({ total, onClose, onComplete }: {
+type TenderMethod = 'cash' | 'card' | 'stripe_terminal';
+
+function TenderModal({ total, terminalEnabled, onClose, onComplete }: {
   total: number;
+  terminalEnabled: boolean;
   onClose: () => void;
-  onComplete: (tenders: { method: 'cash' | 'card' | 'stripe_terminal'; amount: number; txn_ref?: string | null }[]) => Promise<{ ok: boolean; error?: string }>;
+  onComplete: (tenders: { method: TenderMethod; amount: number; txn_ref?: string | null }[]) => Promise<{ ok: boolean; error?: string }>;
 }) {
-  const [method, setMethod] = useState<'cash' | 'card'>('cash');
+  const [method, setMethod] = useState<TenderMethod>('cash');
   const [cashIn, setCashIn] = useState<number>(total);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // ── Stripe Terminal flow state ─────────────────────────────────────────
+  // Lives alongside the cash/card state so switching tabs doesn't drop a
+  // PI on the floor — we cancel cleanly via the unmount effect below.
+  const [terminalStage, setTerminalStage] =
+    useState<'idle' | 'minting' | 'pushing' | 'waiting' | 'succeeded' | 'failed'>('idle');
+  const [terminalPiId, setTerminalPiId] = useState<string | null>(null);
+  const [terminalMsg, setTerminalMsg] = useState<string>('');
+  const pollRef = useRef<number | null>(null);
+
+  // Stop any in-flight poll when the modal unmounts.
+  useEffect(() => () => {
+    if (pollRef.current) {
+      window.clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
   const change = method === 'cash' ? Math.max(0, cashIn - total) : 0;
+
+  // Methods on offer — Terminal slots in only when the till has an env
+  // pointing at a paired reader. Otherwise we ship the original two-tab
+  // layout (cash + manual card).
+  const methods: TenderMethod[] = terminalEnabled ? ['cash', 'stripe_terminal', 'card'] : ['cash', 'card'];
+
+  const methodLabel: Record<TenderMethod, string> = {
+    cash: 'Cash',
+    card: 'Manual card',
+    stripe_terminal: 'Tap card',
+  };
 
   function tap(amount: number) {
     setCashIn(amount);
   }
 
+  // ── Stripe Terminal kick-off ───────────────────────────────────────────
+  // 1. Mint a PI server-side (amount in pence, currency GBP, card_present)
+  // 2. Push the PI to the paired reader
+  // 3. Poll every 2s until status changes off `requires_payment_method` /
+  //    `requires_confirmation` / `processing`. Succeeded → ring the sale.
+  async function startTerminalFlow() {
+    setError(null);
+    setTerminalMsg('Creating payment…');
+    setTerminalStage('minting');
+
+    const pi = await createTerminalPaymentIntent({ amount: total });
+    if (!pi.ok) {
+      setTerminalStage('failed');
+      setTerminalMsg(('error' in pi ? pi.error : null) ?? 'Could not create PaymentIntent');
+      return;
+    }
+    setTerminalPiId(pi.payment_intent_id);
+    setTerminalStage('pushing');
+    setTerminalMsg('Sending to reader…');
+
+    const push = await processOnReader({ pi_id: pi.payment_intent_id });
+    if (!push.ok) {
+      setTerminalStage('failed');
+      setTerminalMsg(('error' in push ? push.error : null) ?? 'Reader refused the PaymentIntent');
+      return;
+    }
+    setTerminalStage('waiting');
+    setTerminalMsg('Waiting for customer to tap…');
+
+    pollRef.current = window.setInterval(async () => {
+      const probe = await retrievePaymentIntent({ pi_id: pi.payment_intent_id });
+      if (!probe.ok) {
+        // Soft fail — keep polling unless we hit something we cannot recover.
+        return;
+      }
+      if (probe.status === 'succeeded') {
+        if (pollRef.current) { window.clearInterval(pollRef.current); pollRef.current = null; }
+        setTerminalStage('succeeded');
+        setTerminalMsg('Payment confirmed — closing sale.');
+        // Ring up automatically so the cashier doesn't have to tap twice.
+        startTransition(async () => {
+          const r = await onComplete([{ method: 'stripe_terminal', amount: total, txn_ref: pi.payment_intent_id }]);
+          if (!r.ok) {
+            setTerminalStage('failed');
+            setTerminalMsg(r.error ?? 'Payment captured but sale could not be saved — escalate.');
+          }
+        });
+      } else if (probe.status === 'canceled') {
+        if (pollRef.current) { window.clearInterval(pollRef.current); pollRef.current = null; }
+        setTerminalStage('failed');
+        setTerminalMsg('Payment cancelled on the reader.');
+      }
+    }, 2000);
+  }
+
+  async function cancelTerminalFlow() {
+    if (pollRef.current) { window.clearInterval(pollRef.current); pollRef.current = null; }
+    if (terminalPiId) {
+      // Fire-and-forget — if the PI is already past cancellable state, Stripe
+      // will say so and we don't really care: the cashier just wants the UI
+      // to clear so they can pick another tender.
+      void cancelTerminalPaymentIntent({ pi_id: terminalPiId });
+    }
+    setTerminalPiId(null);
+    setTerminalStage('idle');
+    setTerminalMsg('');
+  }
+
   function submit() {
     setError(null);
+    if (method === 'stripe_terminal') {
+      // Terminal submit kicks off the PI flow — completion happens inside
+      // the poller above, not here.
+      void startTerminalFlow();
+      return;
+    }
     const tenders = method === 'cash'
       ? [{ method: 'cash' as const, amount: cashIn }]
       : [{ method: 'card' as const, amount: total, txn_ref: null }];
@@ -675,6 +802,9 @@ function TenderModal({ total, onClose, onComplete }: {
       if (!r.ok) setError(r.error ?? 'Sale failed');
     });
   }
+
+  // Disable tab switching mid-Terminal-flow so we don't strand a PI.
+  const tabsLocked = method === 'stripe_terminal' && terminalStage !== 'idle' && terminalStage !== 'failed';
 
   return (
     <div
@@ -705,24 +835,26 @@ function TenderModal({ total, onClose, onComplete }: {
 
         {/* Tender method toggle */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {(['cash', 'card'] as const).map(m => (
+          {methods.map(m => (
             <button
               key={m}
               type="button"
+              disabled={tabsLocked && m !== method}
               onClick={() => setMethod(m)}
               style={{
                 flex: 1, padding: '14px',
                 background: method === m ? '#6B2C91' : '#1F1F22',
                 border: '1px solid ' + (method === m ? '#6B2C91' : '#2A2A2D'),
                 borderRadius: 10, color: '#F5F5F7',
-                fontWeight: 700, fontSize: '0.9375rem',
-                cursor: 'pointer', textTransform: 'capitalize',
+                fontWeight: 700, fontSize: '0.875rem',
+                cursor: (tabsLocked && m !== method) ? 'not-allowed' : 'pointer',
+                opacity: (tabsLocked && m !== method) ? 0.4 : 1,
               }}
-            >{m}</button>
+            >{methodLabel[m]}</button>
           ))}
         </div>
 
-        {method === 'cash' ? (
+        {method === 'cash' && (
           <>
             <label style={{ display: 'block', fontSize: '0.75rem', color: '#9CA3AF', marginBottom: 6 }}>
               Cash tendered
@@ -756,10 +888,46 @@ function TenderModal({ total, onClose, onComplete }: {
               </strong>
             </div>
           </>
-        ) : (
+        )}
+
+        {method === 'card' && (
           <div style={{ padding: 20, background: '#1F1F22', borderRadius: 10, textAlign: 'center', color: '#9CA3AF' }}>
             Charge {fmtGBP(total)} on the card terminal, then tap{' '}
             <strong style={{ color: '#F5F5F7' }}>Complete sale</strong> once the customer&apos;s receipt prints.
+          </div>
+        )}
+
+        {method === 'stripe_terminal' && (
+          <div style={{
+            padding: 20, background: '#1F1F22', borderRadius: 10,
+            textAlign: 'center', color: '#9CA3AF',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            {terminalStage === 'idle' && (
+              <>
+                <div style={{ fontSize: '0.875rem' }}>
+                  Tap <strong style={{ color: '#F5F5F7' }}>Send to reader</strong> below — the customer&apos;s reader will prompt for tap, insert, or contactless.
+                </div>
+              </>
+            )}
+            {terminalStage !== 'idle' && (
+              <>
+                <TerminalStatusDot stage={terminalStage} />
+                <div style={{
+                  fontSize: '0.9375rem',
+                  color: terminalStage === 'succeeded' ? '#34D399' : terminalStage === 'failed' ? '#FCA5A5' : '#F5F5F7',
+                  fontWeight: 600,
+                }}>
+                  {terminalMsg}
+                </div>
+                {(terminalStage === 'waiting' || terminalStage === 'pushing') && (
+                  <button
+                    type="button" onClick={cancelTerminalFlow}
+                    style={{ marginTop: 4, padding: '8px 14px', background: 'transparent', border: '1px solid #4B5563', borderRadius: 6, color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                  >Cancel payment on reader</button>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -770,13 +938,21 @@ function TenderModal({ total, onClose, onComplete }: {
         )}
 
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-          <button type="button" onClick={onClose} style={{ flex: 1, padding: 14, background: 'transparent', border: '1px solid #2A2A2D', borderRadius: 8, color: '#9CA3AF', fontWeight: 600, cursor: 'pointer' }}>
+          <button
+            type="button" onClick={onClose}
+            disabled={tabsLocked}
+            style={{ flex: 1, padding: 14, background: 'transparent', border: '1px solid #2A2A2D', borderRadius: 8, color: '#9CA3AF', fontWeight: 600, cursor: tabsLocked ? 'not-allowed' : 'pointer', opacity: tabsLocked ? 0.4 : 1 }}
+          >
             Cancel
           </button>
           <button
             type="button"
             onClick={submit}
-            disabled={pending || (method === 'cash' && cashIn + 0.005 < total)}
+            disabled={
+              pending ||
+              (method === 'cash' && cashIn + 0.005 < total) ||
+              (method === 'stripe_terminal' && terminalStage !== 'idle' && terminalStage !== 'failed')
+            }
             style={{
               flex: 2, padding: 14,
               background: pending ? '#4A5568' : '#10B981',
@@ -784,11 +960,35 @@ function TenderModal({ total, onClose, onComplete }: {
               fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer',
             }}
           >
-            {pending ? 'Processing…' : 'Complete sale'}
+            {pending
+              ? 'Processing…'
+              : method === 'stripe_terminal'
+                ? (terminalStage === 'failed' ? 'Retry' : 'Send to reader')
+                : 'Complete sale'}
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function TerminalStatusDot({ stage }: { stage: 'minting' | 'pushing' | 'waiting' | 'succeeded' | 'failed' }) {
+  const color =
+    stage === 'succeeded' ? '#10B981' :
+    stage === 'failed'    ? '#EF4444' :
+    '#6B2C91';
+  const pulsing = stage === 'waiting' || stage === 'pushing' || stage === 'minting';
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: 'inline-block', width: 14, height: 14,
+        borderRadius: '50%', background: color,
+        margin: '0 auto',
+        boxShadow: pulsing ? `0 0 0 0 ${color}80` : 'none',
+        animation: pulsing ? 'aizel-pos-pulse 1.4s ease-out infinite' : undefined,
+      }}
+    />
   );
 }
 
