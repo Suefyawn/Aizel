@@ -212,6 +212,21 @@ a.underline,
   border-radius: 4px;
 }
 
+/* SearchOverlay exception — the input lives inside a form whose 2 px
+ * bottom border is the visual frame. The default :focus-visible ring
+ * floated around the borderless input and looked disconnected (the
+ * search input auto-focuses when the overlay opens, so every customer
+ * sees this). Suppress the ring on the input itself and signal focus
+ * by thickening the form underline to brand pink instead — the cursor
+ * blinking inside the field still provides the standard "input has
+ * focus" affordance for users of any input method. */
+#search-overlay-input:focus-visible {
+  outline: none !important;
+}
+form[role='search']:focus-within {
+  border-bottom-color: var(--brand-pink) !important;
+}
+
 /* Dialog slide animations on filter rail / MiniCart / SearchOverlay are
  * auto-suppressed by the existing global prefers-reduced-motion rule
  * further down (kills transition-duration on every element). */
