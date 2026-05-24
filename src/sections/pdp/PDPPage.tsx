@@ -10,6 +10,8 @@ import { useCart } from '@/context/CartContext';
 import { BackInStockForm } from '@/components/pdp/BackInStockForm';
 import { SubscribeAndSave } from '@/components/pdp/SubscribeAndSave';
 import { KlarnaMessaging } from '@/components/pdp/KlarnaMessaging';
+import { RecentlyViewedRail } from '@/components/product/RecentlyViewedRail';
+import { useTrackView } from '@/lib/hooks/useRecentlyViewed';
 import { track } from '@/lib/analytics';
 import { stripBrandPrefix } from '@/lib/product-display';
 import { whatsappUrl as waUrl, WA_TEMPLATES as WA_T } from '@/lib/whatsapp';
@@ -235,6 +237,10 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
   const buyPanelRef = useRef<HTMLDivElement | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const { addToCart } = useCart();
+
+  // Track this PDP visit in the recently-viewed feed (localStorage). The
+  // hook deduplicates by product id, so a refresh doesn't double-count.
+  useTrackView(product);
 
   // Observe the in-page buy panel; surface the sticky bar only after it has
   // scrolled off the top of the viewport (not before the user reaches it).
@@ -735,6 +741,11 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           </div>
         </section>
       )}
+
+      {/* localStorage-backed recently-viewed feed. Hides itself when the
+          shopper has only ever viewed this one product (the hook applies
+          the dedupe + the <2 items guard). */}
+      <RecentlyViewedRail excludeId={product.id} />
 
       {/* Sticky mobile buy-bar — fixed to the bottom of the viewport once the
           in-page buy panel scrolls off the top. Mobile-only via the

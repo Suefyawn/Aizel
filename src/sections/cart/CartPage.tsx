@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { getBrowserClient } from '@/lib/supabase-browser';
 import { brandPlusName } from '@/lib/product-display';
 import { whatsappUrl as waUrl, WA_TEMPLATES as WA_T } from '@/lib/whatsapp';
+import { RecentlyViewedRail } from '@/components/product/RecentlyViewedRail';
 import type { CartItem, Coupon } from '@/types';
 
 const FREE_SHIPPING = 15;
@@ -297,6 +298,11 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
           </div>
         </div>
       </section>
+
+      {/* Recently-viewed rail — encourages a final add-on browse before
+          the shopper commits to checkout. Hides itself when there isn't
+          enough localStorage data to make the row useful. */}
+      <RecentlyViewedRail heading="Pick up where you left off" />
     </div>
   );
 }
