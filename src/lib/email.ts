@@ -686,6 +686,32 @@ export async function sendWinBackEmail(args: {
   });
 }
 
+// ─── 11.10. Customer: bulk marketing blast (admin-triggered) ────────────────
+// Operator composes from /admin/marketing/blast. We wrap the body in the
+// brand shell + auto-add the unsubscribe footer (via marketingRecipient
+// — required for PECR compliance on marketing-class email). Daily-cap
+// gated as `batch` so the operator can't blow the Resend budget in one
+// blast and lock out transactional sends.
+export async function sendMarketingBlast(args: {
+  to: string;
+  subject: string;
+  /** HTML body — already-composed copy. Wrapped in shell() so it picks
+   *  up the standard branded header + footer + unsubscribe link. */
+  html: string;
+  first_name?: string;
+}): Promise<void> {
+  const greeting = args.first_name
+    ? `<p style="margin:0 0 14px;color:${INK};line-height:1.55">Hi ${escapeHtml(args.first_name)},</p>`
+    : '';
+  const html = shell(`${greeting}${args.html}`, { marketingRecipient: args.to });
+  await send({
+    to: args.to,
+    subject: args.subject,
+    html,
+    kind: 'batch',
+  });
+}
+
 // ─── 11. Owner: low-stock alert (background job) ────────────────────────────
 export async function sendLowStockAlertEmail(args: { products: { name: string; brand: string; stock: number; slug: string }[] }) {
   if (!args.products.length) return;

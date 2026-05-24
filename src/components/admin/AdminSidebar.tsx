@@ -41,6 +41,7 @@ const GROUPS: NavGroup[] = [
     { href: '/admin/blog',      label: 'Blog',      icon: '✦', permission: 'blog' },
     { href: '/admin/reviews',   label: 'Reviews',   icon: '★', permission: 'reviews' },
     { href: '/admin/newsletter', label: 'Newsletter', icon: '✉', permission: 'newsletter' },
+    { href: '/admin/marketing/blast', label: 'Email blast', icon: '⌁', permission: 'newsletter' },
     { href: '/admin/emails',    label: 'Email log', icon: '❏', permission: 'settings' },
   ]},
   { label: 'Store', items: [
