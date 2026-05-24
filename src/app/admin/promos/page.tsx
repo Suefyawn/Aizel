@@ -196,7 +196,7 @@ export default async function AdminPromosPage({
                   && (!p.start_at || new Date(p.start_at) <= new Date())
                   && (!p.end_at   || new Date(p.end_at)   >  new Date());
                 return (
-                  <tr key={p.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', background: editingPromo?.id === p.id ? '#fdf2f8' : live ? '' : '#f9fafb' }}>
+                  <tr key={p.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', background: editingPromo?.id === p.id ? '#F5EFF8' : live ? '' : '#f9fafb' }}>
                     <td data-label="Slot" style={{ padding: '12px 16px', fontSize: '0.8125rem', color: '#374151', whiteSpace: 'nowrap' }}>
                       <div style={{ fontWeight: 600 }}>{p.position === 'top_bar' ? 'Top bar' : 'Hero strip'}</div>
                       <div style={{ fontSize: '0.6875rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.kind}</div>

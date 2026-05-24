@@ -240,7 +240,7 @@ export default async function DashboardPage() {
               {topProducts.map((p, i) => (
                 <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{
-                    width: 24, height: 24, borderRadius: '50%', background: '#fdf2f8',
+                    width: 24, height: 24, borderRadius: '50%', background: '#F5EFF8',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '0.75rem', fontWeight: 700, color: '#4A1A6B', flexShrink: 0,
                   }}>{i + 1}</span>

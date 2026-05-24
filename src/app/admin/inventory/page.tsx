@@ -35,7 +35,7 @@ const DEAD_STOCK_MS = DEAD_STOCK_DAYS * 86_400_000;
 
 const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
   import:       { bg: '#eef2ff', fg: '#3730a3' },
-  order:        { bg: '#fce7f3', fg: '#9d174d' },
+  order:        { bg: '#fce7f3', fg: '#4A1A6B' },
   return:       { bg: '#d1fae5', fg: '#065f46' },
   cancellation: { bg: '#ede9fe', fg: '#5b21b6' },
   restock:      { bg: '#d1fae5', fg: '#065f46' },
@@ -260,8 +260,8 @@ export default async function InventoryPage({
           </select>
         </div>
         <div>
-          <label htmlFor="qty_delta" style={lbl}>Δ (signed)</label>
-          <input id="qty_delta" name="qty_delta" type="number" required step="1" placeholder="e.g. -3 or 50" style={inp} />
+          <label htmlFor="qty_delta" style={lbl}>Change (use + or −)</label>
+          <input id="qty_delta" name="qty_delta" type="number" required step="1" placeholder="+50 to add, -3 to remove" style={inp} />
         </div>
         <div>
           <label htmlFor="reason" style={lbl}>Reason</label>

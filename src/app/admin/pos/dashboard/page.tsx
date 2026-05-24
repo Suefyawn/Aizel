@@ -68,6 +68,29 @@ export default async function PosDashboardPage() {
   const orders = (orderRows ?? []) as PosOrderRow[];
   const openShifts = (openSessionRows ?? []) as PosSessionRow[];
 
+  // Resolve cashier UUIDs to human-readable names — the owner shouldn't
+  // need to memorise UUID prefixes to know who's on the till.
+  const cashierIds = Array.from(new Set(openShifts.map(s => s.staff_id).filter(Boolean)));
+  const { data: staffRows } = cashierIds.length
+    ? await admin.from('staff_members').select('id, name, email').in('id', cashierIds)
+    : { data: [] };
+  const cashierMap = new Map<string, { name: string; email: string }>(
+    ((staffRows ?? []) as Array<{ id: string; name: string; email: string }>)
+      .map(s => [s.id, { name: s.name, email: s.email }]),
+  );
+
+  // Time-ago helper for the shift "opened" cell — turns a precise timestamp
+  // into the at-a-glance number a manager actually cares about ("3h 14m ago").
+  function shiftAge(openedAt: string): string {
+    const ms = Date.now() - new Date(openedAt).getTime();
+    if (ms < 60_000) return 'just now';
+    const mins = Math.floor(ms / 60_000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return remMins > 0 ? `${hrs}h ${remMins}m ago` : `${hrs}h ago`;
+  }
+
   const todayRevenue = orders.reduce((s, o) => s + Number(o.total ?? 0), 0);
   const txnCount = orders.length;
   const avgBasket = txnCount > 0 ? todayRevenue / txnCount : 0;
@@ -136,14 +159,26 @@ export default async function PosDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {openShifts.map(s => (
-                <tr key={s.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                  <td data-label="Cashier" style={td}><code style={{ fontSize: '0.75rem', color: '#6b7280' }}>{s.staff_id.slice(0, 8)}</code></td>
-                  <td data-label="Opened" style={td}>{new Date(s.opened_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td data-label="Float" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(s.opening_float)}</td>
-                  <td style={td}><span style={{ padding: '2px 8px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>Open</span></td>
-                </tr>
-              ))}
+              {openShifts.map(s => {
+                const cashier = cashierMap.get(s.staff_id);
+                return (
+                  <tr key={s.id} style={{ borderTop: '1px solid #f3f4f6' }}>
+                    <td data-label="Cashier" style={td}>
+                      {cashier ? (
+                        <span style={{ fontWeight: 600, color: '#111827' }}>{cashier.name}</span>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#9ca3af', fontStyle: 'italic' }}>Unknown cashier</span>
+                      )}
+                    </td>
+                    <td data-label="Opened" style={td}>
+                      {new Date(s.opened_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                      <span style={{ color: '#9ca3af', marginLeft: 6, fontSize: '0.75rem' }}>· {shiftAge(s.opened_at)}</span>
+                    </td>
+                    <td data-label="Float" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(s.opening_float)}</td>
+                    <td style={td}><span style={{ padding: '2px 8px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>Open</span></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

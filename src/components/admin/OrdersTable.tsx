@@ -77,6 +77,17 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
   const bulk = (status: OrderStatus) => {
     if (selected.size === 0) return;
     const count = selected.size;
+    // Cancel is irreversible — refunds don't happen here and the customer
+    // gets a "your order was cancelled" email. Guard against accidental
+    // multi-select cancels of (potentially) hundreds of orders.
+    if (status === 'cancelled') {
+      const ok = window.confirm(
+        count === 1
+          ? `Cancel this order? The customer will be emailed automatically.`
+          : `Cancel ${count} orders? Each customer will be emailed automatically. This cannot be undone.`,
+      );
+      if (!ok) return;
+    }
     startTransition(async () => {
       const result = await bulkUpdateOrderStatus(Array.from(selected), status);
       if (result.error) {
@@ -136,7 +147,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
             const st = o.status ?? 'pending';
             const isSelected = selected.has(o.id!);
             return (
-              <tr key={o.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', background: isSelected ? '#fdf2f8' : 'transparent' }}>
+              <tr key={o.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', background: isSelected ? '#F5EFF8' : 'transparent' }}>
                 <td style={{ padding: '12px 12px', textAlign: 'center' }}>
                   <input
                     type="checkbox"
@@ -176,7 +187,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
           const isSelected = selected.has(o.id!);
           return (
             <div key={o.id} className="ord-swipe">
-              <div className="ord-swipe-face" style={{ background: isSelected ? '#fdf2f8' : 'white' }}>
+              <div className="ord-swipe-face" style={{ background: isSelected ? '#F5EFF8' : 'white' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <input
                     type="checkbox"

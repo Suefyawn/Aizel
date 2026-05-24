@@ -52,7 +52,7 @@ function RecipientRow({ r }: { r: NotificationRecipient }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: '#fdf2f8', color: '#4A1A6B',
+              background: '#F5EFF8', color: '#4A1A6B',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: '0.875rem', flexShrink: 0,
             }}>

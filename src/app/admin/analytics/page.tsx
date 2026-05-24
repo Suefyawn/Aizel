@@ -342,7 +342,7 @@ export default async function AnalyticsPage({
                             return (
                               <td key={o} style={{
                                 padding: '4px 6px', textAlign: 'center',
-                                background: `rgba(236, 72, 153, ${opacity})`,
+                                background: `rgba(107, 44, 145, ${opacity})`,
                                 color: opacity > 0.5 ? 'white' : '#111827',
                                 fontVariantNumeric: 'tabular-nums', minWidth: 30,
                               }}>

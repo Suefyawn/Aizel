@@ -182,14 +182,14 @@ export function ProductForm({ product }: { product?: Product }) {
             <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#f9fafb' }}>
               <input
                 type="checkbox"
-                checked={!trackInv}
-                onChange={e => setTrackInv(!e.target.checked)}
+                checked={trackInv}
+                onChange={e => setTrackInv(e.target.checked)}
                 style={{ marginTop: 2, accentColor: '#4A1A6B' }}
               />
               <span>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#374151' }}>Inventory managed externally</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#374151' }}>Track stock for this product</span>
                 <span style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>
-                  For products fulfilled by a third-party vendor. Aizel won&apos;t track stock — the product stays sellable and orders never decrement its count.
+                  On (default) — each sale decrements the count and Aizel won&apos;t oversell. Untick for products with no physical stock to count: services, made-to-order items, or anything pre-order / on-demand.
                 </span>
               </span>
             </label>

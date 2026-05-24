@@ -38,7 +38,7 @@ export function SettingsNav() {
               className="adm-settings-nav-link"
               style={{
                 display: 'block', padding: '10px 12px', borderRadius: 8,
-                background: active ? '#fdf2f8' : 'transparent',
+                background: active ? '#F5EFF8' : 'transparent',
                 color: active ? '#111827' : '#374151',
                 textDecoration: 'none',
                 borderLeft: `3px solid ${active ? '#4A1A6B' : 'transparent'}`,

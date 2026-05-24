@@ -23,7 +23,7 @@ interface LedgerRow {
 
 const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
   import:       { bg: '#eef2ff', fg: '#3730a3' },
-  order:        { bg: '#fce7f3', fg: '#9d174d' },
+  order:        { bg: '#fce7f3', fg: '#4A1A6B' },
   return:       { bg: '#d1fae5', fg: '#065f46' },
   cancellation: { bg: '#ede9fe', fg: '#5b21b6' },
   restock:      { bg: '#d1fae5', fg: '#065f46' },

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { supabaseAdmin } from '@/lib/supabase';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { ConfirmButton } from '@/components/admin/ConfirmButton';
 import { CouponEditModal } from '@/components/admin/CouponEditModal';
 import { createCoupon, deleteCoupon, toggleCoupon } from '@/app/admin/coupon-actions';
 import { getStaffSession } from '@/lib/staff-auth';
@@ -178,14 +179,30 @@ export default async function CouponsPage({
                     </td>
                     <td data-label="Status" style={{ padding: '12px 16px' }}>
                       <form action={toggleCoupon.bind(null, c.id, !c.active)}>
-                        <button type="submit" style={{
-                          padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
-                          background: c.active && !isExpired && !isMaxed ? '#f0fdf4' : '#f3f4f6',
-                          color: c.active && !isExpired && !isMaxed ? '#15803d' : '#9ca3af',
-                          minHeight: 30,
-                        }}>
-                          {c.active ? 'Active' : 'Inactive'}
-                        </button>
+                        {/* Confirm before deactivating a LIVE coupon so an
+                            accidental click mid-promo doesn't silently
+                            switch it off. Re-activating is a one-click op. */}
+                        {c.active && !isExpired && !isMaxed ? (
+                          <ConfirmButton
+                            message={`Pause "${c.code}"? Customers won't be able to use it until you switch it back on.`}
+                            style={{
+                              padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                              fontSize: '0.75rem', fontWeight: 600,
+                              background: '#f0fdf4', color: '#15803d', minHeight: 30,
+                            }}
+                          >
+                            Active
+                          </ConfirmButton>
+                        ) : (
+                          <button type="submit" style={{
+                            padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
+                            background: '#f3f4f6',
+                            color: '#9ca3af',
+                            minHeight: 30,
+                          }}>
+                            Inactive
+                          </button>
+                        )}
                       </form>
                     </td>
                     <td style={{ padding: '12px 16px' }}>

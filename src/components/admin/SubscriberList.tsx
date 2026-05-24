@@ -57,8 +57,8 @@ export function SubscriberList({ subscribers }: { subscribers: Subscriber[] }) {
     padding: '5px 12px', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600,
     cursor: 'pointer', border: '1px solid',
     borderColor: status === key ? '#4A1A6B' : '#e5e7eb',
-    background: status === key ? '#fdf2f8' : 'white',
-    color: status === key ? '#9d174d' : '#6b7280',
+    background: status === key ? '#F5EFF8' : 'white',
+    color: status === key ? '#4A1A6B' : '#6b7280',
   });
 
   const runAction = (label: string, fn: () => Promise<{ ok: boolean; error?: string }>, onSuccess?: () => void) => {

@@ -34,7 +34,7 @@ export default async function SettingsPaymentsPage({ searchParams }: { searchPar
               name="pay_card_enabled"
               checked={g('pay_card_enabled', 'true') !== 'false'}
               label="Credit / Debit card"
-              desc="Visa, Mastercard, Amex via Stripe. Requires STRIPE_SECRET_KEY env var (integration pending)."
+              desc="Visa, Mastercard, Amex via Stripe Checkout. Set STRIPE_SECRET_KEY + NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in Integrations to switch from test mode to live."
             />
             <PayMethodRow
               name="pay_cod_enabled"

@@ -139,7 +139,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                   return (
                     <tr key={p.id} style={{
                       borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
-                      background: checked ? '#fdf2f8' : outOfStock ? '#fef2f2' : lowStock ? '#fffbeb' : 'transparent',
+                      background: checked ? '#F5EFF8' : outOfStock ? '#fef2f2' : lowStock ? '#fffbeb' : 'transparent',
                     }}>
                       <td style={{ padding: '12px' }}>
                         <input type="checkbox" checked={checked} onChange={() => toggle(p.id)} aria-label={`Select ${p.name}`} />
@@ -169,7 +169,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         {p.tag ? (
-                          <span style={{ display: 'inline-block', padding: '2px 8px', background: '#fdf2f8', borderRadius: 20, fontSize: '0.75rem', fontWeight: 500, color: '#9d174d' }}>
+                          <span style={{ display: 'inline-block', padding: '2px 8px', background: '#F5EFF8', borderRadius: 20, fontSize: '0.75rem', fontWeight: 500, color: '#4A1A6B' }}>
                             {p.tag}
                           </span>
                         ) : <span style={{ color: '#d1d5db' }}>&mdash;</span>}
@@ -200,7 +200,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                 <div
                   key={p.id}
                   className="adm-product-card"
-                  style={{ background: checked ? '#fdf2f8' : outOfStock ? '#fef2f2' : lowStock ? '#fffbeb' : 'white' }}
+                  style={{ background: checked ? '#F5EFF8' : outOfStock ? '#fef2f2' : lowStock ? '#fffbeb' : 'white' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <input

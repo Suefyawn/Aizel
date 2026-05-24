@@ -311,7 +311,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     padding: '3px 9px', borderRadius: 20,
-                    background: '#fdf2f8', color: '#9d174d', border: '1px solid #fbcfe8',
+                    background: '#F5EFF8', color: '#4A1A6B', border: '1px solid #E3D2EF',
                   }}
                 >
                   Repeat · {customerStats.count} orders

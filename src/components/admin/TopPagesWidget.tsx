@@ -46,7 +46,7 @@ function Rows({ items }: { items: PageRow[] }) {
           <li key={row.path} style={{ position: 'relative' }}>
             <div style={{
               position: 'absolute', inset: 0, width: `${pct}%`,
-              background: '#fdf2f8', borderRadius: 6,
+              background: '#F5EFF8', borderRadius: 6,
               zIndex: 0,
             }} />
             <div style={{

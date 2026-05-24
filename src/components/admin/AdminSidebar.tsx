@@ -181,17 +181,16 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
         ))}
       </nav>
 
-      {/* Bottom links */}
+      {/* Bottom links — My Profile is shown to everyone (owners change
+          their own password / 2FA there too). */}
       <div style={{ padding: '12px 20px 0', borderTop: '1px solid #1f2937' }}>
-        {!session.isOwner && (
-          <Link href="/admin/profile" style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '8px 0', color: '#9ca3af', textDecoration: 'none',
-            fontSize: '0.8125rem', borderBottom: '1px solid #1f2937', marginBottom: 8,
-          }}>
-            <span>⚙</span> My Profile
-          </Link>
-        )}
+        <Link href="/admin/profile" style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 0', color: '#9ca3af', textDecoration: 'none',
+          fontSize: '0.8125rem', borderBottom: '1px solid #1f2937', marginBottom: 8,
+        }}>
+          <span>⚙</span> My Profile
+        </Link>
       </div>
 
       {/* Logout */}

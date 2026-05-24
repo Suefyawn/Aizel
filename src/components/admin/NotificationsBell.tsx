@@ -97,7 +97,7 @@ export function NotificationsBell({ notifications }: { notifications: Notificati
                       display: 'flex', alignItems: 'flex-start', gap: 10,
                       padding: '10px 14px', borderBottom: '1px solid #f3f4f6',
                       textDecoration: 'none', color: 'inherit',
-                      background: n.read ? 'white' : '#fdf2f8',
+                      background: n.read ? 'white' : '#F5EFF8',
                     }}
                   >
                     <span style={{ fontSize: '1rem', color: '#4A1A6B', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18 }}>

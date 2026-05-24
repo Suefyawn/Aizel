@@ -9,6 +9,7 @@ import { NoAccess } from '@/components/admin/NoAccess';
 import { CustomerGDPRPanel } from '@/components/admin/CustomerGDPRPanel';
 import { TierBadge } from '@/components/ui/TierBadge';
 import { tierFor } from '@/lib/loyalty-tiers';
+import { whatsappUrlForCustomer } from '@/lib/whatsapp';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
@@ -113,7 +114,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           <div style={{ ...section, marginBottom: 16 }}>
             <div style={{
               width: 56, height: 56, borderRadius: '50%',
-              background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#F5EFF8', display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1.5rem', marginBottom: 16,
             }}>
               {(user.first_name?.[0] ?? user.email[0]).toUpperCase()}
@@ -123,7 +124,41 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                 ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
                 : '—'}
             </h2>
-            <p style={{ margin: '0 0 16px', fontSize: '0.875rem', color: '#6b7280' }}>{user.email}</p>
+            <p style={{ margin: '0 0 12px', fontSize: '0.875rem', color: '#6b7280', wordBreak: 'break-all' }}>{user.email}</p>
+            {/* Quick contact actions — opens the system's default mail
+                client / WhatsApp chat with the customer pre-filled. */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              <a
+                href={`mailto:${user.email}`}
+                style={{
+                  flex: '1 1 auto', padding: '8px 12px', fontSize: '0.75rem', fontWeight: 600,
+                  background: '#F5EFF8', color: '#4A1A6B', textDecoration: 'none',
+                  border: '1px solid #E3D2EF', borderRadius: 6,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  minHeight: 36,
+                }}
+              >✉ Email</a>
+              {(() => {
+                const phone = user.phone?.trim();
+                if (!phone) return null;
+                const href = whatsappUrlForCustomer(phone, `Hi ${user.first_name ?? 'there'}, this is Aizel.`);
+                if (!href) return null;
+                return (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: '1 1 auto', padding: '8px 12px', fontSize: '0.75rem', fontWeight: 600,
+                      background: '#dcfce7', color: '#15803d', textDecoration: 'none',
+                      border: '1px solid #bbf7d0', borderRadius: 6,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      minHeight: 36,
+                    }}
+                  >💬 WhatsApp</a>
+                );
+              })()}
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {/* Tier — derived from the customer's lifetime delivered
                   spend that we've already calculated for the stats card
