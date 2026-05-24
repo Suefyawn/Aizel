@@ -20,7 +20,19 @@ const PAGE_SIZE = 48;
 // surface an empty category.
 const TOP_CATEGORY_NAMES = ['All', ...TAXONS.map(t => t.label)];
 
-type SortKey = 'featured' | 'price-low' | 'price-high' | 'name';
+type SortKey = 'featured' | 'newest' | 'bestsellers' | 'price-low' | 'price-high' | 'name';
+
+// Industry-standard sort menu order, matching what UK beauty retailers
+// (Cult Beauty, LookFantastic, Beauty Bay) present. The order is deliberate:
+// merchandised picks first, then recency / popularity, then price, then A-Z.
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'featured',    label: 'Featured' },
+  { value: 'newest',      label: 'Newest first' },
+  { value: 'bestsellers', label: 'Bestsellers first' },
+  { value: 'price-low',   label: 'Price: Low → High' },
+  { value: 'price-high',  label: 'Price: High → Low' },
+  { value: 'name',        label: 'Name A–Z' },
+];
 
 interface Props {
   products: Product[];
@@ -159,14 +171,35 @@ export function CollectionPage({
   const [inStockOnly, setInStockOnly] = useState(initialState.stock);
   const [onSaleOnly, setOnSaleOnly] = useState(initialState.sale);
   const [q, setQ] = useState(initialState.q);
+  // In-rail brand search — quick filter when a category has many brands.
+  // Industry-standard pattern on UK beauty retailers' filter sidebars.
+  const [brandQuery, setBrandQuery] = useState('');
 
-  // Filter rail is collapsed by default so the catalogue shows immediately.
-  // When open it's a fixed left-side slide-in panel on every viewport.
+  // Filter rail behaviour depends on viewport:
+  //   • Mobile/tablet (<1024px): collapsed by default; opening it slides a
+  //     modal overlay in from the left, with body-scroll lock + focus trap.
+  //   • Desktop (≥1024px): always visible as a persistent left sidebar
+  //     (no modal semantics, no scroll lock, no focus trap).
+  // We track viewport in a state so the ARIA shape switches cleanly between
+  // the two modes (role=dialog vs role=region) and the modal-only hooks
+  // (scroll lock / focus trap) only fire on mobile.
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [isDesktopRail, setIsDesktopRail] = useState(false);
   const filterPanelRef = useRef<HTMLElement | null>(null);
-  useBodyScrollLock(filtersOpen);
-  useEscapeKey(filtersOpen, () => setFiltersOpen(false));
-  useFocusTrap(filtersOpen, filterPanelRef);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setIsDesktopRail(mql.matches);
+    sync();
+    mql.addEventListener('change', sync);
+    return () => mql.removeEventListener('change', sync);
+  }, []);
+  // Modal-only behaviour: only when the rail is actually behaving as an
+  // overlay (mobile/tablet and the user has opened it).
+  const railIsModal = filtersOpen && !isDesktopRail;
+  useBodyScrollLock(railIsModal);
+  useEscapeKey(railIsModal, () => setFiltersOpen(false));
+  useFocusTrap(railIsModal, filterPanelRef);
   // Look up an attribute_value by id (for the chip label).
   const attrValueLookup = useMemo(() => {
     const m = new Map<string, { attrName: string; value: string }>();
@@ -341,6 +374,23 @@ export function CollectionPage({
   if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price);
   else if (sortBy === 'price-high') filtered = [...filtered].sort((a, b) => b.price - a.price);
   else if (sortBy === 'name') filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortBy === 'newest') {
+    // Newest first by created_at where present (Supabase). Demo-mode rows
+    // don't carry timestamps, so fall back to reverse-id which preserves
+    // insertion order from demo-data.ts.
+    filtered = [...filtered].sort((a, b) => {
+      const at = a.created_at ?? '';
+      const bt = b.created_at ?? '';
+      if (at && bt) return bt.localeCompare(at);
+      return b.id.localeCompare(a.id);
+    });
+  }
+  else if (sortBy === 'bestsellers') {
+    // Bestseller-flagged products first, then everything else in stable order.
+    filtered = [...filtered].sort((a, b) =>
+      (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0),
+    );
+  }
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -406,14 +456,17 @@ export function CollectionPage({
       <section style={{ padding: 'var(--section-gap) 0' }}>
         <div className="container">
 
-          {/* ─── Toolbar above the grid: Filters toggle · chips · sort · count ─ */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+          {/* ─── Toolbar above the grid: Filters toggle · chips · sort · count ─
+              Sticky on desktop (handled by .shop-toolbar in globals.css) so
+              the sort + chips stay reachable as the user scrolls a long grid. */}
+          <div className="shop-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(o => !o)}
                 aria-expanded={filtersOpen}
                 aria-controls="shop-filter-rail"
+                className="shop-filter-toggle"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   padding: '8px 14px', borderRadius: 100,
@@ -472,10 +525,9 @@ export function CollectionPage({
                   color: 'var(--ink-900)', cursor: 'pointer', outline: 'none',
                 }}
               >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low → High</option>
-                <option value="price-high">Price: High → Low</option>
-                <option value="name">Name A–Z</option>
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -494,16 +546,26 @@ export function CollectionPage({
             }}
           />
 
+          {/* Layout wrapper — at desktop (≥1024px) becomes a 2-col grid with
+              a persistent left rail; at mobile/tablet the rail collapses
+              back to the slide-in overlay defined inline below. CSS lives
+              in .shop-layout / .shop-rail / .shop-filter-toggle. */}
+          <div className="shop-layout">
+
           {/* Filter rail — fixed slide-in panel from the left, on every viewport.
               Always in the DOM so opening / closing animates the transform. */}
           <aside
             id="shop-filter-rail"
             className="shop-rail"
             ref={filterPanelRef}
-            role="dialog"
-            aria-modal={filtersOpen}
+            // On desktop the rail is a persistent region; on mobile it's a
+            // modal dialog the user opens explicitly. The ARIA shape switches
+            // to match — otherwise the desktop persistent sidebar would be
+            // hidden from AT users.
+            role={isDesktopRail ? 'region' : 'dialog'}
+            aria-modal={isDesktopRail ? undefined : filtersOpen}
             aria-label="Filter products"
-            aria-hidden={!filtersOpen}
+            aria-hidden={isDesktopRail ? undefined : !filtersOpen}
             style={{
               position: 'fixed', top: 0, left: 0, bottom: 0,
               width: 320, maxWidth: '88vw',
@@ -578,21 +640,52 @@ export function CollectionPage({
               </fieldset>
 
               {/* Brand */}
-              {allBrands.length > 1 && (
-                <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px' }}>
-                  <legend style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-                    Brand
-                  </legend>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 280, overflowY: 'auto', paddingRight: 4 }}>
-                    {allBrands.map(b => (
-                      <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8125rem', cursor: 'pointer', padding: '3px 0' }}>
-                        <input type="checkbox" checked={selectedBrands.has(b)} onChange={() => toggleBrand(b)} />
-                        <span style={{ flex: 1 }}>{b}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              )}
+              {allBrands.length > 1 && (() => {
+                // Filter brands by the in-rail brand query. We retain any
+                // already-selected brands at the top of the list so the user
+                // can always uncheck them — otherwise typing a search term
+                // could "hide" an active selection from the list view.
+                const ql = brandQuery.trim().toLowerCase();
+                const matching = ql
+                  ? allBrands.filter(b => b.toLowerCase().includes(ql))
+                  : allBrands;
+                const selectedShown = Array.from(selectedBrands).filter(b => !matching.includes(b));
+                const displayBrands = [...selectedShown, ...matching];
+                return (
+                  <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px' }}>
+                    <legend style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                      Brand
+                    </legend>
+                    {allBrands.length > 8 && (
+                      <input
+                        type="search"
+                        value={brandQuery}
+                        onChange={e => setBrandQuery(e.target.value)}
+                        placeholder="Search brands"
+                        aria-label="Search brand list"
+                        style={{
+                          width: '100%', padding: '6px 10px', marginBottom: 8,
+                          border: '1px solid var(--line)', borderRadius: 6,
+                          fontSize: '0.8125rem', outline: 'none',
+                          background: 'var(--paper)',
+                        }}
+                      />
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 280, overflowY: 'auto', paddingRight: 4 }}>
+                      {displayBrands.length === 0 ? (
+                        <div className="small-text" style={{ padding: '8px 0', color: 'var(--ink-500)' }}>
+                          No brands match &ldquo;{brandQuery}&rdquo;
+                        </div>
+                      ) : displayBrands.map(b => (
+                        <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8125rem', cursor: 'pointer', padding: '3px 0' }}>
+                          <input type="checkbox" checked={selectedBrands.has(b)} onChange={() => toggleBrand(b)} />
+                          <span style={{ flex: 1 }}>{b}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                );
+              })()}
 
               {/* Variant attribute facets (Shade, Size, etc.) */}
               {attributes.map(attr => {
@@ -778,6 +871,7 @@ export function CollectionPage({
             </nav>
           )}
             </div> {/* close product grid column */}
+          </div> {/* close .shop-layout */}
         </div>
       </section>
     </div>

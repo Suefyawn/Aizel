@@ -8,21 +8,22 @@ import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBodyScrollLock, useEscapeKey, useFocusTrap } from '@/lib/hooks/useBodyScrollLock';
-import { TAXONS } from '@/lib/category-taxonomy';
+import { NAV_SECTIONS } from '@/lib/category-taxonomy';
 import { whatsappUrl, WA_TEMPLATES } from '@/lib/whatsapp';
 
-// Desktop nav: each taxon (Hair Care / Body Care / Styling / Grooming) opens a
-// mega-menu dropdown of its categories; the flat items are plain links.
-// Driven by the central taxonomy so editorial changes don't touch the header.
-// Top-level nav also needs direct entry points to the full catalogue and
-// the brand index — the taxon dropdowns hide these inside category trees
-// otherwise. Order: All / Brands first (the most-asked-for finding
-// surfaces), Sale (intermittent), Blog (editorial) last.
+// Desktop nav: three curated mega-menus (Hair Care, Body Care, Styling) +
+// three flat links (All, Brands, Sale). Six primary surfaces total — matches
+// the IA pattern major UK hair/beauty retailers use (Cult Beauty,
+// LookFantastic, Beauty Bay): a handful of taxon mega-menus, brand directory,
+// catch-all and the sale rail. Blog lives in the footer.
+// `NAV_SECTIONS` is curated in `category-taxonomy.ts`; the data taxonomy
+// still has 4 taxons (hair / body / styling / grooming) but Styling +
+// Grooming consolidate into one mega-menu with two sub-columns so the bar
+// stays uncluttered.
 const FLAT_ITEMS = [
   { label: 'All',    href: '/shop' },
   { label: 'Brands', href: '/brand' },
   { label: 'Sale',   href: '/shop?on_sale=1' },
-  { label: 'Blog',   href: '/blog' },
 ];
 
 function navLinkStyle(active: boolean): React.CSSProperties {
@@ -129,25 +130,29 @@ export function Header() {
         </Link>
 
         <nav style={{ display: 'flex', gap: 26, alignItems: 'center' }} className="desktop-nav" aria-label="Primary">
-          {TAXONS.map(t => {
+          {NAV_SECTIONS.map(section => {
             const curCat = searchParams.get('category');
-            const active = searchParams.get('taxon') === t.key
-              || (!!curCat && t.categories.includes(curCat));
-            const open = openMenu === t.key;
+            const curTaxon = searchParams.get('taxon');
+            const active =
+              (!!curTaxon && section.activeTaxonKeys.includes(curTaxon)) ||
+              (!!curCat && section.columns.some(c => c.categories.includes(curCat)));
+            const open = openMenu === section.key;
+            const multiColumn = section.columns.length > 1;
             return (
               <div
-                key={t.key}
+                key={section.key}
                 style={{ position: 'relative' }}
-                onMouseEnter={() => setOpenMenu(t.key)}
+                onMouseEnter={() => setOpenMenu(section.key)}
                 onMouseLeave={() => setOpenMenu(null)}
               >
                 <Link
-                  href={`/shop?taxon=${t.key}`}
+                  href={section.href}
                   aria-current={active ? 'page' : undefined}
                   aria-expanded={open}
-                  onFocus={() => setOpenMenu(t.key)}
+                  aria-haspopup="true"
+                  onFocus={() => setOpenMenu(section.key)}
                   style={navLinkStyle(active)}
-                >{t.label}</Link>
+                >{section.label}</Link>
                 {open && (
                   // Outer wrapper sits flush against the link (top:100%) and
                   // its transparent paddingTop bridges the visual gap — so the
@@ -156,31 +161,43 @@ export function Header() {
                   <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 10, zIndex: 200 }}>
                     <div
                       style={{
-                        minWidth: 220, padding: 8,
+                        // Multi-column menus need more width so the columns
+                        // breathe; single-column matches the old 220-wide look.
+                        minWidth: multiColumn ? 460 : 220,
+                        padding: multiColumn ? 14 : 8,
+                        display: multiColumn ? 'grid' : 'block',
+                        gridTemplateColumns: multiColumn
+                          ? `repeat(${section.columns.length}, minmax(0, 1fr))`
+                          : undefined,
+                        gap: multiColumn ? 12 : undefined,
                         background: 'var(--paper)', border: '1px solid var(--line)',
                         borderRadius: 'var(--radius-card)', boxShadow: '0 14px 36px rgba(0,0,0,0.13)',
                       }}
                     >
-                      <Link
-                        href={`/shop?taxon=${t.key}`}
-                        style={{
-                          display: 'block', padding: '8px 12px', textDecoration: 'none',
-                          fontFamily: 'var(--font-ui)', fontSize: '0.75rem', fontWeight: 700,
-                          letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-pink-text)',
-                        }}
-                      >All {t.label}</Link>
-                      {t.categories.map(cat => (
-                        <Link
-                          key={cat}
-                          href={`/shop?category=${encodeURIComponent(cat)}`}
-                          style={{
-                            display: 'block', padding: '9px 12px', borderRadius: 8,
-                            textDecoration: 'none', fontFamily: 'var(--font-ui)',
-                            fontSize: '0.875rem', color: 'var(--ink-700)',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--paper2)'; e.currentTarget.style.color = 'var(--ink-900)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-700)'; }}
-                        >{cat}</Link>
+                      {section.columns.map(col => (
+                        <div key={col.heading} style={{ minWidth: 0 }}>
+                          <Link
+                            href={col.href}
+                            style={{
+                              display: 'block', padding: '8px 12px', textDecoration: 'none',
+                              fontFamily: 'var(--font-ui)', fontSize: '0.75rem', fontWeight: 700,
+                              letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-pink-text)',
+                            }}
+                          >{multiColumn ? col.heading : `All ${col.heading}`}</Link>
+                          {col.categories.map(cat => (
+                            <Link
+                              key={cat}
+                              href={`/shop?category=${encodeURIComponent(cat)}`}
+                              style={{
+                                display: 'block', padding: '9px 12px', borderRadius: 8,
+                                textDecoration: 'none', fontFamily: 'var(--font-ui)',
+                                fontSize: '0.875rem', color: 'var(--ink-700)',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--paper2)'; e.currentTarget.style.color = 'var(--ink-900)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-700)'; }}
+                            >{cat}</Link>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -190,12 +207,23 @@ export function Header() {
           })}
           {FLAT_ITEMS.map(item => {
             const active = isActiveLink(item.href);
+            // Sale gets the brand accent so it reads as a promotional pill
+            // — matches the merchandising convention on every UK beauty site.
+            const isSale = item.label === 'Sale';
             return (
               <Link
                 key={item.label}
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                style={navLinkStyle(active)}
+                style={{
+                  ...navLinkStyle(active),
+                  ...(isSale && {
+                    color: 'var(--brand-pink-text)',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                  }),
+                }}
               >{item.label}</Link>
             );
           })}
@@ -391,13 +419,14 @@ export function Header() {
         </div>
 
         <nav aria-label="Mobile primary" style={{ padding: '8px var(--side) 24px', display: 'flex', flexDirection: 'column' }}>
-          {TAXONS.map(t => {
-            const expanded = openSection === t.key;
+          {NAV_SECTIONS.map(section => {
+            const expanded = openSection === section.key;
+            const multiColumn = section.columns.length > 1;
             return (
-              <div key={t.key} style={{ borderBottom: '1px solid var(--line)' }}>
+              <div key={section.key} style={{ borderBottom: '1px solid var(--line)' }}>
                 <button
                   type="button"
-                  onClick={() => setOpenSection(expanded ? null : t.key)}
+                  onClick={() => setOpenSection(expanded ? null : section.key)}
                   aria-expanded={expanded}
                   tabIndex={mobileMenu ? 0 : -1}
                   style={{
@@ -407,7 +436,7 @@ export function Header() {
                     justifyContent: 'space-between', padding: '18px 4px', minHeight: 52,
                   }}
                 >
-                  {t.label}
+                  {section.label}
                   <span aria-hidden="true" style={{
                     fontSize: '1.25rem', color: 'var(--ink-500)',
                     transform: expanded ? 'rotate(45deg)' : 'rotate(0)',
@@ -416,27 +445,49 @@ export function Header() {
                 </button>
                 {expanded && (
                   <div style={{ paddingBottom: 10 }}>
-                    <Link
-                      href={`/shop?taxon=${t.key}`}
-                      onClick={() => setMobileMenu(false)}
-                      tabIndex={mobileMenu ? 0 : -1}
-                      style={{
-                        display: 'block', padding: '10px 16px', textDecoration: 'none',
-                        fontFamily: 'var(--font-ui)', fontSize: '0.8125rem', fontWeight: 700,
-                        letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--brand-pink-text)',
-                      }}
-                    >All {t.label}</Link>
-                    {t.categories.map(cat => (
+                    {/* On mobile we always stack columns vertically with their
+                        sub-heading visible — the Styling section gets a clear
+                        "Styling & Tools" and "Grooming" rail rather than a
+                        flat undifferentiated list. */}
+                    {!multiColumn && (
                       <Link
-                        key={cat}
-                        href={`/shop?category=${encodeURIComponent(cat)}`}
+                        href={section.href}
                         onClick={() => setMobileMenu(false)}
                         tabIndex={mobileMenu ? 0 : -1}
                         style={{
-                          display: 'block', padding: '11px 16px', textDecoration: 'none',
-                          fontFamily: 'var(--font-ui)', fontSize: '0.9375rem', color: 'var(--ink-700)',
+                          display: 'block', padding: '10px 16px', textDecoration: 'none',
+                          fontFamily: 'var(--font-ui)', fontSize: '0.8125rem', fontWeight: 700,
+                          letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--brand-pink-text)',
                         }}
-                      >{cat}</Link>
+                      >All {section.label}</Link>
+                    )}
+                    {section.columns.map(col => (
+                      <div key={col.heading} style={multiColumn ? { paddingTop: 6, paddingBottom: 6 } : undefined}>
+                        {multiColumn && (
+                          <Link
+                            href={col.href}
+                            onClick={() => setMobileMenu(false)}
+                            tabIndex={mobileMenu ? 0 : -1}
+                            style={{
+                              display: 'block', padding: '10px 16px', textDecoration: 'none',
+                              fontFamily: 'var(--font-ui)', fontSize: '0.8125rem', fontWeight: 700,
+                              letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--brand-pink-text)',
+                            }}
+                          >{col.heading}</Link>
+                        )}
+                        {col.categories.map(cat => (
+                          <Link
+                            key={cat}
+                            href={`/shop?category=${encodeURIComponent(cat)}`}
+                            onClick={() => setMobileMenu(false)}
+                            tabIndex={mobileMenu ? 0 : -1}
+                            style={{
+                              display: 'block', padding: '11px 16px', textDecoration: 'none',
+                              fontFamily: 'var(--font-ui)', fontSize: '0.9375rem', color: 'var(--ink-700)',
+                            }}
+                          >{cat}</Link>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}

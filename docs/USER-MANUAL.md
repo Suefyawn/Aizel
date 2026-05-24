@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 23 May 2026.*
+> *Last updated: 24 May 2026.*
 
 ---
 
@@ -53,20 +53,26 @@ customers and spot where an order is.
 - **Home page** — the landing page. It shows a hero banner, curated product
   rails (featured items, bestsellers), shop-by-category tiles for Hair Care
   and Body Care, the latest blog posts, and trust/press sections.
-- **Shop page** (`/shop`) — the full catalogue. Customers can filter by
-  category, brand, and product attributes (size, scent, etc.), search by name,
-  show only on-sale items, and sort by newest, price, or name. Results are
-  paginated.
+- **Shop page** (`/shop`) — the full catalogue. On desktop a persistent
+  left-hand filter rail lets customers narrow the grid by category, brand
+  (with a quick-search input when the brand list is long), price, in-stock,
+  on-sale, and any product attributes (size, scent, etc.). They can sort by
+  **Featured**, **Newest first**, **Bestsellers first**, **Price (low/high)**
+  or **Name A–Z**. On phones/tablets the same filters appear in a slide-in
+  panel opened from the **Filters** button. Active filters always show as
+  removable chips above the grid, and results are paginated.
 - **Product page** — each product has its images, price (and the crossed-out
   original price if it's on sale), description, ingredients, how-to-use, key
   benefits, FAQs, and its customer star rating. If the product comes in
   variants (e.g. sizes or scents), the customer picks one before adding to the
   cart.
 
-The four top-level navigation sections are **Hair Care**, **Body Care**,
-**Styling & Tools**, and **Grooming**. Each opens a mega-menu of its
-sub-categories (Shampoo & Conditioner, Hair Oils & Serums, Cocoa & Shea
-Butter, Wig & Lace Adhesives, and so on).
+The primary navigation has three taxon mega-menus — **Hair Care**, **Body
+Care**, and **Styling** (which combines Styling & Tools and Grooming into a
+single two-column mega-menu) — followed by three flat links: **All** (the
+full catalogue), **Brands** (the brand index), and **Sale** (live sale
+items). The mega-menus surface sub-categories like Shampoo & Conditioner,
+Hair Oils & Serums, Cocoa & Shea Butter, Wig & Lace Adhesives, and so on.
 
 ### 2.2 Cart and checkout
 

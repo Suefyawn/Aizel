@@ -633,11 +633,56 @@ a.underline,
   .mobile-menu-btn { display: none !important; }
 }
 
-/* Shop filter rail — left-side slide-in panel on every viewport.
- * Position / transform / backdrop are inlined in CollectionPage.tsx; we
- * only add the always-visible close-× rule here since it's controlled
- * by a class. */
+/* Shop filter rail.
+ *
+ * Mobile / tablet (<1024px): left-side slide-in panel. The fixed-position,
+ * transform-based overlay is inlined in CollectionPage.tsx — these classes
+ * just toggle a couple of small bits (the close × button is hidden on
+ * desktop, visible on mobile via the `.shop-rail-close` rule below).
+ *
+ * Desktop (≥1024px): persistent two-column layout. The aside becomes a
+ * sticky sidebar that sits to the left of the product grid, always visible
+ * — matches the IA pattern UK beauty retailers (Cult Beauty, LookFantastic,
+ * Beauty Bay) use. `!important` is required to override the inline
+ * fixed/transform styles applied on the JSX element.
+ */
+.shop-layout { display: block; }
 .shop-rail-close { display: inline-block; }
+@media (min-width: 1024px) {
+  .shop-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .shop-rail {
+    position: sticky !important;
+    top: 88px !important;     /* clear the sticky header + toolbar */
+    left: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: calc(100vh - 110px);
+    transform: none !important;
+    box-shadow: none !important;
+    border-right: none !important;
+    padding: 0 4px 0 0 !important;
+    z-index: auto !important;
+    overflow-y: auto;
+  }
+  .shop-rail-backdrop,
+  .shop-filter-toggle,
+  .shop-rail-close { display: none !important; }
+  .shop-toolbar {
+    position: sticky;
+    top: 64px; /* header height + a hair */
+    z-index: 60;
+    background: var(--paper);
+    padding: 10px 0;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid var(--line);
+  }
+}
 
 /* Checkout / Cart responsive */
 @media (max-width: 860px) {

@@ -27,10 +27,13 @@ test.describe('Storefront — golden path', () => {
   test('header nav uses the new hair-and-body taxonomy', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('nav[aria-label="Primary"]');
+    // Three curated mega-menus: Hair Care, Body Care, Styling. Styling
+    // consolidates the old "Styling & Tools" + "Grooming" taxons into one
+    // mega-menu with two columns so the top bar stays uncluttered — those
+    // taxon labels move down a level into the mega's sub-headings.
     await expect(nav.getByRole('link', { name: /^Hair Care$/i })).toBeVisible();
     await expect(nav.getByRole('link', { name: /^Body Care$/i })).toBeVisible();
-    await expect(nav.getByRole('link', { name: /^Styling & Tools$/i })).toBeVisible();
-    await expect(nav.getByRole('link', { name: /^Grooming$/i })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /^Styling$/i })).toBeVisible();
     // Belt-and-braces against a Wellness / Makeup regression.
     await expect(nav.getByText(/Wellness/i)).toHaveCount(0);
     await expect(nav.getByText(/Makeup/i)).toHaveCount(0);
@@ -76,6 +79,36 @@ test.describe('Storefront — golden path', () => {
     // The collection page should render at least one product tile.
     const hasProduct = await page.locator('a[href^="/product/"]').count();
     expect(hasProduct).toBeGreaterThan(0);
+  });
+
+  test('shop page exposes the industry-standard sort menu', async ({ page }) => {
+    // Regression: the sort dropdown must expose Featured + recency +
+    // popularity + price + alpha — matches the merchandising menus on
+    // every major UK beauty retailer. A flat 4-option list (the previous
+    // shape) is a discoverability regression.
+    await page.goto('/shop');
+    const sort = page.getByLabel('Sort products');
+    await expect(sort).toBeVisible();
+    const optionTexts = await sort.locator('option').allTextContents();
+    const text = optionTexts.join('|');
+    expect(text).toContain('Featured');
+    expect(text).toContain('Newest first');
+    expect(text).toContain('Bestsellers first');
+    expect(text).toContain('Price: Low');
+    expect(text).toContain('Price: High');
+    expect(text).toContain('Name A');
+  });
+
+  test('shop page renders the persistent filter rail on desktop', async ({ page }) => {
+    // At ≥1024px the filter rail should be in-flow (no longer a slide-in
+    // modal), matching Cult Beauty / LookFantastic. We assert it via the
+    // ARIA shape: at desktop the rail switches to role=region (not dialog),
+    // which is what AT users hear when filters are persistently available.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/shop');
+    const rail = page.locator('#shop-filter-rail');
+    await expect(rail).toBeVisible();
+    await expect(rail).toHaveAttribute('role', 'region');
   });
 
   test('checkout page shows card option and £15 threshold messaging', async ({ page }) => {

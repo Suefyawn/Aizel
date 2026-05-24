@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Overline } from '@/components/ui/Overline';
 
-// "Shop by category" — two equal pillars: Makeup & Skincare (outer) and
-// Health & Wellness (inner). Tile images are passed in from the homepage:
-// a curated editorial photo per category, all shot on a shared backdrop
-// so the grid reads as one cohesive set.
+// "Shop by category" — two equal pillars: Hair Care (the core range) and
+// Body & More (everything from butters and oils to wig adhesives). Tile
+// images are passed in from the homepage: a curated editorial photo per
+// category, all shot on a shared backdrop so the grid reads as one set.
 
 export interface CategoryTile {
   label: string;
@@ -73,7 +73,7 @@ export function CategoryTiles({ groups }: { groups: CategoryTileGroup[] }) {
       <div className="container">
         <Overline style={{ display: 'block', marginBottom: 6 }}>Shop by category</Overline>
         <h2 className="display-l" style={{ fontSize: '1.75rem', margin: '0 0 32px' }}>
-          Beauty, <em style={{ fontStyle: 'italic' }}>inside out</em>
+          Wash day, <em style={{ fontStyle: 'italic' }}>sorted</em>
         </h2>
         {groups.map(group => (
           <div key={group.title} style={{ marginBottom: 32 }}>

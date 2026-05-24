@@ -148,6 +148,71 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
 /** Every fine-grained leaf category, flattened across all taxons. */
 export const ALL_CATEGORIES: readonly string[] = TAXONS.flatMap(t => t.categories);
 
+// ── Nav-only structure ────────────────────────────────────────────────────
+// The header nav is curated separately from the data taxonomy: 4 raw taxons
+// would crowd the bar, so Styling & Tools + Grooming collapse into one
+// "Styling" mega-menu with two sub-columns. The mega-menu still links each
+// sub-heading to its underlying taxon page so /shop?taxon=grooming keeps
+// working — only the top-of-header surface changes.
+
+export interface NavMegaColumn {
+  /** Sub-heading shown above the column (e.g. "Styling & Tools"). */
+  heading: string;
+  /** Taxon URL the heading links to (e.g. /shop?taxon=styling). */
+  href: string;
+  /** Leaf categories displayed under the heading. */
+  categories: readonly string[];
+}
+
+export interface NavSection {
+  /** Primary nav label shown in the header (e.g. "Hair Care", "Styling"). */
+  label: string;
+  /** Primary anchor href — what clicking the top-level label navigates to. */
+  href: string;
+  /** Stable key for React + state. */
+  key: string;
+  /** Taxon keys whose URLs (?taxon=…) should also light this nav item as
+   *  active. A "Styling" mega-menu covers BOTH styling and grooming taxons. */
+  activeTaxonKeys: readonly string[];
+  /** Mega-menu sub-columns. Most sections have one column (= one taxon);
+   *  the consolidated "Styling" section has two so the IA stays legible. */
+  columns: readonly NavMegaColumn[];
+}
+
+/**
+ * Industry-standard primary nav for the storefront. Five mega-menu items
+ * mirrors what Cult Beauty / LookFantastic / Beauty Bay surface, instead of
+ * dumping every taxon flat across the bar.
+ */
+export const NAV_SECTIONS: readonly NavSection[] = (() => {
+  const hair    = TAXONS.find(t => t.key === 'hair')!;
+  const body    = TAXONS.find(t => t.key === 'body')!;
+  const styling = TAXONS.find(t => t.key === 'styling')!;
+  const groom   = TAXONS.find(t => t.key === 'grooming')!;
+  return [
+    {
+      key: 'hair', label: hair.label, href: `/shop?taxon=${hair.key}`,
+      activeTaxonKeys: [hair.key],
+      columns: [{ heading: hair.label, href: `/shop?taxon=${hair.key}`, categories: hair.categories }],
+    },
+    {
+      key: 'body', label: body.label, href: `/shop?taxon=${body.key}`,
+      activeTaxonKeys: [body.key],
+      columns: [{ heading: body.label, href: `/shop?taxon=${body.key}`, categories: body.categories }],
+    },
+    {
+      // "Styling" is a curated grouping — clicking the top label drops the
+      // shopper on the Styling & Tools landing; the mega-menu surfaces both.
+      key: 'styling', label: 'Styling', href: `/shop?taxon=${styling.key}`,
+      activeTaxonKeys: [styling.key, groom.key],
+      columns: [
+        { heading: styling.label, href: `/shop?taxon=${styling.key}`, categories: styling.categories },
+        { heading: groom.label,   href: `/shop?taxon=${groom.key}`,   categories: groom.categories },
+      ],
+    },
+  ];
+})();
+
 const slugifyCategory = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
