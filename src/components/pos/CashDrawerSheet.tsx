@@ -67,7 +67,20 @@ export function CashDrawerSheet({ session, onClose, onShiftChanged }: Props) {
             big
           />
         </div>
-        <button onClick={() => { setCloseReport(null); onClose(); }} style={primaryBtnStyle}>Done</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <a
+            href={`/admin/pos/shifts/${closeReport.session_id}?print=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '12px 16px', borderRadius: 8, textAlign: 'center',
+              background: 'transparent', border: '1px solid #4B5563',
+              color: '#9CA3AF', textDecoration: 'none', fontWeight: 600, fontSize: '0.9375rem',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >🖨 Print Z-report</a>
+          <button onClick={() => { setCloseReport(null); onClose(); }} style={primaryBtnStyle}>Done</button>
+        </div>
       </Sheet>
     );
   }

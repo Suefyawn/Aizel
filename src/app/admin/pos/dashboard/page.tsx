@@ -53,7 +53,7 @@ export default async function PosDashboardPage() {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-  const [{ data: orderRows }, { data: openSessionRows }] = await Promise.all([
+  const [{ data: orderRows }, { data: openSessionRows }, { data: closedSessionRows }] = await Promise.all([
     admin.from('orders')
       .select('id, order_number, total, pay_method, created_at, items')
       .eq('channel', 'pos')
@@ -63,14 +63,29 @@ export default async function PosDashboardPage() {
       .select('id, staff_id, opening_float, opened_at, status')
       .eq('status', 'open')
       .order('opened_at', { ascending: false }),
+    // Last 10 closed shifts — printable Z-reports are linked from here.
+    admin.from('pos_sessions')
+      .select('id, staff_id, opening_float, opened_at, closed_at, expected_cash, counted_cash, discrepancy')
+      .eq('status', 'closed')
+      .order('closed_at', { ascending: false })
+      .limit(10),
   ]);
 
   const orders = (orderRows ?? []) as PosOrderRow[];
   const openShifts = (openSessionRows ?? []) as PosSessionRow[];
+  const closedShifts = (closedSessionRows ?? []) as Array<{
+    id: string; staff_id: string; opening_float: number;
+    opened_at: string; closed_at: string;
+    expected_cash: number | null; counted_cash: number | null; discrepancy: number | null;
+  }>;
 
   // Resolve cashier UUIDs to human-readable names — the owner shouldn't
-  // need to memorise UUID prefixes to know who's on the till.
-  const cashierIds = Array.from(new Set(openShifts.map(s => s.staff_id).filter(Boolean)));
+  // need to memorise UUID prefixes to know who's on the till. Include
+  // closed-shift staff too so the archive shows names.
+  const cashierIds = Array.from(new Set([
+    ...openShifts.map(s => s.staff_id),
+    ...closedShifts.map(s => s.staff_id),
+  ].filter(Boolean)));
   const { data: staffRows } = cashierIds.length
     ? await admin.from('staff_members').select('id, name, email').in('id', cashierIds)
     : { data: [] };
@@ -176,6 +191,55 @@ export default async function PosDashboardPage() {
                     </td>
                     <td data-label="Float" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(s.opening_float)}</td>
                     <td style={td}><span style={{ padding: '2px 8px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>Open</span></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ── Recent closed shifts → Z-report archive ──────────────────── */}
+      {closedShifts.length > 0 && (
+        <div style={{ ...card, marginTop: 16 }}>
+          <h2 style={cardTitle}>Recent shifts</h2>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#f9fafb' }}>
+                {['Closed', 'Cashier', 'Duration', 'Counted', 'Discrepancy', ''].map(h => (
+                  <th key={h} style={th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {closedShifts.map(s => {
+                const cashier = cashierMap.get(s.staff_id);
+                const disc = Number(s.discrepancy ?? 0);
+                const discAbs = Math.abs(disc);
+                const discColor = discAbs < 0.01 ? '#16a34a' : discAbs < 5 ? '#92400e' : '#dc2626';
+                const durMin = Math.max(0, Math.round((new Date(s.closed_at).getTime() - new Date(s.opened_at).getTime()) / 60_000));
+                const durLabel = durMin >= 60 ? `${Math.floor(durMin / 60)}h ${durMin % 60}m` : `${durMin}m`;
+                return (
+                  <tr key={s.id} style={{ borderTop: '1px solid #f3f4f6' }}>
+                    <td data-label="Closed" style={td}>
+                      {new Date(s.closed_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td data-label="Cashier" style={td}>
+                      {cashier ? <span style={{ fontWeight: 600, color: '#111827' }}>{cashier.name}</span> : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>}
+                    </td>
+                    <td data-label="Duration" style={{ ...td, color: '#6b7280' }}>{durLabel}</td>
+                    <td data-label="Counted" style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>
+                      {s.counted_cash != null ? fmtGBP(Number(s.counted_cash)) : '—'}
+                    </td>
+                    <td data-label="Discrepancy" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: discColor }}>
+                      {disc >= 0 ? '+ ' : '− '}{fmtGBP(discAbs)}
+                    </td>
+                    <td style={{ ...td, textAlign: 'right' }}>
+                      <Link
+                        href={`/admin/pos/shifts/${s.id}`}
+                        style={{ color: '#4A1A6B', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}
+                      >Z-report →</Link>
+                    </td>
                   </tr>
                 );
               })}
