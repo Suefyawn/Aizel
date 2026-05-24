@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 24 May 2026.*
+> *Last updated: 24 May 2026 — POS till + Stripe Terminal added.*
 
 ---
 
@@ -160,9 +160,11 @@ together. Here's what each link is for:
 **Sell** — day-to-day commerce operations
 | Section | What it's for |
 |---|---|
-| **Orders** | Every order placed. Filter by status, search, and open an order to process it. |
-| **Products** | The catalogue. Create, edit, publish, archive, and delete products; manage variants, images, pricing, and descriptions. Bulk price tools and CSV import are here — including the eBay importer at `npm run import:ebay`. |
-| **Inventory** | Stock levels. See low-stock items and adjust stock counts. |
+| **Orders** | Every order placed. Filter by status, search, and open an order to process it. Web orders are prefixed `AZ-` and POS sales `AZ-P` so you can tell at a glance how it came in. |
+| **POS Till** | The full-screen touchscreen till for in-shop sales. Scan barcodes or tap products, take cash or card payment, hold/resume sales mid-flow, and print receipts. See [section 4.b](#4b-in-shop-pos-sales) for the walk-through. |
+| **POS Dashboard** | Back-office view of the till — today's takings, hourly heatmap, tender split (cash vs card), top SKUs, recent transactions, and the open-shifts table. |
+| **Products** | The catalogue. Create, edit, publish, archive, and delete products; manage variants, images, pricing, and descriptions. Bulk price tools and CSV import are here — including the eBay importer at `npm run import:ebay`. Each product now carries an optional SKU and barcode for till scanning. |
+| **Inventory** | Stock levels. See low-stock items and adjust stock counts. POS sales deduct from the same stock counts as web orders so you never oversell across channels. |
 | **Vendors** | Your suppliers/fulfilment partners. Add vendors and track what you owe or are owed (settlements). |
 | **Returns** | Customer return requests awaiting your approval, and refund processing. |
 
@@ -233,6 +235,63 @@ margin, and who owes whom. Mark it **settled** once that payment is done.
 "repeat customer" badge and lifetime spend if applicable), the shipping address,
 the items, the full status timeline, a payment summary, and a **Print Invoice**
 button.
+
+### 4.b In-shop POS sales
+
+For face-to-face sales in the shop, open **POS Till** from the sidebar — it
+launches a dedicated full-screen till in its own dark layout (no sidebar, no
+top bar) so a touchscreen monitor or tablet works clean.
+
+**Step 1 — Open your shift.**
+The first time you sit down at the till, hit the orange **Open till** badge in
+the top-right and count your opening float (the cash already in the drawer).
+That number anchors the end-of-day cash reconciliation. Only one shift can be
+open per cashier at a time.
+
+**Step 2 — Ring up the sale.**
+- *Scan or search:* type, scan a barcode, or tap a product tile to add it. A
+  scanner that types and presses Enter just works — the search field auto-
+  focuses for you between actions.
+- *Adjust quantities and prices:* qty stepper on each line, and you can mark a
+  line down by overwriting the unit price. (Prices above the catalogue price
+  are refused server-side as a tamper guard.)
+- *Cart discount:* one global £ amount off the whole basket.
+- *Customer email:* optional — when set, the receipt is emailed automatically.
+
+**Step 3 — Take payment.**
+Hit **Tender**. The payment dialog offers:
+- *Cash* — type the amount tendered or tap a denomination button (£5/£10/£20
+  rounded-up). The till tells you the change to give.
+- *Tap card* — only visible when Stripe Terminal is paired (see
+  PRE-LAUNCH.md §3.3). Sends the payment to the chip-and-PIN reader; the dot
+  pulses purple while waiting, turns green on success and auto-completes the
+  sale with the Stripe PaymentIntent stored against it for reconciliation.
+- *Manual card* — for when you already have a card terminal of your own. Just
+  charge the card there and tap **Complete sale** once the customer's receipt
+  prints.
+
+**Step 4 — Park & resume (interruptions).**
+If a customer wanders off mid-sale, hit **Park sale**, give the hold a label
+("Lady in red coat"). The basket is saved, you can ring up other customers,
+then resume from the **Held** badge in the top bar. Holds are per-cashier so
+your colleague can't accidentally finish a sale you set aside.
+
+**Step 5 — Cash in / cash out during the shift.**
+Tap the **Till open** badge any time to log a cash drop, cash pickup, or to
+close the shift. The journal keeps a tight cash trail.
+
+**Step 6 — Close the shift.**
+At end of day, hit **Close shift** in the till badge. Count the drawer, type
+the actual cash in. The system computes the *expected* cash from the journal
+(opening float + cash sales + cash-ins − cash-outs − refunds) and shows you
+the discrepancy with a tone band: green ≤ 1p, amber ≤ £5, red anything more.
+The Z-report is timestamped and available on the POS Dashboard.
+
+**Returns at the till**
+Walk-in returns currently route through the Orders page — pull up the
+original `AZ-P…` order, hit **Refund**, choose the items and amount. The cash
+refund flows through `pos_cash_events` and shows up in your cash drawer
+journal automatically.
 
 > **Tip:** cancelling an order automatically returns its items to stock.
 
