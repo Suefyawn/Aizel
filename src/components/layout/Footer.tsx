@@ -5,6 +5,7 @@ import { LogoMark } from '@/components/ui/LogoMark';
 import { LogoWordmark } from '@/components/ui/LogoWordmark';
 import { Overline } from '@/components/ui/Overline';
 import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
+import { PaymentMethodStrip } from '@/components/layout/PaymentMethodStrip';
 import type { SocialLink } from '@/lib/socials';
 
 // Footer link list rendered with a consistent "overline-ish" treatment —
@@ -132,8 +133,18 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
           </div>
         </div>
 
+        {/* Payment-method strip — UK trust pattern shoppers scan for
+            before committing to a checkout. Visa / MC / Amex / PayPal /
+            Apple Pay / Google Pay / Klarna in the canonical lockup. */}
         <div style={{
-          marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(255, 255, 255,0.08)',
+          marginTop: 36, paddingTop: 24, borderTop: '1px solid rgba(255, 255, 255,0.08)',
+          display: 'flex', justifyContent: 'flex-start',
+        }}>
+          <PaymentMethodStrip />
+        </div>
+
+        <div style={{
+          marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(255, 255, 255,0.05)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
         }}>
           <span className="small-text" style={{ color: 'rgba(255, 255, 255,0.3)' }}>© {new Date().getFullYear()} Aizel. All rights reserved.</span>
