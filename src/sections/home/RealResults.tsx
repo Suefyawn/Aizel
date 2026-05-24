@@ -78,13 +78,16 @@ const ACCENT_STYLES: Record<Review['accent'], {
   // sit cleanly on the new white site canvas; the accent identity is carried
   // by the quote-mark, dot strip and avatar colours (which use the Aizel
   // purple/gold/ink palette).
+  // Variant key kept for state stability — the actual look is now a pale
+  // purple variant. The cream "yellow" surface read as a YellowPink
+  // hangover; tone + identity move to the Aizel purple.
   yellow: {
-    cardBg:      'linear-gradient(160deg, #FFFDF6 0%, #FFFFFF 60%, #FFFDF6 100%)',
-    cardBorder:  '1px solid rgba(212, 164, 55, 0.28)',
-    quoteColor:  '#D4A437',
-    avatarBg:    '#D4A437',
-    avatarColor: '#0A0A0A',
-    dot:         '#D4A437',
+    cardBg:      'linear-gradient(160deg, #FAF7FC 0%, #FFFFFF 60%, #FAF7FC 100%)',
+    cardBorder:  '1px solid rgba(107, 44, 145, 0.20)',
+    quoteColor:  '#6B2C91',
+    avatarBg:    '#6B2C91',
+    avatarColor: '#FFFFFF',
+    dot:         '#6B2C91',
   },
   pink: {
     cardBg:      'linear-gradient(160deg, #FBF8FD 0%, #FFFFFF 55%, #FBF8FD 100%)',
@@ -203,12 +206,14 @@ export function RealResults() {
           >
             {/* Decorative diagonal accent — picks up the brand tone without
                 competing with the numerals. */}
+            {/* Two purple blobs at different opacities — was gold + purple
+                but the gold blob skewed the strip toward YellowPink. */}
             <div
               aria-hidden="true"
               style={{
                 position: 'absolute', top: -40, right: -40,
                 width: 180, height: 180, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(212, 164, 55, 0.18), transparent 65%)',
+                background: 'radial-gradient(circle, rgba(107, 44, 145, 0.14), transparent 65%)',
               }}
             />
             <div
@@ -216,7 +221,7 @@ export function RealResults() {
               style={{
                 position: 'absolute', bottom: -60, left: -60,
                 width: 220, height: 220, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(107, 44, 145, 0.12), transparent 65%)',
+                background: 'radial-gradient(circle, rgba(107, 44, 145, 0.10), transparent 65%)',
               }}
             />
             {STATS.map(s => (

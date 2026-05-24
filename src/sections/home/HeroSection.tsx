@@ -38,9 +38,12 @@ const GradientFallback = () => (
     aria-hidden="true"
     style={{
       position: 'absolute', inset: 0,
+      // Two purple radials over a white wash — was a gold + purple pair but
+      // the gold radial was the loudest thing in the hero and read as a
+      // YellowPink hangover. Now reads cleanly as the Aizel purple.
       background: `
-        radial-gradient(at 78% 22%, rgba(212, 164, 55, 0.30), transparent 55%),
-        radial-gradient(at 22% 78%, rgba(107, 44, 145, 0.22), transparent 55%),
+        radial-gradient(at 78% 22%, rgba(107, 44, 145, 0.18), transparent 55%),
+        radial-gradient(at 22% 78%, rgba(107, 44, 145, 0.26), transparent 55%),
         linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 50%, #FFFFFF 100%)`,
     }}
   />

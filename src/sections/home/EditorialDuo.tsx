@@ -16,6 +16,9 @@ const CARDS = [
     cta: 'Shop Hair Care',
     href: '/shop?taxon=hair',
     img: '',
+    // Pale purple — was #EFE3F3 (paler) / #F5E6CF (cream); the cream
+    // tile read as a YellowPink hangover. Both fallbacks are now purple
+    // tints at different lightnesses so the two cards stay distinct.
     fallbackColor: '#EFE3F3',
     alt: 'Curated shampoo, conditioner and treatment essentials',
   },
@@ -25,7 +28,7 @@ const CARDS = [
     cta: 'Shop Body Care',
     href: '/shop?taxon=body',
     img: '',
-    fallbackColor: '#F5E6CF',
+    fallbackColor: '#E2D2EB',
     alt: 'Cocoa butter, shea butter and body oils',
   },
 ];

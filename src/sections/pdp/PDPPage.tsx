@@ -590,7 +590,10 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
 
       <section
         style={{
-          background: 'linear-gradient(120deg, var(--paper2) 0%, var(--paper) 60%, #FFF8E1 100%)',
+          // Paper → pale purple wash (#F5EFF8). Was paper → cream (#FFF8E1)
+          // which read as a YellowPink hangover on the PDP. The pale purple
+          // anchors the section in the Aizel brand without dominating.
+          background: 'linear-gradient(120deg, var(--paper2) 0%, var(--paper) 60%, #F5EFF8 100%)',
           padding: '64px 0',
           borderTop: '1px solid var(--line)',
           borderBottom: '1px solid var(--line)',
@@ -600,12 +603,15 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
       >
         {/* Decorative brand-tint blobs — replaces the missing editorial
             photo placeholder with something that always looks intentional. */}
+        {/* Two purple blobs at different opacities — was a gold/purple pair
+            but the gold tint pushed the section toward YellowPink. Pure
+            purple keeps the decorative interest in the Aizel palette. */}
         <div
           aria-hidden="true"
           style={{
             position: 'absolute', top: -80, left: -60,
             width: 220, height: 220, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(212, 164, 55,0.22), transparent 65%)',
+            background: 'radial-gradient(circle, rgba(107, 44, 145,0.14), transparent 65%)',
           }}
         />
         <div
@@ -613,7 +619,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           style={{
             position: 'absolute', bottom: -100, right: -80,
             width: 280, height: 280, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(107, 44, 145,0.16), transparent 65%)',
+            background: 'radial-gradient(circle, rgba(107, 44, 145,0.20), transparent 65%)',
           }}
         />
 

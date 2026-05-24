@@ -764,7 +764,9 @@ export function CollectionPage({
                 style={{
                   width: 60, height: 60, margin: '0 auto 18px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #FDE7F0 0%, #FFF8E1 100%)',
+                  // Pale purple tints — was pink → cream and read as a
+                  // YellowPink hangover on the empty-results state.
+                  background: 'linear-gradient(135deg, #F5EFF8 0%, #E2D2EB 100%)',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '1.5rem', color: 'var(--brand-pink-text)',
                 }}
