@@ -4,7 +4,8 @@
 //   - Endpoint URL:  https://aizel.co.uk/api/payments/stripe/webhook
 //   - Events:        checkout.session.completed, checkout.session.expired,
 //                    checkout.session.async_payment_failed,
-//                    payment_intent.payment_failed
+//                    payment_intent.payment_failed,
+//                    charge.refunded
 //
 // The endpoint MUST receive the request body verbatim (no JSON parse) for
 // signature verification to work — that's why we read `req.text()` and pass
@@ -58,6 +59,15 @@ export async function POST(req: Request) {
         break;
       case 'payment_intent.payment_failed':
         await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+        break;
+      case 'charge.refunded':
+        // Catches refunds issued FROM THE STRIPE DASHBOARD (or any other
+        // out-of-band tool). Refunds issued through our admin RefundPanel
+        // already wrote the payments row — the unique (gateway, txn_ref)
+        // index means this handler is a no-op for those, while filling
+        // the gap for dashboard refunds that would otherwise leave the
+        // order's books out of sync.
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
         break;
       default:
         // Unhandled event types — log and ack so Stripe stops retrying.
@@ -196,4 +206,107 @@ async function handlePaymentIntentFailed(pi: Stripe.PaymentIntent): Promise<void
     .update({ status: 'payment_failed' })
     .eq('id', order.id)
     .eq('status', 'payment_pending');
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+  // `charge.refunded` fires every time a refund is created against the
+  // charge — including ones our admin RefundPanel just issued. The unique
+  // (gateway, txn_ref) index on payments makes those duplicate inserts
+  // a no-op, so this handler only effectively does work for refunds
+  // initiated outside Aizel (most commonly: someone clicked "Refund" in
+  // the Stripe dashboard).
+  //
+  // Correlation: charge.payment_intent → our payments row that holds the
+  // original Checkout Session id. We look up the order via the existing
+  // succeeded payment row rather than re-parsing metadata.
+
+  const piId = typeof charge.payment_intent === 'string'
+    ? charge.payment_intent
+    : charge.payment_intent?.id;
+  if (!piId) {
+    Sentry.captureMessage('charge.refunded with no payment_intent — cannot correlate', 'warning');
+    return;
+  }
+
+  const admin = supabaseAdmin();
+
+  // Find the succeeded Stripe payment that this charge belongs to. The
+  // Session payload we stored includes the PI id, so we fish out the row
+  // by joining via the raw_payload JSON. PostgREST supports
+  // ->>'payment_intent' for jsonb dot access.
+  const { data: sourceRow } = await admin
+    .from('payments')
+    .select('id, order_id, raw_payload')
+    .eq('gateway', 'stripe')
+    .eq('status', 'succeeded')
+    .filter('raw_payload->>payment_intent', 'eq', piId)
+    .maybeSingle<{ id: string; order_id: string; raw_payload: Record<string, unknown> }>();
+
+  if (!sourceRow) {
+    // Could be a charge for an order we never recorded (test mode, manual
+    // dashboard payment). Skip rather than insert orphan payments rows.
+    Sentry.captureMessage(`charge.refunded for unknown PI ${piId}`, 'info');
+    return;
+  }
+
+  // Walk every refund on the charge — Stripe fires `charge.refunded` once
+  // per refund, but `charge.refunds.data` carries the full history, and a
+  // single event sometimes covers a multi-refund reconciliation. Inserting
+  // each one keyed by its refund id makes the handler safely re-runnable.
+  const refunds = charge.refunds?.data ?? [];
+  if (refunds.length === 0) {
+    Sentry.captureMessage(`charge.refunded with empty refunds.data for PI ${piId}`, 'warning');
+    return;
+  }
+
+  for (const refund of refunds) {
+    const amount = (refund.amount ?? 0) / 100;
+    // Upsert via (gateway, txn_ref) unique index — INSERT … ON CONFLICT
+    // DO NOTHING is the Postgres pattern. PostgREST exposes this via
+    // .upsert({...}, { onConflict: 'gateway,txn_ref', ignoreDuplicates: true }).
+    await admin.from('payments').upsert(
+      {
+        order_id: sourceRow.order_id,
+        gateway: 'stripe',
+        amount,
+        currency: (charge.currency ?? 'gbp').toUpperCase(),
+        status: 'refunded',
+        txn_ref: refund.id,
+        raw_payload: {
+          stripe_refund: { id: refund.id, status: refund.status, reason: refund.reason },
+          via: 'webhook:charge.refunded',
+        },
+      },
+      { onConflict: 'gateway,txn_ref', ignoreDuplicates: true },
+    );
+  }
+
+  // Recompute the cumulative refunded amount + flip status if the order is
+  // now fully refunded. Mirrors the logic in refund-actions.ts so an
+  // admin-initiated refund and a dashboard-initiated one converge on the
+  // same end state.
+  const { data: allPayments } = await admin
+    .from('payments')
+    .select('amount, status')
+    .eq('order_id', sourceRow.order_id)
+    .eq('gateway', 'stripe');
+  const refundedTotal = ((allPayments ?? []) as Array<{ amount: number; status: string }>)
+    .filter(r => r.status === 'refunded')
+    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+  const { data: orderRow } = await admin
+    .from('orders')
+    .select('total, status')
+    .eq('id', sourceRow.order_id)
+    .maybeSingle<{ total: number; status: string }>();
+  if (orderRow && refundedTotal + 0.005 >= Number(orderRow.total ?? 0)) {
+    await admin.from('orders').update({ status: 'refunded' }).eq('id', sourceRow.order_id);
+    await admin.from('order_events').insert({
+      order_id: sourceRow.order_id,
+      from_status: orderRow.status,
+      to_status: 'refunded',
+      note: `Refunded via Stripe dashboard (£${refundedTotal.toFixed(2)})`,
+      actor_kind: 'system',
+    });
+  }
 }
