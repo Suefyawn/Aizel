@@ -75,9 +75,14 @@ export function QuizClient({ products }: Props) {
         </p>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — role=progressbar so the aria-label is permitted
+          (axe-core flags aria-label on a bare div as aria-prohibited-attr). */}
       <div
+        role="progressbar"
         aria-label={`Question ${step + 1} of ${total}`}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={step + 1}
         style={{ height: 4, background: 'var(--paper2)', borderRadius: 'var(--radius-pill)', overflow: 'hidden', marginBottom: 8 }}
       >
         <div style={{

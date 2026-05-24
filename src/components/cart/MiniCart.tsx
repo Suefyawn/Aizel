@@ -43,7 +43,15 @@ export function MiniCart() {
         role="dialog"
         aria-modal={cartOpen}
         aria-label="Shopping cart"
-        aria-hidden={!cartOpen}
+        // The drawer stays in the DOM (so the slide-in animates) but when
+        // closed it must be removed from the accessibility + tab order.
+        // `inert` does both in one go (HTML5 attribute, well-supported
+        // 2023+) and avoids the aria-hidden-on-focusable violation that
+        // `aria-hidden={!cartOpen}` causes — focusable buttons inside an
+        // aria-hidden subtree fail WCAG 4.1.2.
+        // Cast via spread because React 19's types haven't surfaced
+        // `inert` as a typed prop yet.
+        {...(cartOpen ? {} : { inert: '' as unknown as boolean })}
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, width: 400, maxWidth: '90vw',
           background: 'var(--paper)', boxShadow: 'var(--shadow-1)',

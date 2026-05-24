@@ -40,7 +40,7 @@ export function PressStrip() {
             style={{
               fontFamily: 'var(--font-ui)', fontSize: '0.75rem', fontWeight: 600,
               letterSpacing: '0.2em', textTransform: 'uppercase',
-              color: 'rgba(255, 255, 255, 0.35)',
+              color: 'rgba(255, 255, 255, 0.7)',
               textDecoration: 'none',
               transition: 'color 160ms ease-out',
               padding: '6px 4px', // comfortable tap target without breaking the row rhythm
@@ -48,9 +48,9 @@ export function PressStrip() {
             // Inline hover via JS event handlers — keeps the strip self-
             // contained without adding a CSS rule for one component.
             onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.35)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)')}
             onFocus={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)')}
-            onBlur={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.35)')}
+            onBlur={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)')}
           >{o.name}</a>
         ))}
       </div>
