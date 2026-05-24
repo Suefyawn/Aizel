@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminBottomNav } from './AdminBottomNav';
 import { NotificationsBell } from './NotificationsBell';
+import { KeyboardShortcutsCheatSheet } from './KeyboardShortcutsCheatSheet';
 import { useBodyScrollLock, useEscapeKey, useFocusTrap } from '@/lib/hooks/useBodyScrollLock';
+import { useAdminHotkeys } from '@/lib/hooks/useAdminHotkeys';
 import type { StaffSession } from '@/lib/permissions';
 
 interface Notification {
@@ -41,6 +43,11 @@ export function AdminShell({
   useBodyScrollLock(open);
   useEscapeKey(open, () => setOpen(false));
   useFocusTrap(open, drawerRef);
+
+  // Global admin shortcuts: `g <letter>` jumps between sections, `?`
+  // opens the cheat sheet. The hook ignores keystrokes while the
+  // operator is typing in a form so it can't collide with field entry.
+  const { isCheatSheetOpen, closeCheatSheet } = useAdminHotkeys();
 
   // Auto-close the drawer when crossing to desktop so a stuck-open drawer
   // doesn't leave the body scroll-locked when the viewport widens.
@@ -367,6 +374,11 @@ export function AdminShell({
         pendingOrderCount={pendingOrderCount}
         onMore={() => setOpen(true)}
       />
+
+      {/* Admin keyboard-shortcut cheat sheet — toggled by `?`. Lives at
+          the root of the shell so it overlays any page. Renders nothing
+          until opened, so the rest of the admin pays no render cost. */}
+      <KeyboardShortcutsCheatSheet open={isCheatSheetOpen} onClose={closeCheatSheet} />
     </>
   );
 }
