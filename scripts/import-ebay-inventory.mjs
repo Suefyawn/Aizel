@@ -90,31 +90,72 @@ function coalesce(row, keys) {
   return '';
 }
 
-// Heuristic mapping from eBay categories → Aizel's taxonomy. Extend this
-// table as you see how the seller's listings are categorised.
+// Keyword → Aizel taxonomy. Tuned for the gorgeousbeaut_0 catalogue
+// (Afro/Black hair & body care). Order matters — the first matching key
+// wins, so more specific terms come before generic ones.
+//
+// Schema note: `category` is the LEAF (Shampoo & Conditioner, Cocoa & Shea
+// Butter, etc.) — Aizel's taxon resolver expects the leaf-as-category.
+// `subcategory` carries the parent taxon for breadcrumbs / filters.
 const CATEGORY_MAP = {
-  // Makeup
-  'Lipstick':     { category: 'Makeup', subcategory: 'Lip & Cheek Tints' },
-  'Lip Gloss':    { category: 'Makeup', subcategory: 'Lip & Cheek Tints' },
-  'Blusher':      { category: 'Makeup', subcategory: 'Lip & Cheek Tints' },
-  'Foundation':   { category: 'Makeup', subcategory: 'Face Makeup' },
-  'Concealer':    { category: 'Makeup', subcategory: 'Face Makeup' },
-  'Powder':       { category: 'Makeup', subcategory: 'Face Makeup' },
-  'Mascara':      { category: 'Makeup', subcategory: 'Eyes' },
-  'Eyeshadow':    { category: 'Makeup', subcategory: 'Eyes' },
-  'Eyeliner':     { category: 'Makeup', subcategory: 'Eyes' },
-  'Highlighter':  { category: 'Makeup', subcategory: 'Highlighters' },
-  'Brushes':      { category: 'Makeup', subcategory: 'Brushes & Tools' },
-  // Skincare
-  'Cleanser':     { category: 'Skincare', subcategory: 'Cleansers & Treatments' },
-  'Moisturiser':  { category: 'Skincare', subcategory: 'Moisturisers' },
-  'Moisturizer':  { category: 'Skincare', subcategory: 'Moisturisers' },
-  'Serum':        { category: 'Skincare', subcategory: 'Cleansers & Treatments' },
-  'Mask':         { category: 'Skincare', subcategory: 'Masks' },
-  // Fragrance
-  'Perfume':      { category: 'Fragrance', subcategory: 'Perfume' },
-  'Cologne':      { category: 'Fragrance', subcategory: 'Perfume' },
-  'Body Spray':   { category: 'Fragrance', subcategory: 'Body Mist' },
+  // ── Hair Care: oils first (more specific than "hair") ──
+  'Jamaican Black Castor': { category: 'Hair Oils & Serums', subcategory: 'Hair Care' },
+  'Castor Oil':            { category: 'Hair Oils & Serums', subcategory: 'Hair Care' },
+  'Amla Oil':              { category: 'Hair Oils & Serums', subcategory: 'Hair Care' },
+  'Hair Oil':              { category: 'Hair Oils & Serums', subcategory: 'Hair Care' },
+  'Hair Serum':            { category: 'Hair Oils & Serums', subcategory: 'Hair Care' },
+  // Edge & gels
+  'Edge Control':          { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  'Eco Style':             { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  'Styling Gel':           { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  'Shine ‘n Jam':          { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  "Shine 'n Jam":          { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  'Hair Gel':              { category: 'Edge Control & Gels', subcategory: 'Hair Care' },
+  // Treatments / masks
+  'Protein Treatment':     { category: 'Hair Treatments & Masks', subcategory: 'Hair Care' },
+  'Deep Conditioner':      { category: 'Hair Treatments & Masks', subcategory: 'Hair Care' },
+  'Hair Treatment':        { category: 'Hair Treatments & Masks', subcategory: 'Hair Care' },
+  'Hair Mask':             { category: 'Hair Treatments & Masks', subcategory: 'Hair Care' },
+  // Mousse / hairspray / dry shampoo
+  'Dry Shampoo':           { category: 'Mousse & Hairspray',     subcategory: 'Hair Care' },
+  'Hair Spray':            { category: 'Mousse & Hairspray',     subcategory: 'Hair Care' },
+  'Hairspray':             { category: 'Mousse & Hairspray',     subcategory: 'Hair Care' },
+  'Mousse':                { category: 'Mousse & Hairspray',     subcategory: 'Hair Care' },
+  // Curl / leave-in
+  'Curl Cream':            { category: 'Curl & Styling Creams',  subcategory: 'Hair Care' },
+  'Curl Activator':        { category: 'Curl & Styling Creams',  subcategory: 'Hair Care' },
+  'Leave-In':              { category: 'Curl & Styling Creams',  subcategory: 'Hair Care' },
+  'Leave In':              { category: 'Curl & Styling Creams',  subcategory: 'Hair Care' },
+  // Relaxers
+  'Relaxer':               { category: 'Relaxers & Kits',        subcategory: 'Hair Care' },
+  'No-Lye':                { category: 'Relaxers & Kits',        subcategory: 'Hair Care' },
+  // Shampoo / conditioner (after the more specific terms above)
+  'Shampoo':               { category: 'Shampoo & Conditioner',  subcategory: 'Hair Care' },
+  'Conditioner':           { category: 'Shampoo & Conditioner',  subcategory: 'Hair Care' },
+  // ── Body Care ──
+  'Cocoa Butter':          { category: 'Cocoa & Shea Butter',    subcategory: 'Body Care' },
+  'Shea Butter':           { category: 'Cocoa & Shea Butter',    subcategory: 'Body Care' },
+  'Body Butter':           { category: 'Cocoa & Shea Butter',    subcategory: 'Body Care' },
+  'Body Oil':              { category: 'Body Oils',              subcategory: 'Body Care' },
+  'Body Lotion':           { category: 'Body Lotions',           subcategory: 'Body Care' },
+  'Petroleum Jelly':       { category: 'Petroleum Jelly',        subcategory: 'Body Care' },
+  'Vaseline':              { category: 'Petroleum Jelly',        subcategory: 'Body Care' },
+  'Body Wash':             { category: 'Body Wash',              subcategory: 'Body Care' },
+  // ── Styling & Tools ──
+  'Wonder Lace':           { category: 'Wig & Lace Adhesives',   subcategory: 'Styling & Tools' },
+  'Lace Bond':             { category: 'Wig & Lace Adhesives',   subcategory: 'Styling & Tools' },
+  'Wig Glue':              { category: 'Wig & Lace Adhesives',   subcategory: 'Styling & Tools' },
+  'Bonding Glue':          { category: 'Bonding Glue',           subcategory: 'Styling & Tools' },
+  'Hair Bonding':          { category: 'Bonding Glue',           subcategory: 'Styling & Tools' },
+  // ── Grooming ──
+  'Magic Shaving':         { category: 'Shaving',                subcategory: 'Grooming' },
+  'Shaving Powder':        { category: 'Shaving',                subcategory: 'Grooming' },
+  'Shaving Cream':         { category: 'Shaving',                subcategory: 'Grooming' },
+  'Bump Stopper':          { category: 'Bump Treatments',        subcategory: 'Grooming' },
+  'Beard Oil':             { category: 'Beard Care',             subcategory: 'Grooming' },
+  'Beard Balm':            { category: 'Beard Care',             subcategory: 'Grooming' },
+  // ── Generic catch-all for anything hair-adjacent we missed ──
+  'Hair':                  { category: 'Shampoo & Conditioner',  subcategory: 'Hair Care' },
 };
 
 function guessCategory(rawCategory, title) {
@@ -125,13 +166,54 @@ function guessCategory(rawCategory, title) {
   return { category: 'Makeup', subcategory: null };
 }
 
+// Known brands stocked at Aizel. Used as the first pass at brand detection
+// (the scraper's first-words heuristic catches multi-word phrases like
+// "Cantu Avocado", which is a Cantu *line*, not a brand). Order doesn't
+// matter — `detectBrand` picks the longest matching prefix so "Mane 'n Tail"
+// beats "Mane".
+const KNOWN_BRANDS = [
+  'Cantu', 'ORS', "Palmer's", 'Palmers', 'Kuza', 'ApHogee', 'Aphogee',
+  "Mane 'n Tail", 'Mane n Tail', 'Ebin', 'As I Am', 'Blue Magic',
+  'KeraCare', 'Kera Care', 'Salon Pro', 'Dabur', 'Magic Shaving',
+  "Ghana's Best", 'Ghanas Best', "Let's Jam", 'Lets Jam', 'Got2b',
+  'got2b', 'Vaseline', 'Jergens', 'Bump Stopper', 'SoftSheen-Carson',
+  'SoftSheen', 'Eco Style', 'Eco Styler', 'Ampro', 'Optimum',
+  'Just for Me', 'Murray', 'Doo Gro', 'Lustrasilk', 'Tropic Isle',
+  'TCB', 'Pink', 'Africa', "Africa's Best", 'Shine n Jam',
+  "Shine 'n Jam", 'Clippercide', 'Fair And White', 'Neutrogena',
+  'LA Girl', 'Gabri', 'Sulfur8', 'Sulfur 8',
+];
+const ACCESSIBILITY_SUFFIX = /\s*Opens?\s+in\s+a\s+new\s+window\s+or\s+tab\s*$/i;
+
+function detectBrand(title, fallback) {
+  // Try the explicit CSV `Brand` column first — but only if it's a SHORT
+  // single-brand value, not a multi-word phrase like the scraper produces.
+  if (fallback) {
+    const matchInFallback = KNOWN_BRANDS.find(b => fallback.toLowerCase().startsWith(b.toLowerCase()));
+    if (matchInFallback) return matchInFallback;
+  }
+  // Otherwise scan the title for a known brand prefix.
+  const lower = (title || '').toLowerCase();
+  // Sort by length DESC so "Mane 'n Tail" matches before "Mane".
+  const sorted = [...KNOWN_BRANDS].sort((a, b) => b.length - a.length);
+  for (const b of sorted) {
+    if (lower.startsWith(b.toLowerCase())) return b;
+  }
+  // Last resort: the scraper's first-capitalised-word heuristic.
+  return fallback || null;
+}
+
 function mapRow(row) {
-  const title = coalesce(row, ['Title', 'Item title', 'Product name']);
+  let title = coalesce(row, ['Title', 'Item title', 'Product name']);
   if (!title) return null;
+  // Strip the eBay "Opens in a new window or tab" accessibility suffix the
+  // scraper sometimes captures from card-link text.
+  title = title.replace(ACCESSIBILITY_SUFFIX, '').trim();
   const priceRaw = coalesce(row, ['Current price', 'Start price', 'Price', 'BuyItNowPrice']);
   const price = Number(String(priceRaw).replace(/[^0-9.]/g, '')) || 0;
   const stock = Number(coalesce(row, ['Available quantity', 'Quantity', 'Qty'])) || 0;
-  const brand = coalesce(row, ['Brand', 'Manufacturer']);
+  const brandFallback = coalesce(row, ['Brand', 'Manufacturer']);
+  const brand = detectBrand(title, brandFallback);
   const rawCategory = coalesce(row, ['eBay Category 1 Name', 'Primary Category', 'Category']);
   const description = coalesce(row, ['Description', 'Item description', 'HTML description']);
   const imageRaw = coalesce(row, ['Item photo URL', 'Picture URL', 'Image URLs', 'PicURL']);
