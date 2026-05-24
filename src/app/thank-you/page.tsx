@@ -51,7 +51,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
             Your order <strong>{orderNumber}</strong> has been placed successfully.
           </p>
           <p className="body-text" style={{ color: 'var(--ink-700)', marginBottom: 32 }}>
-            We&apos;ll send you a confirmation on WhatsApp with tracking details once your order ships. Delivery typically takes 2–4 business days.
+            We&apos;ll email you tracking details once your order ships. Royal Mail Tracked typically lands in 2–3 working days across the UK.
           </p>
 
           {bankAccounts.length > 0 && (
