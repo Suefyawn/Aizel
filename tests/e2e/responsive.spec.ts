@@ -15,8 +15,20 @@ import { test, expect } from '@playwright/test';
 // guard for the breakpoint scaffolding itself.
 
 const VIEWPORTS = [
+  // iPhone SE 1st gen — the narrowest viewport real customers still
+  // use in 2026. If anything overflows here, this is where it shows up.
+  { name: 'mobile-320',  width: 320,  height: 568  },
+  // iPhone SE 2nd/3rd gen, the modal "small phone" most layouts target.
   { name: 'mobile-375',  width: 375,  height: 667  },
+  // Phone landscape — flat-lay editorial pages and the hero often
+  // break here when only portrait was considered.
+  { name: 'phone-landscape', width: 667, height: 375 },
+  // iPad portrait — the most common tablet.
   { name: 'tablet-768',  width: 768,  height: 1024 },
+  // iPad landscape — at this width the mobile/tablet rules turn over
+  // to desktop. Catch any laptop-zone breakages.
+  { name: 'tablet-1024', width: 1024, height: 768  },
+  // Standard laptop / small desktop.
   { name: 'desktop-1280', width: 1280, height: 800 },
 ] as const;
 
@@ -26,17 +38,25 @@ const ROUTES = [
   '/',
   '/shop',
   '/shop?category=hair-care',
+  '/search?q=oil',
   '/cart',
   '/checkout',
   '/track',
   '/quiz',
+  '/wishlist',
   '/blog',
+  '/blog/demo-wash-day-routine',     // PDP-style article
   '/brand',
+  '/brand/cantu',                    // brand landing
+  '/product/demo-fair-and-white-gold-ultimate-even-tone-revitalizing-body-lotion-1-1', // PDP
   '/privacy',
+  '/page/about',                     // CMS page
   '/login',
+  '/forgot-password',
   '/account',          // gated — bounces to /login
   '/account/orders',   // gated
   '/account/addresses',// gated
+  '/account/profile',  // gated
 ] as const;
 
 for (const vp of VIEWPORTS) {

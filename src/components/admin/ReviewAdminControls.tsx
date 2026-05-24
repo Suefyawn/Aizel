@@ -141,7 +141,7 @@ export function EditReviewButton({
       >
         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#111827' }}>Edit review</h3>
         <input type="hidden" name="id" value={id} />
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '2fr 1fr' }}>
+        <div className="adm-modal-grid" style={{ display: 'grid', gap: 14, gridTemplateColumns: '2fr 1fr' }}>
           <div>
             <label style={labelStyle}>Author name</label>
             <input

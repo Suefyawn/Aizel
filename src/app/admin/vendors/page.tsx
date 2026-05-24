@@ -129,7 +129,12 @@ export default async function VendorsPage() {
                     </td>
                     <td data-label="WhatsApp" style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#374151', fontFamily: 'monospace' }}>{v.phone}</td>
                     <td data-label="Settlement terms" style={{ padding: '12px 16px' }}>
-                      <form action={updateVendor} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      {/* `adm-vendor-settlement` so the mobile-card layout
+                          can override the global right-align (which would
+                          stack these inputs on top of each other in the
+                          card's right column). On phone we want this form
+                          left-aligned + wrapping naturally. */}
+                      <form action={updateVendor} className="adm-vendor-settlement" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <input
                           name="commission_pct" type="number" min={0} max={100} step="0.01"

@@ -81,6 +81,7 @@ export function OrdersFilter({ total }: { total: number }) {
         defaultValue={q}
         onChange={e => setSearch(e.target.value)}
         placeholder="Search order # or customer…"
+        className="adm-orders-search"
         style={{
           padding: '7px 12px', border: '1px solid #d1d5db', borderRadius: 8,
           fontSize: '0.875rem', color: '#111827', background: 'white', outline: 'none',

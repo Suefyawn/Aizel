@@ -741,6 +741,55 @@ form[role='search']:focus-within {
   .trust-grid { grid-template-columns: 1fr !important; }
 }
 
+/* FAB ↔ bulk-action bar collision on phones. When ProductsTable's bulk
+ * bar mounts at bottom: 56px (above the 56 px bottom nav), the FAB at
+ * bottom: 72px sits inside the bulk bar's vertical range and gets
+ * covered. `:has()` lets us push the FAB up out of the way only when
+ * the bulk bar is actually on the page. Modern browsers only (Safari
+ * 15.4+, Chrome 105+, Firefox 121+) — older browsers fall through to
+ * the existing FAB position which is still tappable, just visually
+ * busier. */
+@media (max-width: 767px) {
+  body:has(.adm-bulk-bar) .adm-fab {
+    bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* OrdersFilter search input: the desktop 220 px minWidth pushes the
+ * "X orders" count off-screen at 375 px in the same flex row. On
+ * phones let it grow to full width on its own row so the count keeps
+ * its place at `margin-left: auto`. */
+@media (max-width: 600px) {
+  .adm-orders-search { min-width: 0 !important; flex: 1 1 100% !important; }
+}
+
+/* Vendors settlement-terms cell — the global .adm-table-cards mobile
+ * rule sets `text-align: right` on every cell so two-input rows stack
+ * cleanly. But the vendor settlement form has a 4-element inline form
+ * (commission % + label + select + button) that we want left-aligned
+ * and wrapping naturally; right-align stacks them on top of each
+ * other. */
+@media (max-width: 767px) {
+  .adm-vendor-settlement {
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+  td:has(> .adm-vendor-settlement) {
+    text-align: left !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* AdminSidebar 1024–1280 px tight zone — the desktop 240 px sidebar
+ * leaves a narrow content column on laptops. Pull it down to the same
+ * 200 px the 768–1024 rule uses; group labels still fit and the
+ * content gains 40 px to breathe. */
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .adm-sidebar { width: 200px !important; }
+  .adm-main    { margin-left: 200px !important; }
+}
+
 /* Admin data tables → stacked cards on phones.
  *
  * The Orders, Products, Vendors, Users, Blog, Coupons, Segments, Audit and
