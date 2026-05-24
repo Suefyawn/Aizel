@@ -102,15 +102,17 @@ export function SearchOverlay({ trending, categories }: SearchOverlayProps = {})
     router.push(`/product/${slug}`);
   };
 
-  // Submit the current query as a full /shop?q=… search and close the overlay.
-  // Called from Enter-key submit, the "View all results" link, and trending /
-  // category pill clicks (which now navigate rather than just showing inline
-  // typeahead matches).
+  // Submit the current query as a full /search?q=… results page and close
+  // the overlay. Called from Enter-key submit, the "View all results"
+  // link, and trending pill clicks. /search is the dedicated query-
+  // driven results route — different from /shop?q= which is the
+  // catalogue with a search filter applied. /search ranks by pg_trgm
+  // similarity; /shop filters in-place with the rail still applicable.
   const goToSearch = (term: string) => {
     const t = term.trim();
     if (!t) return;
     setSearchOpen(false);
-    router.push(`/shop?q=${encodeURIComponent(t)}`);
+    router.push(`/search?q=${encodeURIComponent(t)}`);
   };
   const goToCategory = (cat: string) => {
     setSearchOpen(false);
