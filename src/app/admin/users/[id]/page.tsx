@@ -6,6 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { ORDER_STATUS_LABELS, type Order, type AdminUser, type OrderStatus } from '@/types';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
+import { CustomerGDPRPanel } from '@/components/admin/CustomerGDPRPanel';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
@@ -57,6 +58,9 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   if (session && !session.isOwner && !session.permissions.includes('customers.view')) {
     return <NoAccess section="Customers" />;
   }
+  // customers.edit gates the GDPR actions (data export + anonymise). A
+  // view-only staffer still sees the panel but in a disabled state.
+  const canManageCustomer = !session || session.isOwner || session.permissions.includes('customers.edit');
   const { id } = await params;
 
   // orders is RLS-locked; the `get_admin_user` RPC already uses
@@ -222,6 +226,17 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           )}
         </div>
       </div>
+
+      {/* UK GDPR controls — sit ABOVE the activity timeline because the
+          timeline can be very long; we want the rights-handling actions
+          visible without scrolling. */}
+      <CustomerGDPRPanel
+        userId={id}
+        displayName={user.first_name || user.last_name
+          ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
+          : user.email}
+        canManage={canManageCustomer}
+      />
 
       {/* Activity timeline — the customer's journey */}
       <div style={{ ...section, marginTop: 20 }}>
