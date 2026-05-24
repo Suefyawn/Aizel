@@ -46,7 +46,11 @@ export default function AccountPage() {
             change. Surfaces "£X to Gold" progress alongside the badge. */}
         <TierStrip />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }} className="duo-grid">
+        {/* Drop `.duo-grid` — that class forces 1-col under 900px, which
+            collapses six dashboard tiles into a tall single column on
+            tablet. The auto-fit minmax already gives a 3-up tablet / 2-up
+            phone / 1-up tiny-phone layout naturally. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
           <Link href="/account/orders" style={{
             display: 'block', padding: '28px 24px', background: 'white', borderRadius: 12,
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)', textDecoration: 'none', border: '1px solid var(--line)',

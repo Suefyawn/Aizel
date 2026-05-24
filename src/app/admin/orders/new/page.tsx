@@ -36,7 +36,7 @@ export default async function NewOrderPage() {
   }));
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 980 }}>
+    <div className="adm-page" style={{ padding: '32px 36px', maxWidth: 980 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
         <Link href="/admin/orders" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '0.875rem' }}>← Orders</Link>
         <span style={{ color: '#d1d5db' }}>/</span>

@@ -718,6 +718,27 @@ form[role='search']:focus-within {
   .trust-grid { grid-template-columns: repeat(2, 1fr) !important; }
   /* Reclaim horizontal room on phones — the 36px desktop gutter is too wide. */
   .adm-page { padding: 20px 14px !important; }
+  /* Inventory's manual stock-adjustment form is a 5-col grid (product /
+   * delta / reason / note / submit) tuned for desktop; on phones each
+   * field shrinks to ~60-80px which is unusable. Collapse to one
+   * column so each field gets full width. */
+  .adm-stock-form { grid-template-columns: 1fr !important; align-items: stretch !important; }
+  /* Refund panel is a 3-col grid (amount / reason / submit) that
+   * overflows even the desktop order-detail card on tablets and below.
+   * Single-column on phone, amount + reason on one row + button below
+   * via a 2-col grid for tablets where space allows. */
+  .adm-refund-form { grid-template-columns: 1fr !important; }
+  /* Toast container collides with the 56 px bottom nav on phones. Lift
+   * above it (plus iOS safe-area inset) so it doesn't disappear behind
+   * the tab bar. */
+  .adm-toast-stack { bottom: calc(72px + env(safe-area-inset-bottom)) !important; right: 12px !important; left: 12px !important; }
+  .adm-toast-stack > div { max-width: 100% !important; }
+}
+
+/* 4-up Aizel trust grid: 2-up at tablet, 1-up at very narrow phones so
+ * each card's body copy isn't crushed to 4-character lines. */
+@media (max-width: 480px) {
+  .trust-grid { grid-template-columns: 1fr !important; }
 }
 
 /* Admin data tables → stacked cards on phones.

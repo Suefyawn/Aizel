@@ -73,7 +73,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
   }
 
   return (
-    <div style={{ padding: '32px 36px' }}>
+    <div className="adm-page" style={{ padding: '32px 36px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
         <Link href="/admin/products" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '0.875rem' }}>
           ← Products
@@ -94,7 +94,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
         <form action={action}>
           {/* ── Basics ─────────────────────────────────────────────────── */}
           <Section title="Basics" first>
-            <div style={row2}>
+            <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
                 <label style={lbl}>Brand</label>
                 <input name="brand" defaultValue={product?.brand ?? ''} style={inp} placeholder="e.g. CeraVe — blank for own-label" />
@@ -110,7 +110,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
               </div>
             </div>
 
-            <div style={row2}>
+            <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
                 <label style={lbl}>Category *</label>
                 <select name="category" required defaultValue={product?.category ?? ''} style={inp}>
@@ -204,7 +204,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
 
           {/* ── Vendor & sourcing ──────────────────────────────────────── */}
           <Section title="Vendor & sourcing" desc="Link the product to a supplier to track cost, margin and payouts.">
-            <div style={row2}>
+            <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
                 <label style={lbl}>Vendor</label>
                 <select name="vendor_id" value={vendorId} onChange={e => setVendorId(e.target.value)} style={inp}>
@@ -284,7 +284,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
                 placeholder="Short product description shown on the product page…" />
             </div>
 
-            <div style={row2}>
+            <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
                 <label style={lbl}>How to Use</label>
                 <textarea name="how_to_use" defaultValue={product?.how_to_use ?? ''} rows={4}
@@ -327,7 +327,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
 
           {/* ── Search & social (SEO) ──────────────────────────────────── */}
           <Section title="Search & social" desc="Leave blank to fall back to auto-generated values.">
-            <div style={row2}>
+            <div className="adm-form-2col" style={row2}>
               <div style={fieldWrap}>
                 <label style={lbl}>SEO title</label>
                 <input name="seo_title" type="text" defaultValue={product?.seo_title ?? ''} maxLength={120}

@@ -133,7 +133,7 @@ export default async function InventoryPage({
   const orderMap = new Map<string, OrderLite>(((orderData ?? []) as OrderLite[]).map(o => [o.id, o]));
 
   return (
-    <div style={{ padding: '32px 36px' }}>
+    <div className="adm-page" style={{ padding: '32px 36px' }}>
       <h1 style={{ margin: '0 0 6px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Inventory</h1>
       <p style={{ margin: '0 0 24px', fontSize: '0.8125rem', color: '#6b7280' }}>
         Current stock levels at a glance, plus a permanent audit trail of every movement.
@@ -187,7 +187,7 @@ export default async function InventoryPage({
           </div>
         ) : (
           <div style={{ maxHeight: 440, overflowY: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+            <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
               <thead>
                 <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                   {['Product', 'Stock', 'Status', ''].map(h => (
@@ -208,15 +208,15 @@ export default async function InventoryPage({
                     : null;
                   return (
                     <tr key={p.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                      <td style={td}>
+                      <td data-label="Product" style={td}>
                         <Link href={`/admin/products/${p.id}`} style={{ color: '#111827', fontWeight: 500, textDecoration: 'none' }}>
                           {brandPlusName(p.brand, p.name)}
                         </Link>
                       </td>
-                      <td style={{ ...td, fontFamily: 'monospace', fontWeight: 700, color: p.stock <= 0 ? '#991b1b' : p.stock <= LOW_STOCK_THRESHOLD ? '#92400e' : '#111827' }}>
+                      <td data-label="Stock" style={{ ...td, fontFamily: 'monospace', fontWeight: 700, color: p.stock <= 0 ? '#991b1b' : p.stock <= LOW_STOCK_THRESHOLD ? '#92400e' : '#111827' }}>
                         {p.stock}
                       </td>
-                      <td style={td}>
+                      <td data-label="Status" style={td}>
                         {currentView === 'dead' && ageDays !== null ? (
                           <span style={{ background: '#F5EFF8', color: '#4A1A6B', padding: '2px 8px', borderRadius: 6, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             {ageDays} days on shelf
@@ -245,6 +245,7 @@ export default async function InventoryPage({
       <h2 style={{ margin: '0 0 10px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Log a stock change</h2>
       <form
         action={adjustStock}
+        className="adm-stock-form"
         style={{ background: 'white', borderRadius: 10, border: '1px solid #e5e7eb', padding: 16, marginBottom: 24, display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 2fr auto', gap: 12, alignItems: 'end' }}
       >
         <div>
@@ -281,7 +282,7 @@ export default async function InventoryPage({
       <h2 style={{ margin: '0 0 10px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Movement history</h2>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, fontSize: '0.8125rem', flexWrap: 'wrap' }}>
+      <div className="adm-filter-pills" style={{ display: 'flex', gap: 8, marginBottom: 16, fontSize: '0.8125rem', flexWrap: 'wrap' }}>
         <Link href="/admin/inventory" style={chipLink(!reasonFilter && !productFilter)}>All</Link>
         {(['order','return','cancellation','restock','adjustment','damage','import'] as const).map(r => (
           <Link key={r} href={`/admin/inventory?reason=${r}`} style={chipLink(reasonFilter === r)}>
@@ -295,7 +296,7 @@ export default async function InventoryPage({
         {rows.length === 0 ? (
           <div style={{ padding: 60, textAlign: 'center', color: '#9ca3af' }}>No stock movements yet.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
             <thead>
               <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {['When','Product','Δ','Balance','Reason','Order','Actor','Note'].map(h => (
@@ -310,33 +311,33 @@ export default async function InventoryPage({
                 const color = reasonColors[r.reason];
                 return (
                   <tr key={r.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                    <td style={{ ...td, color: '#6b7280', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
-                    <td style={td}>
+                    <td data-label="When" style={{ ...td, color: '#6b7280', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
+                    <td data-label="Product" style={td}>
                       {product
                         ? <Link href={`/admin/products/${product.id}`} style={{ color: '#4A1A6B', textDecoration: 'none' }}>{brandPlusName(product.brand, product.name)}</Link>
                         : <span style={{ color: '#9ca3af' }}>(variant {r.variant_id?.slice(0, 8)}…)</span>}
                     </td>
-                    <td style={{ ...td, fontFamily: 'monospace', fontWeight: 700, color: r.qty_delta < 0 ? '#991b1b' : '#065f46' }}>
+                    <td data-label="Δ" style={{ ...td, fontFamily: 'monospace', fontWeight: 700, color: r.qty_delta < 0 ? '#991b1b' : '#065f46' }}>
                       {r.qty_delta > 0 ? '+' : ''}{r.qty_delta}
                     </td>
-                    <td style={{ ...td, fontFamily: 'monospace' }}>{r.balance_after ?? '—'}</td>
-                    <td style={td}>
+                    <td data-label="Balance" style={{ ...td, fontFamily: 'monospace' }}>{r.balance_after ?? '—'}</td>
+                    <td data-label="Reason" style={td}>
                       <span style={{ background: color.bg, color: color.fg, padding: '2px 8px', borderRadius: 6, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         {r.reason}
                       </span>
                     </td>
-                    <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                    <td data-label="Order" style={{ ...td, fontFamily: 'monospace', fontSize: '0.75rem' }}>
                       {order
                         ? <Link href={`/admin/orders/${order.id}`} style={{ color: '#4A1A6B', textDecoration: 'none' }}>{order.order_number}</Link>
                         : '—'}
                     </td>
-                    <td style={{ ...td, fontSize: '0.75rem', color: '#374151' }}>
+                    <td data-label="Actor" style={{ ...td, fontSize: '0.75rem', color: '#374151' }}>
                       <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: r.actor_kind === 'owner' ? '#4A1A6B' : r.actor_kind === 'staff' ? '#3b82f6' : '#6b7280', textTransform: 'uppercase' }}>
                         {r.actor_kind}
                       </span>
                       {r.actor_email && <div style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{r.actor_email}</div>}
                     </td>
-                    <td style={{ ...td, fontSize: '0.75rem', color: '#374151', maxWidth: 280 }}>{r.note ?? '—'}</td>
+                    <td data-label="Note" style={{ ...td, fontSize: '0.75rem', color: '#374151', maxWidth: 280 }}>{r.note ?? '—'}</td>
                   </tr>
                 );
               })}

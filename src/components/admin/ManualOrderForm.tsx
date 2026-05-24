@@ -83,7 +83,7 @@ export function ManualOrderForm({ products }: Props) {
       {/* ── Customer ─────────────────────────────────────────────────── */}
       <section style={sectionStyle}>
         <h2 style={h2Style}>Customer</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Field label="First name *"  name="first_name" required />
           <Field label="Last name *"   name="last_name"  required />
           <Field label="Email"         name="email"      type="email" placeholder="optional — leave blank for in-store gifts" />
@@ -95,7 +95,7 @@ export function ManualOrderForm({ products }: Props) {
       <section style={sectionStyle}>
         <h2 style={h2Style}>Shipping address</h2>
         <Field label="Address line *"   name="address" required placeholder="House/flat name or number, street" />
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginTop: 12 }}>
+        <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginTop: 12 }}>
           <Field label="City / Town *"        name="city" required placeholder="London" />
           <Field label="Country / Region"     name="province" placeholder="England" />
           <Field label="Postcode *"           name="zip" required placeholder="SW1A 1AA" />
@@ -197,7 +197,7 @@ export function ManualOrderForm({ products }: Props) {
       {/* ── Payment + totals ─────────────────────────────────────────── */}
       <section style={sectionStyle}>
         <h2 style={h2Style}>Payment &amp; totals</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>
             Payment method
             <select name="pay_method" defaultValue="manual" style={{ ...inputStyle, marginTop: 4 }}>

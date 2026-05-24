@@ -283,7 +283,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="adm-table-scroll">
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
             <thead>
               <tr style={{ background: '#f9fafb' }}>
                 {['Order', 'Customer', 'Total', 'Status', 'Payment', 'Date'].map(h => (
@@ -296,18 +296,18 @@ export default async function DashboardPage() {
                 const status = o.status ?? 'pending';
                 return (
                   <tr key={o.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
-                    <td style={{ padding: '12px 16px' }}>
+                    <td data-label="Order" style={{ padding: '12px 16px' }}>
                       <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 600, fontSize: '0.875rem', color: '#4A1A6B', textDecoration: 'none' }}>
                         {o.order_number}
                       </Link>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#374151' }}>
+                    <td data-label="Customer" style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#374151' }}>
                       {o.first_name} {o.last_name}
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600, color: '#111827' }}>
+                    <td data-label="Total" style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600, color: '#111827' }}>
                       {fmt(o.total)}
                     </td>
-                    <td style={{ padding: '12px 16px' }}>
+                    <td data-label="Status" style={{ padding: '12px 16px' }}>
                       <span style={{
                         display: 'inline-block', padding: '2px 10px', borderRadius: 20,
                         fontSize: '0.75rem', fontWeight: 600,
@@ -317,7 +317,7 @@ export default async function DashboardPage() {
                         {ORDER_STATUS_LABELS[status as OrderStatus] ?? status}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px' }}>
+                    <td data-label="Payment" style={{ padding: '12px 16px' }}>
                       <span style={{
                         display: 'inline-block', padding: '2px 10px',
                         background: '#f3f4f6', borderRadius: 20,
@@ -326,7 +326,7 @@ export default async function DashboardPage() {
                         {payLabel[o.pay_method] ?? o.pay_method}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '0.8125rem', color: '#6b7280' }}>
+                    <td data-label="Date" style={{ padding: '12px 16px', fontSize: '0.8125rem', color: '#6b7280' }}>
                       {o.created_at ? fmtDate(o.created_at) : '—'}
                     </td>
                   </tr>

@@ -125,7 +125,7 @@ export function RefundPanel({ orderId, summary, canRefund, stripeConfigured }: P
         </p>
       ) : (
         // ── The actual form ───────────────────────────────────────────
-        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(120px,160px) minmax(200px,1fr) auto', alignItems: 'flex-end' }}>
+        <form onSubmit={onSubmit} className="adm-refund-form" style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(120px,160px) minmax(200px,1fr) auto', alignItems: 'flex-end' }}>
           <div>
             <label htmlFor="refund-amount" style={lbl}>Amount (GBP)</label>
             <input

@@ -46,7 +46,7 @@ export function BlogForm({ post }: { post?: BlogPost }) {
   const [imageUrl] = useState(post?.image_url ?? '');
 
   return (
-    <div style={{ padding: '32px 36px' }}>
+    <div className="adm-page" style={{ padding: '32px 36px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
         <Link href="/admin/blog" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '0.875rem' }}>
           ← Blog

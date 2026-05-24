@@ -148,7 +148,7 @@ export default function AccountOrdersPage() {
                         <tbody>
                           {(o.items ?? []).map((item, i) => (
                             <tr key={i} style={{ borderTop: i > 0 ? '1px solid var(--line)' : 'none' }}>
-                              <td style={{ padding: '8px 0', color: 'var(--ink-900)', fontWeight: 500 }}>{brandPlusName(item.brand, item.name)}</td>
+                              <td style={{ padding: '8px 0', color: 'var(--ink-900)', fontWeight: 500, overflowWrap: 'anywhere' }}>{brandPlusName(item.brand, item.name)}</td>
                               <td style={{ padding: '8px 0', color: 'var(--ink-500)', textAlign: 'center' }}>×{item.qty}</td>
                               <td style={{ padding: '8px 0', color: 'var(--ink-900)', fontWeight: 600, textAlign: 'right' }}>{fmt(item.price * item.qty)}</td>
                             </tr>

@@ -88,7 +88,7 @@ export default async function ActivityLogPage({
   };
 
   return (
-    <div style={{ padding: '32px 36px' }}>
+    <div className="adm-page" style={{ padding: '32px 36px' }}>
       <h1 style={{ margin: '0 0 6px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Activity log</h1>
       <p style={{ margin: '0 0 20px', fontSize: '0.8125rem', color: '#6b7280' }}>
         Everything happening across the store — orders, signups, reviews, subscriptions and staff actions.
@@ -186,7 +186,7 @@ export default async function ActivityLogPage({
                   </td>
                   <td data-label="Details" style={{ padding: '10px 16px', fontSize: '0.6875rem', color: '#374151' }}>
                     {r.diff
-                      ? <details><summary style={{ cursor: 'pointer', color: '#6b7280' }}>view</summary><pre style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap', maxWidth: 360 }}>{JSON.stringify(r.diff, null, 2)}</pre></details>
+                      ? <details><summary style={{ cursor: 'pointer', color: '#6b7280' }}>view</summary><pre style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap', maxWidth: '100%', overflowWrap: 'anywhere' }}>{JSON.stringify(r.diff, null, 2)}</pre></details>
                       : '—'}
                   </td>
                 </tr>

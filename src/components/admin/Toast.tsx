@@ -27,7 +27,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div style={{
+      <div className="adm-toast-stack" style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
         display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none',
       }}>

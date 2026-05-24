@@ -172,7 +172,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               No orders yet
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
                   {['Order #', 'Date', 'Items', 'Total', 'Status', 'Payment', ''].map(h => (
@@ -186,21 +186,21 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   const itemCount = (o.items ?? []).length;
                   return (
                     <tr key={o.id} style={{ borderTop: i > 0 ? '1px solid #f9fafb' : 'none' }}>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td data-label="Order #" style={{ padding: '10px 12px' }}>
                         <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '0.875rem', color: '#4A1A6B', textDecoration: 'none', fontFamily: 'monospace' }}>
                           {o.order_number}
                         </Link>
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
+                      <td data-label="Date" style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
                         {o.created_at ? fmtDateTime(o.created_at) : '—'}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#374151' }}>
+                      <td data-label="Items" style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#374151' }}>
                         {itemCount} item{itemCount !== 1 ? 's' : ''}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
+                      <td data-label="Total" style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
                         {fmt(o.total)}
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td data-label="Status" style={{ padding: '10px 12px' }}>
                         <span style={{
                           display: 'inline-block', padding: '2px 10px', borderRadius: 20,
                           fontSize: '0.75rem', fontWeight: 600,
@@ -210,7 +210,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                           {ORDER_STATUS_LABELS[status] ?? status}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td data-label="Payment" style={{ padding: '10px 12px' }}>
                         <span style={{
                           display: 'inline-block', padding: '2px 8px',
                           background: '#f3f4f6', borderRadius: 20,

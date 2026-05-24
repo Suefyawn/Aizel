@@ -129,7 +129,10 @@ export function BlogPostPage({ post, relatedPosts, relatedProducts }: BlogPostPa
             <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--ink-500)' }} />
             <span className="small-text">{post.read_time}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.75rem', fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: 16, maxWidth: 880 }}>{post.title}</h1>
+          {/* Fluid type so a long title doesn't blow out at 375 px — the
+              clamp goes from the small-screen size (1.75rem) up to the
+              desktop hero (2.75rem), scaling with the viewport. */}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 6vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: 16, maxWidth: 880, overflowWrap: 'break-word' }}>{post.title}</h1>
           <p className="body-text" style={{ color: 'var(--ink-700)', fontSize: '1.0625rem', lineHeight: 1.6, marginBottom: 24, maxWidth: 720 }}>{post.excerpt}</p>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', paddingBottom: 16 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--paper2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

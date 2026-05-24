@@ -354,17 +354,15 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
                 <input id="co-email" type="email" autoComplete="email" value={formData.email} onChange={e => update('email', e.target.value)} placeholder="For order updates and payment receipts" style={inputStyle('email')} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'co-email-error' : undefined} />
                 {errors.email && <span id="co-email-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.email}</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }} className="checkout-name-grid">
-                <div>
-                  <label htmlFor="co-phone" style={labelStyle}>Phone *</label>
-                  <input id="co-phone" type="tel" autoComplete="tel" value={formData.phone} onChange={e => update('phone', e.target.value)} placeholder="07123 456789" style={inputStyle('phone')} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'co-phone-error' : undefined} />
-                  {errors.phone && <span id="co-phone-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.phone}</span>}
-                </div>
+              <div style={{ marginBottom: 24 }}>
+                <label htmlFor="co-phone" style={labelStyle}>Phone *</label>
+                <input id="co-phone" type="tel" autoComplete="tel" value={formData.phone} onChange={e => update('phone', e.target.value)} placeholder="07123 456789" style={inputStyle('phone')} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'co-phone-error' : undefined} />
+                {errors.phone && <span id="co-phone-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.phone}</span>}
               </div>
 
               <hr className="hairline" style={{ margin: '32px 0' }} />
               <Overline style={{ display: 'block', marginBottom: 16 }}>Shipping Address</Overline>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <div className="checkout-name-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
                   <label htmlFor="co-fname" style={labelStyle}>First Name *</label>
                   <input id="co-fname" autoComplete="given-name" value={formData.firstName} onChange={e => update('firstName', e.target.value)} style={inputStyle('firstName')} aria-invalid={!!errors.firstName} aria-describedby={errors.firstName ? 'co-fname-error' : undefined} />

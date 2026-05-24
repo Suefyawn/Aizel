@@ -192,8 +192,8 @@ export function SearchOverlay({ trending, categories }: SearchOverlayProps = {})
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--ink-500)', fontSize: '0.8125rem', fontWeight: 500, fontFamily: 'var(--font-ui)',
-                padding: '10px 14px', borderRadius: 6, minHeight: 36,
-                display: 'inline-flex', alignItems: 'center',
+                padding: '12px 16px', borderRadius: 6, minHeight: 44, minWidth: 44,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               }}
             >Close</button>
           </form>

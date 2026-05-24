@@ -55,7 +55,7 @@ function AddressForm({
           <label htmlFor="addr-label" style={lbl}>Label (e.g. Home, Office)</label>
           <input id="addr-label" name="label" placeholder="Home" defaultValue={initial?.label ?? ''} style={inp} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="checkout-name-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
             <label htmlFor="addr-fname" style={lbl}>First Name *</label>
             <input id="addr-fname" name="first_name" autoComplete="given-name" required defaultValue={initial?.first_name ?? ''} style={inp} />
@@ -77,7 +77,7 @@ function AddressForm({
           <label htmlFor="addr-line2" style={lbl}>Address Line 2</label>
           <input id="addr-line2" name="line2" autoComplete="address-line2" style={inp} placeholder="Area, neighbourhood (optional)" defaultValue={initial?.line2 ?? ''} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="addr-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           <div>
             <label htmlFor="addr-city" style={lbl}>City / Town *</label>
             <input id="addr-city" name="city" autoComplete="address-level2" required defaultValue={initial?.city ?? ''} style={inp} placeholder="London" />

@@ -208,7 +208,7 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
                         — {appliedCoupon.type === 'percent' ? `${appliedCoupon.value}% off` : `£${appliedCoupon.value.toLocaleString()} off`}
                       </span>
                     </div>
-                    <button type="button" aria-label="Remove coupon" onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: '1rem', lineHeight: 1, padding: 2 }}>×</button>
+                    <button type="button" aria-label="Remove coupon" onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: '1.125rem', lineHeight: 1, minWidth: 36, minHeight: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: 8 }}>

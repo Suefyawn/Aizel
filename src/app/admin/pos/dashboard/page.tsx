@@ -104,7 +104,7 @@ export default async function PosDashboardPage() {
   }, {} as Record<string, number>);
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 1200 }}>
+    <div className="adm-page" style={{ padding: '32px 36px', maxWidth: 1200 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>POS dashboard</h1>
         <Link href="/admin/pos" style={{ marginLeft: 'auto', padding: '8px 16px', background: '#6B2C91', color: 'white', borderRadius: 7, textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 600 }}>
@@ -127,7 +127,7 @@ export default async function PosDashboardPage() {
       {openShifts.length > 0 && (
         <div style={card}>
           <h2 style={cardTitle}>Open shifts</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f9fafb' }}>
                 {['Cashier', 'Opened', 'Float', ''].map(h => (
@@ -138,9 +138,9 @@ export default async function PosDashboardPage() {
             <tbody>
               {openShifts.map(s => (
                 <tr key={s.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                  <td style={td}><code style={{ fontSize: '0.75rem', color: '#6b7280' }}>{s.staff_id.slice(0, 8)}</code></td>
-                  <td style={td}>{new Date(s.opened_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(s.opening_float)}</td>
+                  <td data-label="Cashier" style={td}><code style={{ fontSize: '0.75rem', color: '#6b7280' }}>{s.staff_id.slice(0, 8)}</code></td>
+                  <td data-label="Opened" style={td}>{new Date(s.opened_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td data-label="Float" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(s.opening_float)}</td>
                   <td style={td}><span style={{ padding: '2px 8px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>Open</span></td>
                 </tr>
               ))}
@@ -228,7 +228,7 @@ export default async function PosDashboardPage() {
         {topSkus.length === 0 ? (
           <p style={emptyMuted}>Nothing sold yet.</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f9fafb' }}>
                 {['Product', 'Units', 'Revenue'].map(h => (
@@ -239,12 +239,12 @@ export default async function PosDashboardPage() {
             <tbody>
               {topSkus.map((s, i) => (
                 <tr key={i} style={{ borderTop: '1px solid #f3f4f6' }}>
-                  <td style={td}>
+                  <td data-label="Product" style={td}>
                     {s.brand && <span style={{ color: '#6b7280', marginRight: 4 }}>{s.brand}</span>}
                     {s.name}
                   </td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{s.units}</td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{fmtGBP(s.revenue)}</td>
+                  <td data-label="Units" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{s.units}</td>
+                  <td data-label="Revenue" style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{fmtGBP(s.revenue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -258,7 +258,7 @@ export default async function PosDashboardPage() {
         {orders.length === 0 ? (
           <p style={emptyMuted}>No transactions today.</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f9fafb' }}>
                 {['Order', 'Items', 'Tender', 'Total', 'Time'].map(h => (
@@ -269,15 +269,15 @@ export default async function PosDashboardPage() {
             <tbody>
               {orders.slice(0, 12).map(o => (
                 <tr key={o.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                  <td style={td}>
+                  <td data-label="Order" style={td}>
                     <Link href={`/admin/orders/${o.id}`} style={{ fontFamily: 'monospace', color: '#4A1A6B', fontWeight: 700, textDecoration: 'none' }}>
                       {o.order_number}
                     </Link>
                   </td>
-                  <td style={td}>{(o.items ?? []).reduce((s, i) => s + i.qty, 0)} items</td>
-                  <td style={td}><span style={{ padding: '2px 8px', background: '#f3f4f6', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>{o.pay_method}</span></td>
-                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(Number(o.total))}</td>
-                  <td style={{ ...td, color: '#6b7280' }}>{new Date(o.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td data-label="Items" style={td}>{(o.items ?? []).reduce((s, i) => s + i.qty, 0)} items</td>
+                  <td data-label="Tender" style={td}><span style={{ padding: '2px 8px', background: '#f3f4f6', borderRadius: 20, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>{o.pay_method}</span></td>
+                  <td data-label="Total" style={{ ...td, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmtGBP(Number(o.total))}</td>
+                  <td data-label="Time" style={{ ...td, color: '#6b7280' }}>{new Date(o.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
                 </tr>
               ))}
             </tbody>

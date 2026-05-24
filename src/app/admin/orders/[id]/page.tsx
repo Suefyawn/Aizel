@@ -153,7 +153,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   ].join('\n');
 
   return (
-    <div id="order-detail-page" style={{ padding: '32px 36px' }}>
+    <div id="order-detail-page" className="adm-page" style={{ padding: '32px 36px' }}>
       {/* Print styles — printing this page outputs ONLY the invoice card.
           Every other block is a direct child of #order-detail-page, so one
           rule hides them all (and stays correct as sections are added). */}
@@ -439,7 +439,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div style={{ ...section, marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 16px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Order items</h2>
         <div className="adm-table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="adm-table-cards" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
               {['Product', 'Brand', 'Variant', 'Price', 'Qty', 'Subtotal'].map(h => (
@@ -450,12 +450,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <tbody>
             {items.map((item, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #f9fafb' }}>
-                <td style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 500, color: '#111827' }}>{item.name}</td>
-                <td style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280' }}>{item.brand}</td>
-                <td style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280' }}>{item.variant_label ?? item.variant ?? '—'}</td>
-                <td style={{ padding: '10px 12px', fontSize: '0.875rem', color: '#374151' }}>{fmt(item.price)}</td>
-                <td style={{ padding: '10px 12px', fontSize: '0.875rem', color: '#374151' }}>{item.qty}</td>
-                <td style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 600, color: '#111827' }}>{fmt(item.price * item.qty)}</td>
+                <td data-label="Product" style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 500, color: '#111827' }}>{item.name}</td>
+                <td data-label="Brand" style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280' }}>{item.brand}</td>
+                <td data-label="Variant" style={{ padding: '10px 12px', fontSize: '0.8125rem', color: '#6b7280' }}>{item.variant_label ?? item.variant ?? '—'}</td>
+                <td data-label="Price" style={{ padding: '10px 12px', fontSize: '0.875rem', color: '#374151' }}>{fmt(item.price)}</td>
+                <td data-label="Qty" style={{ padding: '10px 12px', fontSize: '0.875rem', color: '#374151' }}>{item.qty}</td>
+                <td data-label="Subtotal" style={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 600, color: '#111827' }}>{fmt(item.price * item.qty)}</td>
               </tr>
             ))}
           </tbody>

@@ -74,7 +74,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   return (
     <>
       <ProductForm product={product} vendors={(vendorData ?? []) as Vendor[]} />
-      <div style={{ padding: '0 36px 32px' }}>
+      <div className="adm-page" style={{ padding: '0 36px 32px' }}>
         <VariantsSection
           productId={product.id}
           productKind={product.kind ?? 'simple'}
