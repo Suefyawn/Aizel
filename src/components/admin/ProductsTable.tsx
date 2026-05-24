@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { deleteProduct } from '@/app/admin/actions';
 import {
-  bulkArchiveProducts, bulkDeleteProducts, bulkPriceAdjustProducts,
+  bulkAdjustStock, bulkArchiveProducts, bulkDeleteProducts, bulkPriceAdjustProducts,
   bulkPublishProducts, bulkTagProducts,
 } from '@/app/admin/bulk-product-actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
@@ -293,6 +293,30 @@ export function ProductsTable({ products }: { products: Product[] }) {
             if (!isFinite(n)) return;
             wrap(async () => { await bulkPriceAdjustProducts(Array.from(selected), n); }, `Price ${n >= 0 ? '+' : ''}${n}%`);
           }} disabled={pending} style={btn('#3b82f6')}>Adjust price&hellip;</button>
+
+          {/* Stock adjuster — accepts both an absolute "20" (set to) and a
+              signed "+10 / -5" (delta). Products with track_inventory=false
+              are skipped server-side and reported in the toast. */}
+          <button onClick={() => {
+            const raw = window.prompt('Adjust stock — enter +10 / -5 to add/remove, or a plain number to set absolute (e.g. 20)');
+            if (raw === null || raw.trim() === '') return;
+            const trimmed = raw.trim();
+            const hasSign = /^[+-]/.test(trimmed);
+            const n = Number(trimmed);
+            if (!isFinite(n)) return;
+            const mode: 'set' | 'delta' = hasSign ? 'delta' : 'set';
+            const ids = Array.from(selected);
+            const count = selected.size;
+            startTransition(async () => {
+              const { updated, skipped } = await bulkAdjustStock(ids, { mode, value: n });
+              setSelected(new Set());
+              const what = mode === 'set'
+                ? `Stock set to ${Math.max(0, Math.round(n))}`
+                : `Stock ${n >= 0 ? '+' : ''}${n}`;
+              const tail = skipped > 0 ? ` (${skipped} skipped — managed externally)` : '';
+              toast(`${what} on ${updated}/${count}${tail}`, 'success');
+            });
+          }} disabled={pending} style={btn('#8b5cf6')}>Adjust stock&hellip;</button>
 
           <button onClick={handleBulkDelete} disabled={pending} style={btn('#ef4444')}>Delete</button>
 
