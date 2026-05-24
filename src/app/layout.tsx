@@ -30,6 +30,7 @@ const fontUI = Inter({
 import { SiteChrome } from '@/components/layout/SiteChrome';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { PlausibleAnalytics } from '@/components/analytics/PlausibleAnalytics';
+import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { WebVitalsReporter } from '@/components/layout/WebVitalsReporter';
 import { ServiceWorkerRegister } from '@/components/layout/ServiceWorkerRegister';
 import { PWAInstallPrompt } from '@/components/layout/PWAInstallPrompt';
@@ -133,6 +134,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NewsletterModal />
         <GoogleAnalytics />
         <PlausibleAnalytics />
+        <MetaPixel />
         <WebVitalsReporter />
         <ServiceWorkerRegister />
         <PWAInstallPrompt />
