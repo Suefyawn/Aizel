@@ -4,10 +4,10 @@
 type IconName = 'authentic' | 'delivery' | 'cod' | 'returns';
 
 const ITEMS: { icon: IconName; label: string; sub: string }[] = [
-  { icon: 'authentic', label: '100% Authentic', sub: 'Genuine products' },
-  { icon: 'delivery',  label: 'Free UK Delivery', sub: 'On orders over £15' },
-  { icon: 'cod',       label: 'Secure Checkout', sub: 'Card & PayPal' },
-  { icon: 'returns',   label: 'Easy Returns',    sub: '14-day policy' },
+  { icon: 'delivery',  label: 'Free UK Delivery', sub: 'Over £15 · Royal Mail Tracked' },
+  { icon: 'authentic', label: '100% Authentic',   sub: 'Direct from authorised brands' },
+  { icon: 'cod',       label: 'Secure Checkout',  sub: 'Card · PayPal · Apple Pay' },
+  { icon: 'returns',   label: 'Easy Returns',     sub: '14 days · UK freepost' },
 ];
 
 function TrustIcon({ name }: { name: IconName }) {

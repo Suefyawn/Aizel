@@ -14,9 +14,15 @@ import { whatsappUrl, WA_TEMPLATES } from '@/lib/whatsapp';
 // Desktop nav: each taxon (Hair Care / Body Care / Styling / Grooming) opens a
 // mega-menu dropdown of its categories; the flat items are plain links.
 // Driven by the central taxonomy so editorial changes don't touch the header.
+// Top-level nav also needs direct entry points to the full catalogue and
+// the brand index — the taxon dropdowns hide these inside category trees
+// otherwise. Order: All / Brands first (the most-asked-for finding
+// surfaces), Sale (intermittent), Blog (editorial) last.
 const FLAT_ITEMS = [
-  { label: 'Sale', href: '/shop?on_sale=1' },
-  { label: 'Blog', href: '/blog' },
+  { label: 'All',    href: '/shop' },
+  { label: 'Brands', href: '/brand' },
+  { label: 'Sale',   href: '/shop?on_sale=1' },
+  { label: 'Blog',   href: '/blog' },
 ];
 
 function navLinkStyle(active: boolean): React.CSSProperties {

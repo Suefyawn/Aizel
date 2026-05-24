@@ -635,7 +635,7 @@ export const DEMO_SITE_SETTINGS: Record<string, string> = {
   free_shipping_threshold: '15',
   default_shipping_rate: '4',
   announcement_active: 'true',
-  announcement_text: 'DEMO MODE · Authentic hair & body care · Free UK delivery over £15',
+  announcement_text: 'Free UK delivery over £15 · Royal Mail Tracked · VAT included',
   announcement_color: '#111827',
   promo_active: 'true',
   promo_label: 'New',

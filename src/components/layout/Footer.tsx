@@ -92,12 +92,14 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
           <div>
             <div style={{ marginBottom: 24 }}><LogoWordmark color="var(--paper)" /></div>
             <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', maxWidth: 260, marginBottom: 16 }}>
-              Authentic Black hair and body care brands, delivered across the UK.
+              Authentic Black hair and body care brands, shipped across the United Kingdom.
             </p>
             <address style={{ fontStyle: 'normal' }}>
-              <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.5)', fontSize: '0.75rem' }}>
+              <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.5)', fontSize: '0.75rem', lineHeight: 1.7 }}>
                 Free UK delivery on orders over £15<br />
-                14-day returns · Card &amp; PayPal accepted
+                Royal Mail Tracked · DPD next-day available<br />
+                14-day returns · Card · PayPal · Apple Pay<br />
+                All prices include VAT
               </p>
             </address>
           </div>

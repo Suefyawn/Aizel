@@ -36,6 +36,29 @@ test.describe('Storefront — golden path', () => {
     await expect(nav.getByText(/Makeup/i)).toHaveCount(0);
   });
 
+  test('header nav surfaces All + Brands directly', async ({ page }) => {
+    // Regression guard: from the top of every page a shopper should be one
+    // click from the full catalogue and the brand index. Hiding either
+    // inside a mega-menu (the previous shape) kills discoverability.
+    await page.goto('/');
+    const nav = page.locator('nav[aria-label="Primary"]');
+    const all = nav.getByRole('link', { name: /^All$/ });
+    const brands = nav.getByRole('link', { name: /^Brands$/ });
+    await expect(all).toBeVisible();
+    await expect(brands).toBeVisible();
+    await expect(all).toHaveAttribute('href', '/shop');
+    await expect(brands).toHaveAttribute('href', '/brand');
+  });
+
+  test('homepage features a Shop by Brand section', async ({ page }) => {
+    await page.goto('/');
+    // Brand strip section header.
+    await expect(page.getByRole('heading', { name: /Shop by brand/i })).toBeVisible();
+    // At least 4 brand tiles rendered, each linking to /brand/<slug>.
+    const tiles = page.locator('a[href^="/brand/"]');
+    expect(await tiles.count()).toBeGreaterThanOrEqual(4);
+  });
+
   test('shop page lists products with GBP prices', async ({ page }) => {
     await page.goto('/shop');
     await expect(page).toHaveTitle(/Aizel/);

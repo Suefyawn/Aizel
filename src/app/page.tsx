@@ -9,6 +9,7 @@ import {
   getOnSale,
   getSiteSettings,
   getBlogPosts,
+  getAllBrands,
 } from '@/lib/supabase';
 
 // Homepage "Shop by category" tiles — eight category landings split
@@ -40,10 +41,12 @@ import { FeaturedProducts } from '@/sections/home/FeaturedProducts';
 import { EditorialDuo } from '@/sections/home/EditorialDuo';
 import { SaleCollection } from '@/sections/home/SaleCollection';
 import { BestsellersBand } from '@/sections/home/BestsellersBand';
+import { BrandStrip } from '@/sections/home/BrandStrip';
 import { CategoryTiles } from '@/sections/home/CategoryTiles';
 import { RealResults } from '@/sections/home/RealResults';
 import { JournalSection } from '@/sections/home/JournalSection';
 import { PressStrip } from '@/sections/home/PressStrip';
+import Link from 'next/link';
 
 export default async function HomePage() {
   // Pull each rail in parallel. The new helpers all fall back to a stock-
@@ -51,12 +54,13 @@ export default async function HomePage() {
   // returns fewer rows than requested, so empty sections shouldn't happen
   // once the catalog has any products. Migration 076 backfilled
   // is_featured + is_bestseller; the queries respect those first.
-  const [featured, bestsellers, saleProducts, settings, blogPosts] = await Promise.all([
+  const [featured, bestsellers, saleProducts, settings, blogPosts, brands] = await Promise.all([
     getFeatured(6),
     getBestsellers(8),
     getOnSale(8),
     getSiteSettings(),
     getBlogPosts(),
+    getAllBrands(),
   ]);
 
   // The featured sale collection is shown only while a sale is switched on
@@ -107,7 +111,50 @@ export default async function HomePage() {
         />
       )}
       <BestsellersBand products={bestsellers.slice(0, 4)} />
+      <BrandStrip brands={brands} />
       <CategoryTiles groups={categoryGroups} />
+      {/* All-products CTA — closes the discoverability gap between curated
+          homepage rails and the full catalogue. Placed after the category
+          tiles so it reads as "still haven't found it? browse the lot". */}
+      <section style={{ padding: '0 0 var(--section-gap)' }}>
+        <div className="container" style={{
+          padding: '40px var(--side)',
+          background: 'var(--ink-900)',
+          color: 'var(--paper)',
+          borderRadius: 'var(--radius-card)',
+          textAlign: 'center',
+        }}>
+          <h2 className="display-l" style={{
+            fontSize: '1.875rem', margin: '0 0 10px',
+            letterSpacing: '-0.02em',
+            color: 'var(--paper)',
+          }}>
+            Browse every product
+          </h2>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.7)', maxWidth: 520,
+            margin: '0 auto 22px', fontSize: '0.9375rem',
+          }}>
+            The full catalogue — every brand and every line we stock,
+            sortable by price, brand and category.
+          </p>
+          <Link
+            href="/shop"
+            style={{
+              display: 'inline-block',
+              padding: '12px 28px',
+              background: 'var(--brand-yellow)',
+              color: 'var(--ink-900)',
+              textDecoration: 'none',
+              borderRadius: 'var(--radius-pill)',
+              fontWeight: 700, fontSize: '0.875rem',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Shop all {brands.reduce((s, b) => s + b.productCount, 0)}+ products →
+          </Link>
+        </div>
+      </section>
       <RealResults />
       <JournalSection posts={blogPosts} />
       <PressStrip />
