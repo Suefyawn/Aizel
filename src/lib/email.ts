@@ -618,6 +618,74 @@ export async function sendReviewRequestEmail(args: {
   });
 }
 
+// ─── 11.9. Customer: win-back nudge (background job) ───────────────────────
+// Fired by the daily cron when a customer's most recent delivered order
+// sits in a 60–90 day "lapsed" window without a follow-up purchase. Aizel's
+// category (hair/body consumables) has a natural 6–8 week reorder cycle,
+// so 60+ days is the point at which we can credibly say "you'd be running
+// low by now" without sounding presumptuous about much-shorter routines.
+//
+// Voice: warm, low-pressure, brand-led. Carries the WELCOMEBACK15 code so
+// the nudge has an actual incentive — pure "we miss you" emails convert
+// poorly compared to a small explicit discount.
+export async function sendWinBackEmail(args: {
+  email: string;
+  first_name?: string;
+  /** Days since last delivery, rounded down — surfaces in the subject
+   *  ("It's been 64 days") so the message feels specific, not boilerplate. */
+  days_since: number;
+  /** One representative product the customer last bought, shown as the
+   *  thumbnail anchor so the email isn't a wall of text. Optional. */
+  last_product?: { name: string; slug: string; image_url?: string | null };
+}): Promise<void> {
+  const greet = args.first_name ? `Hi ${escapeHtml(args.first_name)}, ` : '';
+  const productCta = args.last_product
+    ? `
+      <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 22px">
+        <tr>
+          <td style="width:88px;padding-right:14px">
+            ${args.last_product.image_url
+              ? `<img src="${escapeHtml(args.last_product.image_url)}" alt="${escapeHtml(args.last_product.name)}" width="88" height="88" style="border-radius:10px;border:1px solid #e5e7eb;object-fit:cover"/>`
+              : ''}
+          </td>
+          <td style="vertical-align:middle">
+            <p style="margin:0 0 4px;color:${MUTED};font-size:12px;letter-spacing:0.06em;text-transform:uppercase">Reorder last time&apos;s favourite</p>
+            <p style="margin:0;color:${INK};font-size:15px;font-weight:600;line-height:1.35">${escapeHtml(args.last_product.name)}</p>
+            <p style="margin:8px 0 0">
+              <a href="${SITE_URL}/product/${encodeURIComponent(args.last_product.slug)}"
+                 style="color:${BRAND_PINK};font-weight:600;font-size:13px;text-decoration:none">View product →</a>
+            </p>
+          </td>
+        </tr>
+      </table>`
+    : '';
+  const html = shell(`
+    <h2 style="margin:0 0 12px;font-size:20px;color:${INK};font-family:Georgia,serif;font-weight:500">It&apos;s been a minute.</h2>
+    <p style="margin:0 0 14px">${greet}your last Aizel order landed about ${args.days_since} days ago — if your routine&apos;s anything like ours, you&apos;ll be down to the dregs by now.</p>
+    <p style="margin:0 0 18px">Restock this fortnight and we&apos;ll knock 15% off — our way of saying we miss you.</p>
+    ${productCta}
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 22px">
+      <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:18px 22px;text-align:center">
+        <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Welcome-back discount</p>
+        <p style="margin:0 0 4px;color:${INK};font-size:24px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">WELCOMEBACK15</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">15% off any order over £15. Valid for 14 days.</p>
+      </td></tr>
+    </table>
+    <p style="margin:0 0 24px;text-align:center">
+      <a href="${SITE_URL}/shop?taxon=hair" style="display:inline-block;padding:12px 28px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;letter-spacing:0.02em">Browse what&apos;s new</a>
+    </p>
+    <p style="margin:24px 0 0;color:${MUTED};font-size:12px;line-height:1.5">
+      Not the right time? No worries — we&apos;ll always be a few clicks away when you&apos;re ready.
+    </p>
+  `, { marketingRecipient: args.email });
+  await send({
+    to: args.email,
+    subject: `It&apos;s been ${args.days_since} days — 15% off when you&apos;re ready`,
+    html,
+    kind: 'batch',
+  });
+}
+
 // ─── 11. Owner: low-stock alert (background job) ────────────────────────────
 export async function sendLowStockAlertEmail(args: { products: { name: string; brand: string; stock: number; slug: string }[] }) {
   if (!args.products.length) return;
