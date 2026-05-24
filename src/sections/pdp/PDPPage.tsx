@@ -727,7 +727,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
         aria-hidden={!showStickyBar}
         style={{
           position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 90,
-          background: 'rgba(250,246,238,0.97)',
+          background: 'rgba(255, 255, 255,0.97)',
           backdropFilter: 'saturate(140%) blur(8px)',
           WebkitBackdropFilter: 'saturate(140%) blur(8px)',
           borderTop: '1px solid var(--line)',

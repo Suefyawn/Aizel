@@ -93,7 +93,7 @@ export function PWAInstallPrompt() {
       }}>YP</div>
       <div style={{ flex: 1, fontSize: '0.8125rem', lineHeight: 1.4 }}>
         <strong style={{ display: 'block', marginBottom: 2 }}>Install Aizel</strong>
-        <span style={{ color: 'rgba(250,246,238,0.7)' }}>Skip the browser. Tap to add to your home screen.</span>
+        <span style={{ color: 'rgba(255, 255, 255,0.7)' }}>Skip the browser. Tap to add to your home screen.</span>
         <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
           <button
             onClick={install}
@@ -105,7 +105,7 @@ export function PWAInstallPrompt() {
           <button
             onClick={dismiss}
             style={{
-              padding: '6px 10px', background: 'transparent', color: 'rgba(250,246,238,0.6)',
+              padding: '6px 10px', background: 'transparent', color: 'rgba(255, 255, 255,0.6)',
               border: 'none', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer',
             }}
           >Not now</button>

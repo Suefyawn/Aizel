@@ -16,7 +16,7 @@ function FooterLink({ href, label }: { href: string; label: string }) {
       <Link
         href={href}
         style={{
-          color: 'rgba(250,246,238,0.7)',
+          color: 'rgba(255, 255, 255,0.7)',
           textDecoration: 'none',
           fontFamily: 'var(--font-ui)',
           fontSize: '0.8125rem',
@@ -26,7 +26,7 @@ function FooterLink({ href, label }: { href: string; label: string }) {
           display: 'inline-block',
         }}
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(250,246,238,0.7)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255,0.7)')}
       >
         {label}
       </Link>
@@ -74,14 +74,14 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
             readers don't read the scrolling text. */}
         <div
           aria-hidden="true"
-          style={{ borderBottom: '1px solid rgba(250,246,238,0.1)', paddingBottom: 32, marginBottom: 40, overflow: 'hidden', whiteSpace: 'nowrap' }}
+          style={{ borderBottom: '1px solid rgba(255, 255, 255,0.1)', paddingBottom: 32, marginBottom: 40, overflow: 'hidden', whiteSpace: 'nowrap' }}
         >
           <div
             className="footer-marquee"
             style={{
               display: 'inline-block',
               fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontStyle: 'italic',
-              color: 'rgba(250,246,238,0.2)',
+              color: 'rgba(255, 255, 255,0.2)',
             }}
           >
             {Array(6).fill('Aizel · Hair & Body Care · UK · ').join('')}
@@ -91,11 +91,11 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
           <div>
             <div style={{ marginBottom: 24 }}><LogoWordmark color="var(--paper)" /></div>
-            <p className="small-text" style={{ color: 'rgba(250,246,238,0.55)', maxWidth: 260, marginBottom: 16 }}>
+            <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', maxWidth: 260, marginBottom: 16 }}>
               Authentic Black hair and body care brands, delivered across the UK.
             </p>
             <address style={{ fontStyle: 'normal' }}>
-              <p className="small-text" style={{ color: 'rgba(250,246,238,0.5)', fontSize: '0.75rem' }}>
+              <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.5)', fontSize: '0.75rem' }}>
                 Free UK delivery on orders over £15<br />
                 14-day returns · Card &amp; PayPal accepted
               </p>
@@ -103,38 +103,38 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
           </div>
 
           <nav aria-label="Shop">
-            <Overline style={{ color: 'rgba(250,246,238,0.4)', display: 'block', marginBottom: 16 }}>Shop</Overline>
+            <Overline style={{ color: 'rgba(255, 255, 255,0.4)', display: 'block', marginBottom: 16 }}>Shop</Overline>
             <ul style={{ padding: 0, margin: 0 }}>
               {SHOP_LINKS.map(l => <FooterLink key={l.label} {...l} />)}
             </ul>
           </nav>
 
           <nav aria-label="Company">
-            <Overline style={{ color: 'rgba(250,246,238,0.4)', display: 'block', marginBottom: 16 }}>Company</Overline>
+            <Overline style={{ color: 'rgba(255, 255, 255,0.4)', display: 'block', marginBottom: 16 }}>Company</Overline>
             <ul style={{ padding: 0, margin: 0 }}>
               {COMPANY_LINKS.map(l => <FooterLink key={l.label} {...l} />)}
             </ul>
           </nav>
 
           <nav aria-label="Help">
-            <Overline style={{ color: 'rgba(250,246,238,0.4)', display: 'block', marginBottom: 16 }}>Help</Overline>
+            <Overline style={{ color: 'rgba(255, 255, 255,0.4)', display: 'block', marginBottom: 16 }}>Help</Overline>
             <ul style={{ padding: 0, margin: 0 }}>
               {HELP_LINKS.map(l => <FooterLink key={l.label} {...l} />)}
             </ul>
           </nav>
 
           <div>
-            <Overline style={{ color: 'rgba(250,246,238,0.4)', display: 'block', marginBottom: 16 }}>Newsletter</Overline>
-            <p className="small-text" style={{ color: 'rgba(250,246,238,0.55)', marginBottom: 12 }}>Sign up for health tips & exclusive offers.</p>
+            <Overline style={{ color: 'rgba(255, 255, 255,0.4)', display: 'block', marginBottom: 16 }}>Newsletter</Overline>
+            <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', marginBottom: 12 }}>Sign up for health tips & exclusive offers.</p>
             <NewsletterSignup source="footer" variant="dark" />
           </div>
         </div>
 
         <div style={{
-          marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(250,246,238,0.08)',
+          marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(255, 255, 255,0.08)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
         }}>
-          <span className="small-text" style={{ color: 'rgba(250,246,238,0.3)' }}>© {new Date().getFullYear()} Aizel. All rights reserved.</span>
+          <span className="small-text" style={{ color: 'rgba(255, 255, 255,0.3)' }}>© {new Date().getFullYear()} Aizel. All rights reserved.</span>
           {socials.length > 0 && (
             <div style={{ display: 'flex', gap: 8 }} aria-label="Social media">
               {socials.map(s => (
@@ -145,7 +145,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
                   rel="noopener noreferrer"
                   aria-label={`Aizel on ${s.label}`}
                   style={{
-                    color: 'rgba(250,246,238,0.4)',
+                    color: 'rgba(255, 255, 255,0.4)',
                     textDecoration: 'none',
                     fontSize: '0.6875rem',
                     fontWeight: 600,
@@ -161,7 +161,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
                     alignItems: 'center',
                   }}
                   onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(250,246,238,0.4)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255,0.4)')}
                 >{s.label}</a>
               ))}
             </div>

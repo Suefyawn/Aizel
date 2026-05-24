@@ -30,8 +30,8 @@ export function NewsletterSignup({
   const error = state && 'ok' in state && !state.ok ? state.error : null;
 
   const isLight = variant === 'light';
-  const inputBg   = isLight ? '#fff' : 'rgba(250,246,238,0.08)';
-  const inputBdr  = isLight ? '1px solid var(--line)' : '1px solid rgba(250,246,238,0.15)';
+  const inputBg   = isLight ? '#fff' : 'rgba(255, 255, 255,0.08)';
+  const inputBdr  = isLight ? '1px solid var(--line)' : '1px solid rgba(255, 255, 255,0.15)';
   const inputColor = isLight ? 'var(--ink-900)' : 'var(--paper)';
 
   if (success) {

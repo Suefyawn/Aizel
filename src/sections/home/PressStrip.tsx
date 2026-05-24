@@ -11,7 +11,7 @@ export function PressStrip() {
           <span key={b} style={{
             fontFamily: 'var(--font-ui)', fontSize: '0.75rem', fontWeight: 600,
             letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: 'rgba(250,246,238,0.35)',
+            color: 'rgba(255, 255, 255,0.35)',
           }}>{b}</span>
         ))}
       </div>

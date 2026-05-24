@@ -109,7 +109,7 @@ export function Header() {
   return (
     <header style={{
       position: 'sticky', top: 0, zIndex: 100,
-      background: scrolled ? 'rgba(250, 246, 238, 0.86)' : 'var(--paper)',
+      background: scrolled ? 'rgba(255, 255, 255, 0.86)' : 'var(--paper)',
       backdropFilter: scrolled ? 'saturate(140%) blur(10px)' : 'none',
       WebkitBackdropFilter: scrolled ? 'saturate(140%) blur(10px)' : 'none',
       borderBottom: '1px solid ' + (scrolled ? 'rgba(26,26,26,0.08)' : 'var(--line)'),
