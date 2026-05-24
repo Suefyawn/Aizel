@@ -71,6 +71,11 @@ export interface Product {
   // Migration 076 — homepage curation flags.
   is_bestseller?: boolean | null;
   is_featured?: boolean | null;
+  // Migration 136 — "free-from" claims used by the collection-page filter
+  // rail. Values are kebab-case tokens (sulphate-free, silicone-free,
+  // paraben-free, mineral-oil-free) so the filter URL stays short and
+  // server-side matching is a single Postgres text[] && operator.
+  free_from?: string[] | null;
   // Migration 081 — admin-controlled SEO + content fields.
   seo_title?: string | null;
   seo_description?: string | null;

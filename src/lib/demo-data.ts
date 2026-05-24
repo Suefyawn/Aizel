@@ -5,6 +5,7 @@
 // Never returned in production — gated on `isDemo` in lib/supabase.ts.
 
 import type { BlogPost, Product, Category, Page } from '@/types';
+import { deriveFreeFromClaims } from './free-from';
 
 const TS = '2026-05-22T12:00:00.000Z';
 
@@ -554,6 +555,23 @@ export const DEMO_PRODUCTS: Product[] = [
     kind: 'simple', status: 'published', created_at: TS,
   },
 ];
+
+// Apply the free-from heuristic once at module load so the storefront
+// filter rail has data to filter against in demo mode. In production
+// the column is populated server-side (admin form / one-off backfill);
+// this loop is a no-op on real Supabase rows because we never reach
+// this file when env vars are set.
+for (const p of DEMO_PRODUCTS) {
+  const claims = deriveFreeFromClaims({
+    name: p.name,
+    short_description: p.short_description,
+    description: p.description,
+    ingredients: p.ingredients,
+    brand: p.brand,
+    category: p.category,
+  });
+  if (claims.length > 0) p.free_from = claims;
+}
 
 export const DEMO_CATEGORIES: Category[] = [
   { id: 'demo-cat-1', parent_id: null, slug: 'hair-care', name: 'Hair Care', description: null, image_url: undefined, sort_order: 0 },

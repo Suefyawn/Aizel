@@ -6,6 +6,7 @@ import { Overline } from '@/components/ui/Overline';
 import { ProductTile } from '@/components/ui/ProductTile';
 import { useBodyScrollLock, useEscapeKey, useFocusTrap } from '@/lib/hooks/useBodyScrollLock';
 import { TAXONS, findTaxon, taxonForCategory, canonicalCategory, CATEGORY_DESCRIPTIONS } from '@/lib/category-taxonomy';
+import { FREE_FROM_TOKENS, FREE_FROM_LABELS, type FreeFromToken } from '@/lib/free-from';
 import type { Product, ProductAttribute, AttributeValue } from '@/types';
 
 interface AttributeWithValues extends ProductAttribute {
@@ -106,6 +107,10 @@ export function CollectionPage({
     const pageNum = Math.max(1, Number(sp.get('page') ?? '1'));
     const brands = sp.get('brand')?.split(',').filter(Boolean) ?? [];
     const attrs  = sp.get('attr')?.split(',').filter(Boolean) ?? [];
+    // Validate each ?free_from= token against the closed vocabulary — a
+    // typo'd URL token would otherwise sit in state forever and never match.
+    const freeFromTokens = (sp.get('free_from')?.split(',').filter(Boolean) ?? [])
+      .filter((t): t is FreeFromToken => (FREE_FROM_TOKENS as readonly string[]).includes(t));
     const min = sp.get('min'); const max = sp.get('max');
     return {
       cat, sub, sort, pageNum,
@@ -115,6 +120,7 @@ export function CollectionPage({
       q: sp.get('q') ?? '',
       brands: new Set(brands),
       attrs:  new Set(attrs),
+      freeFrom: new Set<FreeFromToken>(freeFromTokens),
       min: min ? Number(min) : ('' as number | ''),
       max: max ? Number(max) : ('' as number | ''),
       stock: sp.get('stock') === '1',
@@ -171,6 +177,7 @@ export function CollectionPage({
   const [inStockOnly, setInStockOnly] = useState(initialState.stock);
   const [onSaleOnly, setOnSaleOnly] = useState(initialState.sale);
   const [q, setQ] = useState(initialState.q);
+  const [selectedFreeFrom, setSelectedFreeFrom] = useState<Set<FreeFromToken>>(initialState.freeFrom);
   // In-rail brand search — quick filter when a category has many brands.
   // Industry-standard pattern on UK beauty retailers' filter sidebars.
   const [brandQuery, setBrandQuery] = useState('');
@@ -235,8 +242,15 @@ export function CollectionPage({
         remove: () => toggleValue(id),
       });
     }
+    for (const token of selectedFreeFrom) {
+      out.push({
+        key: `ff:${token}`,
+        label: FREE_FROM_LABELS[token],
+        remove: () => toggleFreeFrom(token),
+      });
+    }
     return out;
-  }, [q, priceMin, priceMax, inStockOnly, onSaleOnly, selectedBrands, selectedValueIds, attrValueLookup]);
+  }, [q, priceMin, priceMax, inStockOnly, onSaleOnly, selectedBrands, selectedValueIds, selectedFreeFrom, attrValueLookup]);
 
   function toggleBrand(b: string) {
     setSelectedBrands(prev => {
@@ -252,9 +266,17 @@ export function CollectionPage({
       return next;
     });
   }
+  function toggleFreeFrom(token: FreeFromToken) {
+    setSelectedFreeFrom(prev => {
+      const next = new Set(prev);
+      if (next.has(token)) next.delete(token); else next.add(token);
+      return next;
+    });
+  }
   function clearFilters() {
     setSelectedBrands(new Set());
     setSelectedValueIds(new Set());
+    setSelectedFreeFrom(new Set());
     setPriceMin(''); setPriceMax('');
     setInStockOnly(false); setOnSaleOnly(false);
     setQ('');
@@ -264,7 +286,7 @@ export function CollectionPage({
   // Page state isn't derivable (it's user-driven within a filter set), so
   // resetting it on filter change has to happen in an effect.
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setPage(1); }, [activeCategory, activeSubcategory, sortBy, selectedBrands, selectedValueIds, priceMin, priceMax, inStockOnly, onSaleOnly, q]);
+  useEffect(() => { setPage(1); }, [activeCategory, activeSubcategory, sortBy, selectedBrands, selectedValueIds, selectedFreeFrom, priceMin, priceMax, inStockOnly, onSaleOnly, q]);
   // Brand list rebuilds per-category; drop any selections that no longer apply.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSelectedBrands(new Set()); }, [activeCategory]);
@@ -281,6 +303,7 @@ export function CollectionPage({
     if (page !== 1) sp.set('page', String(page));
     if (selectedBrands.size > 0) sp.set('brand', Array.from(selectedBrands).join(','));
     if (selectedValueIds.size > 0) sp.set('attr', Array.from(selectedValueIds).join(','));
+    if (selectedFreeFrom.size > 0) sp.set('free_from', Array.from(selectedFreeFrom).join(','));
     if (priceMin !== '') sp.set('min', String(priceMin));
     if (priceMax !== '') sp.set('max', String(priceMax));
     if (inStockOnly) sp.set('stock', '1');
@@ -289,12 +312,13 @@ export function CollectionPage({
     const url = qs ? `/shop?${qs}` : '/shop';
     // Replace, not push — filtering shouldn't pile up history entries.
     router.replace(url, { scroll: false });
-  }, [q, activeCategory, activeSubcategory, sortBy, page, selectedBrands, selectedValueIds, priceMin, priceMax, inStockOnly, onSaleOnly, router]);
+  }, [q, activeCategory, activeSubcategory, sortBy, page, selectedBrands, selectedValueIds, selectedFreeFrom, priceMin, priceMax, inStockOnly, onSaleOnly, router]);
 
   const activeFilterCount =
     (q.trim() ? 1 : 0) +
     selectedBrands.size +
     selectedValueIds.size +
+    selectedFreeFrom.size +
     (priceMin !== '' || priceMax !== '' ? 1 : 0) +
     (inStockOnly ? 1 : 0) +
     (onSaleOnly ? 1 : 0);
@@ -348,6 +372,15 @@ export function CollectionPage({
     if (priceMax !== '' && p.price > priceMax) return false;
     if (inStockOnly && p.track_inventory !== false && p.stock <= 0) return false;
     if (onSaleOnly && !(p.original_price && p.original_price > p.price)) return false;
+    if (selectedFreeFrom.size > 0) {
+      // AND match — every selected claim must appear on the product. A
+      // shopper who ticks BOTH "sulphate-free" AND "silicone-free" wants
+      // products that are both, not products that are either.
+      const claims = p.free_from ?? [];
+      for (const token of selectedFreeFrom) {
+        if (!claims.includes(token)) return false;
+      }
+    }
     if (selectedValueIds.size > 0) {
       const productValues = productValueMap[p.id] ?? [];
       // Require the product to cover at least one selected value *per attribute* the user picked.
@@ -686,6 +719,44 @@ export function CollectionPage({
                   </fieldset>
                 );
               })()}
+
+              {/* Free-from claims — small closed vocabulary, rendered as
+                  toggle chips because the labels are short and the binary
+                  yes/no UX maps better to chips than checkboxes. We always
+                  render the fieldset (even when 0 products carry a claim
+                  in the current view) so the shopper learns the feature
+                  exists — clicking a chip with no matches simply empties
+                  the grid + surfaces the empty state. */}
+              <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px' }}>
+                <legend style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                  Free from
+                </legend>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {FREE_FROM_TOKENS.map(token => {
+                    const active = selectedFreeFrom.has(token);
+                    return (
+                      <button
+                        key={token}
+                        type="button"
+                        onClick={() => toggleFreeFrom(token)}
+                        aria-pressed={active}
+                        style={{
+                          padding: '4px 10px',
+                          border: '1px solid ' + (active ? 'var(--ink-900)' : 'var(--line)'),
+                          background: active ? 'var(--ink-900)' : 'var(--paper)',
+                          color: active ? 'var(--paper)' : 'var(--ink-900)',
+                          borderRadius: 100,
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-ui)',
+                        }}
+                      >
+                        {FREE_FROM_LABELS[token]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
 
               {/* Variant attribute facets (Shade, Size, etc.) */}
               {attributes.map(attr => {

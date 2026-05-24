@@ -82,7 +82,7 @@ async function safe<T>(
 // tile reads. Switching from select('*') saves ~400KB on /shop and
 // /shop?taxon=*.
 const PRODUCT_TILE_COLUMNS =
-  'id, brand, name, variant, price, original_price, category, subcategory, tag, slug, stock, track_inventory, image_url, is_bestseller, is_featured, status, created_at, rating, review_count';
+  'id, brand, name, variant, price, original_price, category, subcategory, tag, slug, stock, track_inventory, image_url, is_bestseller, is_featured, free_from, status, created_at, rating, review_count';
 
 export async function getProducts(): Promise<Product[]> {
   if (isDemo) return DEMO_PRODUCTS;
