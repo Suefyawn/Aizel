@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { logAudit } from '@/lib/audit';
+import { assembleCustomerExport } from '@/lib/customer-data-export';
 
 // ============================================================================
 // UK GDPR helpers for the customer admin page.
@@ -65,73 +66,10 @@ export async function exportCustomerData(userId: string): Promise<ExportResult> 
     return { ok: false, error: 'Unauthorized' };
   }
 
-  const admin = supabaseAdmin();
-
-  // Look up the profile + any auth.users metadata so the export carries
-  // the canonical email even after anonymisation (auth.users keeps it).
-  const [
-    { data: profile },
-    { data: addresses },
-    { data: orders },
-    { data: reviews },
-    { data: newsletter },
-    { data: loyaltyAcct },
-    { data: subscriptions },
-    { data: wishlists },
-  ] = await Promise.all([
-    admin.from('profiles').select('*').eq('id', userId).maybeSingle(),
-    admin.from('addresses').select('*').eq('user_id', userId),
-    admin.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
-    admin.from('product_reviews').select('*').eq('user_id', userId),
-    admin.from('newsletter_subscribers').select('*').eq('user_id', userId),
-    admin.from('loyalty_accounts').select('*').eq('user_id', userId).maybeSingle(),
-    admin.from('subscriptions').select('*').eq('user_id', userId),
-    admin.from('wishlists').select('*').eq('user_id', userId),
-  ]);
-
-  // Loyalty transactions joined to the account, when present.
-  let loyaltyLedger: unknown[] = [];
-  if (loyaltyAcct && (loyaltyAcct as { id?: string }).id) {
-    const { data: ledger } = await admin
-      .from('loyalty_transactions')
-      .select('*')
-      .eq('account_id', (loyaltyAcct as { id: string }).id)
-      .order('created_at', { ascending: true });
-    loyaltyLedger = ledger ?? [];
-  }
-
-  // Order events tied to this user's orders.
-  let orderEvents: unknown[] = [];
-  const orderIds = ((orders ?? []) as Array<{ id: string }>).map(o => o.id);
-  if (orderIds.length > 0) {
-    const { data: events } = await admin
-      .from('order_events')
-      .select('*')
-      .in('order_id', orderIds)
-      .order('created_at', { ascending: true });
-    orderEvents = events ?? [];
-  }
-
-  const payload = {
-    export_meta: {
-      exported_at: new Date().toISOString(),
-      exported_by_staff: session.name,
-      data_subject_id: userId,
-      basis: 'UK GDPR Article 15 — right of access',
-    },
-    profile: profile ?? null,
-    addresses: addresses ?? [],
-    orders: orders ?? [],
-    order_events: orderEvents,
-    reviews: reviews ?? [],
-    newsletter_subscription: newsletter ?? [],
-    loyalty: {
-      account: loyaltyAcct ?? null,
-      transactions: loyaltyLedger,
-    },
-    subscriptions: subscriptions ?? [],
-    wishlists: wishlists ?? [],
-  };
+  // Same assembler as the customer-facing self-serve route in
+  // /account/data-export — both produce the same JSON shape so the data
+  // subject gets a consistent file regardless of who triggered it.
+  const payload = await assembleCustomerExport(userId, `actioned by staff: ${session.name}`);
 
   await logAudit(session, {
     action: 'customer.data_export',
@@ -140,7 +78,7 @@ export async function exportCustomerData(userId: string): Promise<ExportResult> 
     diff: { tables: Object.keys(payload).filter(k => k !== 'export_meta') },
   });
 
-  return { ok: true, data: payload };
+  return { ok: true, data: payload as unknown as Record<string, unknown> };
 }
 
 interface AnonymiseResult {

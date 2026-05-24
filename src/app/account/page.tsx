@@ -82,6 +82,16 @@ export default function AccountPage() {
             <div style={{ fontWeight: 600, fontSize: '1.0625rem', color: 'var(--ink-900)', marginBottom: 4 }}>Profile</div>
             <div style={{ fontSize: '0.875rem', color: 'var(--ink-500)' }}>Manage your personal details</div>
           </Link>
+          {/* UK GDPR Article 15 self-serve — download the data Aizel holds
+              on you as a JSON file, no email round-trip needed. */}
+          <Link href="/account/data-export" style={{
+            display: 'block', padding: '28px 24px', background: 'white', borderRadius: 12,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)', textDecoration: 'none', border: '1px solid var(--line)',
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: 12 }}>↓</div>
+            <div style={{ fontWeight: 600, fontSize: '1.0625rem', color: 'var(--ink-900)', marginBottom: 4 }}>My data</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--ink-500)' }}>Download everything we hold about you</div>
+          </Link>
         </div>
 
         <button onClick={handleSignOut} style={{
