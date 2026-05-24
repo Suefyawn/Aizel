@@ -13,6 +13,7 @@ import { postOrderDestination } from '@/lib/checkout-routing';
 import { brandPlusName } from '@/lib/product-display';
 import { track } from '@/lib/analytics';
 import { BankAccountsList } from '@/components/checkout/BankAccountsList';
+import { PostcodeLookup } from '@/components/checkout/PostcodeLookup';
 import type { Coupon, PayMethod, LoyaltyAccount, BankAccount } from '@/types';
 
 // UK regions used in the checkout address dropdown. Order roughly mirrors
@@ -375,27 +376,50 @@ export function CheckoutPage({ enabledMethods, bankAccounts = [], bankNotes }: C
                   {errors.lastName && <span id="co-lname-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.lastName}</span>}
                 </div>
               </div>
+              {/* Postcode first — UK shoppers expect "Find address" flow. The
+                  PostcodeLookup component renders a Find button + dropdown
+                  when LOQATE_API_KEY is configured server-side, and a
+                  plain postcode input otherwise. */}
+              <div style={{ marginBottom: 16 }}>
+                <label htmlFor="co-zip" style={labelStyle}>Postcode *</label>
+                <PostcodeLookup
+                  value={formData.zip}
+                  onPostcodeChange={next => update('zip', next)}
+                  onSelect={addr => {
+                    // Prefill the rest of the address block from the chosen suggestion.
+                    setFormData(p => ({
+                      ...p,
+                      address: [addr.line1, addr.line2].filter(Boolean).join(', '),
+                      city:    addr.city,
+                      zip:     addr.postcode,
+                    }));
+                    setErrors(p => {
+                      const n = { ...p };
+                      delete n.address; delete n.city;
+                      return n;
+                    });
+                  }}
+                  inputStyle={inputStyle('zip')}
+                  inputId="co-zip"
+                />
+              </div>
               <div style={{ marginBottom: 16 }}>
                 <label htmlFor="co-address" style={labelStyle}>Address *</label>
-                <input id="co-address" autoComplete="street-address" value={formData.address} onChange={e => update('address', e.target.value)} placeholder="House/flat, street, area" style={inputStyle('address')} aria-invalid={!!errors.address} aria-describedby={errors.address ? 'co-address-error' : undefined} />
+                <input id="co-address" autoComplete="street-address" value={formData.address} onChange={e => update('address', e.target.value)} placeholder="House/flat name or number, street" style={inputStyle('address')} aria-invalid={!!errors.address} aria-describedby={errors.address ? 'co-address-error' : undefined} />
                 {errors.address && <span id="co-address-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.address}</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }} className="addr-grid-3">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }} className="addr-grid-3">
                 <div>
-                  <label htmlFor="co-city" style={labelStyle}>City *</label>
-                  <input id="co-city" autoComplete="address-level2" value={formData.city} onChange={e => update('city', e.target.value)} style={inputStyle('city')} aria-invalid={!!errors.city} aria-describedby={errors.city ? 'co-city-error' : undefined} />
+                  <label htmlFor="co-city" style={labelStyle}>City / Town *</label>
+                  <input id="co-city" autoComplete="address-level2" value={formData.city} onChange={e => update('city', e.target.value)} placeholder="London" style={inputStyle('city')} aria-invalid={!!errors.city} aria-describedby={errors.city ? 'co-city-error' : undefined} />
                   {errors.city && <span id="co-city-error" style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{errors.city}</span>}
                 </div>
                 <div>
-                  <label htmlFor="co-province" style={labelStyle}>Province</label>
+                  <label htmlFor="co-province" style={labelStyle}>Country / Region</label>
                   <select id="co-province" autoComplete="address-level1" value={formData.province} onChange={e => update('province', e.target.value)} style={{ ...inputStyle('province'), cursor: 'pointer' }}>
                     <option value="">Select</option>
                     {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
-                </div>
-                <div>
-                  <label htmlFor="co-zip" style={labelStyle}>Postal Code</label>
-                  <input id="co-zip" autoComplete="postal-code" inputMode="numeric" value={formData.zip} onChange={e => update('zip', e.target.value)} style={inputStyle('zip')} />
                 </div>
               </div>
 
