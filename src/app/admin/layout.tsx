@@ -1,8 +1,19 @@
+import { headers } from 'next/headers';
 import { getStaffSession } from '@/lib/staff-auth';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { ToastProvider } from '@/components/admin/Toast';
 import { supabaseAdmin } from '@/lib/supabase';
 import { can, type Permission } from '@/lib/permissions';
+
+// Routes that opt OUT of the standard AdminShell (sidebar + topbar +
+// bottom nav). Each entry is an exact match — child paths still get
+// the shell unless added here. The POS till is the only one today;
+// the back-office POS dashboard at /admin/pos/dashboard stays inside
+// the standard shell so the operator can flip between it and the
+// Orders / Inventory / etc views without losing chrome.
+const SHELL_OPT_OUT = new Set<string>([
+  '/admin/pos',
+]);
 
 interface NotificationRow {
   id: string; kind: string; title: string; body: string | null;
@@ -28,6 +39,14 @@ const KIND_PERMISSION: Record<string, Permission | null> = {
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getStaffSession();
+
+  // Pathname comes from middleware (src/middleware.ts sets x-pathname).
+  // Shell-opt-out routes render their children raw — they own their own
+  // full-screen chrome (currently only the POS till).
+  const pathname = (await headers()).get('x-pathname') ?? '';
+  if (session && SHELL_OPT_OUT.has(pathname)) {
+    return <ToastProvider>{children}</ToastProvider>;
+  }
 
   if (!session) {
     return (

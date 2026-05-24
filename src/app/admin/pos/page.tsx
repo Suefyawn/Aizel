@@ -63,11 +63,17 @@ export default async function PosPage() {
     opened_at: openSession.opened_at,
   } : null;
 
+  // The till uses its own dark, full-screen chrome — wrap inline rather
+  // than via a layout file because the layout would also wrap the
+  // back-office /admin/pos/dashboard route, which wants the standard
+  // admin sidebar.
   return (
-    <PosTerminal
-      products={products}
-      cashier={{ id: session.id, name: session.name }}
-      session={activeSession}
-    />
+    <div style={{ minHeight: '100vh', background: '#0F0F10', color: '#F5F5F7', fontFamily: 'var(--font-ui)' }}>
+      <PosTerminal
+        products={products}
+        cashier={{ id: session.id, name: session.name }}
+        session={activeSession}
+      />
+    </div>
   );
 }

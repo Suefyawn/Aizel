@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { logAudit } from '@/lib/audit';
+import { sendOrderConfirmationEmail } from '@/lib/email';
+import { sendOrderPlacedSms } from '@/lib/notifications/twilio';
 import { z } from 'zod';
 
 // ============================================================================
@@ -244,6 +246,41 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
       session_id: data.session_id ?? null,
     },
   });
+
+  // ── Best-effort receipts ───────────────────────────────────────────────
+  // Email + SMS are fire-and-forget — a Resend/Twilio outage shouldn't
+  // block the sale from completing on the till. Failures are already
+  // captured to Sentry inside email.ts + twilio.ts.
+  if (data.customer_email) {
+    try {
+      await sendOrderConfirmationEmail({
+        email: data.customer_email,
+        order_number: orderNumber,
+        first_name: 'In-store',
+        last_name: 'customer',
+        phone: data.customer_phone || 'in-store',
+        city: 'In-store',
+        total,
+        pay_method: payMethod,
+        items: data.items.map(it => ({
+          name: it.name,
+          brand: it.brand ?? undefined,
+          qty: it.qty,
+          price: it.unit_price,
+          variant: it.variant ?? undefined,
+        })),
+      });
+    } catch { /* logged in email.ts */ }
+  }
+  if (data.customer_phone) {
+    try {
+      await sendOrderPlacedSms({
+        phone: data.customer_phone,
+        orderNumber,
+        total,
+      });
+    } catch { /* logged in twilio.ts */ }
+  }
 
   revalidatePath('/admin/orders');
   revalidatePath('/admin/pos');

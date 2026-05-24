@@ -205,7 +205,12 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Fall-through — emit the response with `x-pathname` set so server
+  // components downstream can read the active path (used by AdminLayout
+  // to skip AdminShell for /admin/pos — see SHELL_OPT_OUT).
+  const res = NextResponse.next();
+  res.headers.set('x-pathname', pathname);
+  return res;
 }
 
 // Map a known WP-style URL to the Next route, or null if no rule matches and
