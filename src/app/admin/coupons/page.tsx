@@ -9,7 +9,7 @@ import { NoAccess } from '@/components/admin/NoAccess';
 import type { Coupon } from '@/types';
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 function getCouponState(c: Coupon): 'expired' | 'maxed' | 'active' | 'inactive' {
   if (c.expires_at && new Date(c.expires_at) < new Date()) return 'expired';
@@ -122,7 +122,7 @@ export default async function CouponsPage({
             <input name="expires_at" type="date" style={inp} />
           </div>
           <button type="submit" style={{
-            padding: '8px 20px', background: '#C5286A', color: 'white',
+            padding: '8px 20px', background: '#4A1A6B', color: 'white',
             border: 'none', borderRadius: 7, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
           }}>
             + Create

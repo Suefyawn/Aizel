@@ -568,7 +568,7 @@ function StaffRow({ staff, roles }: { staff: Staff; roles: Role[] }) {
         </span>
       </td>
       <td data-label="Added" style={{ padding: '14px 20px', color: '#6b7280', fontSize: '0.8125rem' }}>
-        {new Date(staff.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+        {new Date(staff.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
       <td style={{ padding: '14px 20px' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -611,7 +611,7 @@ export function TeamPage({ staff, roles }: { staff: Staff[]; roles: Role[] }) {
             Manage staff accounts, roles, and their permissions
           </p>
         </div>
-        <button style={btn('#C5286A')} onClick={() => setAdding(true)}>+ Add Staff Member</button>
+        <button style={btn('#4A1A6B')} onClick={() => setAdding(true)}>+ Add Staff Member</button>
       </div>
 
       {adding && (

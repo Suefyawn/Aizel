@@ -36,7 +36,7 @@ export async function SentryWidget() {
     return (
       <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <span style={{ color: '#C5286A', display: 'inline-flex' }}><AdminIcon name="bug" size={18} /></span>
+          <span style={{ color: '#4A1A6B', display: 'inline-flex' }}><AdminIcon name="bug" size={18} /></span>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Sentry error tracking</h2>
         </div>
         <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No data yet — hit Refresh analytics.</p>
@@ -50,7 +50,7 @@ export async function SentryWidget() {
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ color: '#C5286A', display: 'inline-flex' }}><AdminIcon name="bug" size={18} /></span>
+          <span style={{ color: '#4A1A6B', display: 'inline-flex' }}><AdminIcon name="bug" size={18} /></span>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Sentry error tracking</h2>
         </div>
         <a

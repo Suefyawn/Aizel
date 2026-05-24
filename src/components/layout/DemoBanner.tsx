@@ -8,7 +8,7 @@ export function DemoBanner() {
     <div
       role="status"
       style={{
-        background: '#F7C948', color: '#111827',
+        background: '#D4A437', color: '#111827',
         textAlign: 'center', padding: '6px 16px',
         fontSize: '0.75rem', fontWeight: 700,
         letterSpacing: '0.05em', textTransform: 'uppercase',

@@ -33,7 +33,7 @@ const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
 };
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleString('en-PK', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  new Date(s).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 export async function ProductInventoryHistory({ productId }: { productId: string }) {
   const admin = supabaseAdmin();
@@ -49,7 +49,7 @@ export async function ProductInventoryHistory({ productId }: { productId: string
     <section style={{ marginTop: 32, background: 'white', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
       <header style={{ padding: '14px 18px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700, color: '#111827' }}>Inventory history</h2>
-        <Link href={`/admin/inventory?product=${productId}`} style={{ fontSize: '0.75rem', color: '#C5286A', textDecoration: 'none', fontWeight: 600 }}>
+        <Link href={`/admin/inventory?product=${productId}`} style={{ fontSize: '0.75rem', color: '#4A1A6B', textDecoration: 'none', fontWeight: 600 }}>
           View all →
         </Link>
       </header>
@@ -89,7 +89,7 @@ export async function ProductInventoryHistory({ productId }: { productId: string
                     )}
                   </td>
                   <td style={{ padding: '8px 14px', fontSize: '0.75rem', color: '#374151' }}>
-                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: r.actor_kind === 'owner' ? '#C5286A' : r.actor_kind === 'staff' ? '#3b82f6' : '#6b7280', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: r.actor_kind === 'owner' ? '#4A1A6B' : r.actor_kind === 'staff' ? '#3b82f6' : '#6b7280', textTransform: 'uppercase' }}>
                       {r.actor_kind}
                     </span>
                     {r.actor_email && <span style={{ marginLeft: 6, color: '#9ca3af' }}>{r.actor_email}</span>}

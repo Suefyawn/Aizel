@@ -73,9 +73,8 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
       {/* Brand */}
       <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid #1f2937', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '1.125rem', letterSpacing: '-0.02em' }}>
-            <span style={{ color: '#f9a8d4' }}>Yellow</span>
-            <span style={{ color: '#ffffff' }}>Pink</span>
+          <div style={{ fontWeight: 700, fontSize: '1.125rem', letterSpacing: '-0.02em', color: '#D4A437' }}>
+            Aizel
           </div>
           <div style={{ color: '#6b7280', fontSize: '0.6875rem', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Admin Panel
@@ -100,7 +99,7 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
       <div style={{ padding: '12px 20px', borderBottom: '1px solid #1f2937', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 32, height: 32, borderRadius: '50%',
-          background: session.isOwner ? '#C5286A' : '#6366f1',
+          background: session.isOwner ? '#4A1A6B' : '#6366f1',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'white', fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0,
         }}>

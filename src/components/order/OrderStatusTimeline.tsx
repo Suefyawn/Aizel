@@ -23,7 +23,7 @@ const ICONS: Record<OrderStatus, string> = {
 };
 
 const fmtShort = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
+  new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
 export interface OrderStatusTimelineProps {
   /** Current status. Drives which step is "active" and which are checked. */

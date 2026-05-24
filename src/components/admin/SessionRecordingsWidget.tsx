@@ -17,7 +17,7 @@ const fmtDuration = (s: number) => {
 
 const fmtWhen = (iso: string) => {
   try {
-    return new Date(iso).toLocaleString('en-PK', {
+    return new Date(iso).toLocaleString('en-GB', {
       day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
     });
   } catch {
@@ -80,7 +80,7 @@ export async function SessionRecordingsWidget() {
                 {fmtDuration(r.durationSeconds)} · session {r.id.slice(0, 8)}
               </div>
             </div>
-            <span style={{ color: '#C5286A', fontWeight: 600, fontSize: '0.75rem' }}>Watch →</span>
+            <span style={{ color: '#4A1A6B', fontWeight: 600, fontSize: '0.75rem' }}>Watch →</span>
           </a>
         ))}
       </div>

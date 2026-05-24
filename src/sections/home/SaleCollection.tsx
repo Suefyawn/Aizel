@@ -16,12 +16,12 @@ export function SaleCollection({ products, title, subtitle, ctaText, ctaUrl }: {
   const items = products.slice(0, 8);
   if (items.length === 0) return null;
   return (
-    <section style={{ background: 'var(--paper2, #faf6ee)', padding: 'var(--section-gap) 0', marginBottom: 'var(--section-gap)' }}>
+    <section style={{ background: 'var(--paper2, #f5f5f5)', padding: 'var(--section-gap) 0', marginBottom: 'var(--section-gap)' }}>
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <span style={{
             display: 'inline-block', padding: '4px 14px', marginBottom: 12,
-            background: 'var(--brand-pink, #C5286A)', color: '#fff',
+            background: 'var(--brand-pink, #4A1A6B)', color: '#fff',
             borderRadius: 'var(--radius-pill, 999px)',
             fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
           }}>

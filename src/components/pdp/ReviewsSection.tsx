@@ -25,7 +25,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
     <span style={{ display: 'inline-flex', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= rating ? '#F7C948' : '#e5e7eb'}>
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= rating ? '#D4A437' : '#e5e7eb'}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
@@ -52,7 +52,7 @@ function StarPicker({ name }: { name: string }) {
             style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
           />
           <svg width="28" height="28" viewBox="0 0 24 24"
-            fill={v <= active ? '#F7C948' : '#e5e7eb'}
+            fill={v <= active ? '#D4A437' : '#e5e7eb'}
             style={{ display: 'block', transition: 'fill 0.1s' }}
             role="img"
             aria-label={`${v} star${v > 1 ? 's' : ''}`}
@@ -299,7 +299,7 @@ export function ReviewsSection({ productId, reviews, photosEnabled = true }: { p
                     )}
                     <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <div style={{ fontSize: '0.75rem', color: 'var(--ink-400)' }}>
-                        {new Date(r.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </div>
                       <HelpfulButton reviewId={r.id} initialCount={r.helpful_count ?? 0} />
                     </div>

@@ -54,7 +54,7 @@ export function ReturnsQueue({ rows, orderMap }: {
                   {order?.order_number ?? r.order_id.slice(0, 8)}
                 </Link>
                 <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  {order ? `${order.first_name} ${order.last_name}` : '—'} · {new Date(r.created_at).toLocaleString('en-PK', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  {order ? `${order.first_name} ${order.last_name}` : '—'} · {new Date(r.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   {r.email && <> · {r.email}</>}
                 </div>
               </div>

@@ -94,7 +94,7 @@ export default async function VendorsPage() {
             <input name="notes" placeholder="What they supply" style={{ ...inp, width: '100%' }} />
           </div>
           <button type="submit" style={{
-            padding: '8px 20px', background: '#C5286A', color: 'white',
+            padding: '8px 20px', background: '#4A1A6B', color: 'white',
             border: 'none', borderRadius: 7, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
           }}>
             + Add
@@ -199,7 +199,7 @@ export default async function VendorsPage() {
                 return (
                   <tr key={s.id} style={{ borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
                     <td data-label="Order" style={{ padding: '12px 16px', fontSize: '0.8125rem' }}>
-                      <Link href={`/admin/orders/${s.order_id}`} style={{ color: '#C5286A', textDecoration: 'none', fontFamily: 'monospace' }}>
+                      <Link href={`/admin/orders/${s.order_id}`} style={{ color: '#4A1A6B', textDecoration: 'none', fontFamily: 'monospace' }}>
                         {orderMap.get(s.order_id) ?? s.order_id.slice(0, 8)}
                       </Link>
                     </td>

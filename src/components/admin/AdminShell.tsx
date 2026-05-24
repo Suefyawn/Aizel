@@ -265,7 +265,7 @@ export function AdminShell({
             position: fixed; right: 16px;
             bottom: calc(72px + env(safe-area-inset-bottom, 0px));
             width: 52px; height: 52px; border-radius: 50%;
-            background: #C5286A; color: #fff; text-decoration: none;
+            background: #4A1A6B; color: #fff; text-decoration: none;
             box-shadow: 0 6px 20px rgba(197, 40, 106, 0.42);
             z-index: 44;
           }
@@ -354,8 +354,7 @@ export function AdminShell({
             </svg>
           </button>
           <span style={{ flex: 1, fontWeight: 700, fontSize: '0.9375rem', color: '#111827' }}>
-            <span style={{ color: '#C5286A' }}>Yellow</span>
-            <span>Pink</span>
+            <span style={{ color: '#4A1A6B' }}>Aizel</span>
             <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>Admin</span>
           </span>
           <NotificationsBell notifications={notifications} />

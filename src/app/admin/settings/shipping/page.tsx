@@ -181,7 +181,7 @@ export default async function SettingsShippingPage({ searchParams }: { searchPar
           <ZoneFields />
           <div>
             <button type="submit" style={{
-              padding: '10px 22px', background: '#C5286A', color: 'white',
+              padding: '10px 22px', background: '#4A1A6B', color: 'white',
               border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer',
             }}>
               Create zone

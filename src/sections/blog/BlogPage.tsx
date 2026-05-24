@@ -99,7 +99,7 @@ export function BlogPage({ posts }: { posts: BlogPost[] }) {
               style={{
                 flex: '1 1 280px', maxWidth: 420, minWidth: 220,
                 padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 'var(--radius-pill)',
-                fontSize: '0.875rem', fontFamily: 'var(--font-ui)', background: 'var(--paper2, #faf6ee)',
+                fontSize: '0.875rem', fontFamily: 'var(--font-ui)', background: 'var(--paper2, #f5f5f5)',
                 outline: 'none',
               }}
             />

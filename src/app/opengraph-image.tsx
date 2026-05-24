@@ -13,7 +13,7 @@ export const alt = `${SITE_NAME} — Authentic hair & body care in the UK`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-const PAPER = '#FAF6EE';
+const PAPER = '#FFFFFF';
 const INK = '#0A0A0A';
 const GOLD = '#D4A437';
 const PURPLE = '#6B2C91';

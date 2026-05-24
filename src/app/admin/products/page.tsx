@@ -75,7 +75,7 @@ export default async function ProductsPage({
             Import CSV
           </Link>
           <Link href="/admin/products/new" style={{
-            padding: '10px 20px', background: '#C5286A', color: 'white',
+            padding: '10px 20px', background: '#4A1A6B', color: 'white',
             borderRadius: 8, textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>

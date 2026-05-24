@@ -41,7 +41,7 @@ export function SettingsNav() {
                 background: active ? '#fdf2f8' : 'transparent',
                 color: active ? '#111827' : '#374151',
                 textDecoration: 'none',
-                borderLeft: `3px solid ${active ? '#C5286A' : 'transparent'}`,
+                borderLeft: `3px solid ${active ? '#4A1A6B' : 'transparent'}`,
                 transition: 'background 0.15s',
               }}
             >

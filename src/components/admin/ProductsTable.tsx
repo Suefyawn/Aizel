@@ -114,7 +114,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
       {products.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
           <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af' }}>
-            No products found. <Link href="/admin/products/new" style={{ color: '#C5286A' }}>Add one &rarr;</Link>
+            No products found. <Link href="/admin/products/new" style={{ color: '#4A1A6B' }}>Add one &rarr;</Link>
           </div>
         </div>
       ) : (
@@ -208,7 +208,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                       checked={checked}
                       onChange={() => toggle(p.id)}
                       aria-label={`Select ${p.name}`}
-                      style={{ cursor: 'pointer', accentColor: '#C5286A', width: 18, height: 18, flexShrink: 0, marginTop: 3 }}
+                      style={{ cursor: 'pointer', accentColor: '#4A1A6B', width: 18, height: 18, flexShrink: 0, marginTop: 3 }}
                     />
                     <div style={{ minWidth: 0, flex: 1 }}>
                       {p.brand && (

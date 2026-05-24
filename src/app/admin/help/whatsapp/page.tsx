@@ -36,7 +36,7 @@ export default async function WhatsAppHelpPage() {
                 href={previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ marginLeft: 'auto', fontSize: '0.8125rem', color: '#C5286A', textDecoration: 'none', fontWeight: 600 }}
+                style={{ marginLeft: 'auto', fontSize: '0.8125rem', color: '#4A1A6B', textDecoration: 'none', fontWeight: 600 }}
               >
                 Test the link →
               </a>

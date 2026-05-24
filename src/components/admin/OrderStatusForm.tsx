@@ -67,7 +67,7 @@ export function OrderStatusForm({ orderId, currentStatus }: {
           disabled={pending}
           style={{
             padding: '9px 20px',
-            background: pending ? '#9ca3af' : '#C5286A',
+            background: pending ? '#9ca3af' : '#4A1A6B',
             color: 'white', border: 'none', borderRadius: 7,
             fontSize: '0.875rem', fontWeight: 600,
             cursor: pending ? 'not-allowed' : 'pointer',

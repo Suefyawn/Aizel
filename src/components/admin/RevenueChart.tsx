@@ -12,7 +12,7 @@ const fmtK = (n: number) => {
 };
 
 const fmtDate = (iso: string) =>
-  new Date(`${iso}T00:00:00`).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
+  new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
 export function RevenueChart({ days }: { days: DayRevenue[] }) {
   if (days.length === 0) {
@@ -80,7 +80,7 @@ export function RevenueChart({ days }: { days: DayRevenue[] }) {
               width={barW}
               height={barH}
               rx={2}
-              fill={isLast ? '#C5286A' : '#f6bcd5'}
+              fill={isLast ? '#4A1A6B' : '#f6bcd5'}
             >
               <title>{`${fmtDate(d.date)} — £${Math.round(d.revenue).toLocaleString()}`}</title>
             </rect>

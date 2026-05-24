@@ -118,7 +118,7 @@ function VariantForm({
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button type="submit" disabled={pending} style={{
-          padding: '8px 16px', background: pending ? '#9ca3af' : '#C5286A',
+          padding: '8px 16px', background: pending ? '#9ca3af' : '#4A1A6B',
           color: 'white', border: 'none', borderRadius: 6,
           fontSize: '0.8125rem', fontWeight: 600, cursor: pending ? 'not-allowed' : 'pointer',
         }}>
@@ -184,7 +184,7 @@ export function VariantsSection({
         </h2>
         {!adding && (
           <button onClick={() => setAdding(true)} style={{
-            padding: '8px 14px', background: '#C5286A', color: 'white',
+            padding: '8px 14px', background: '#4A1A6B', color: 'white',
             border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
           }}>+ Add variant</button>
         )}

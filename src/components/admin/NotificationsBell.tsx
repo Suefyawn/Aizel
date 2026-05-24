@@ -73,7 +73,7 @@ export function NotificationsBell({ notifications }: { notifications: Notificati
               <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: '#111827' }}>Notifications</span>
               {unread.length > 0 && (
                 <form action={markAllNotificationsRead}>
-                  <button type="submit" style={{ background: 'none', border: 'none', color: '#C5286A', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                  <button type="submit" style={{ background: 'none', border: 'none', color: '#4A1A6B', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
                     Mark all read
                   </button>
                 </form>
@@ -100,7 +100,7 @@ export function NotificationsBell({ notifications }: { notifications: Notificati
                       background: n.read ? 'white' : '#fdf2f8',
                     }}
                   >
-                    <span style={{ fontSize: '1rem', color: '#C5286A', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18 }}>
+                    <span style={{ fontSize: '1rem', color: '#4A1A6B', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18 }}>
                       {KIND_SVG[n.kind]
                         ? <AdminIcon name={KIND_SVG[n.kind]} size={16} />
                         : (KIND_ICON[n.kind] ?? '•')}
@@ -109,10 +109,10 @@ export function NotificationsBell({ notifications }: { notifications: Notificati
                       <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</div>
                       {n.body && <div style={{ fontSize: '0.75rem', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</div>}
                       <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: 2 }}>
-                        {new Date(n.created_at).toLocaleString('en-PK', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(n.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    {!n.read && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C5286A', flexShrink: 0, marginTop: 6 }} />}
+                    {!n.read && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4A1A6B', flexShrink: 0, marginTop: 6 }} />}
                   </Link>
                 ))}
               </div>

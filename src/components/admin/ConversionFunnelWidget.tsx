@@ -44,7 +44,7 @@ export async function ConversionFunnelWidget() {
     return prev > 0 ? Math.round((s.count / prev) * 100) : 0;
   });
 
-  const COLOURS = ['#6366f1', '#8b5cf6', '#C5286A', '#f59e0b', '#10b981'];
+  const COLOURS = ['#6366f1', '#8b5cf6', '#4A1A6B', '#f59e0b', '#10b981'];
 
   return (
     <div style={cardStyle}>
@@ -91,7 +91,7 @@ function Header({ updatedAt }: { updatedAt: string | null }) {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
       <div>
         <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: '#C5286A', display: 'inline-flex' }}><AdminIcon name="cart" size={16} /></span>
+          <span style={{ color: '#4A1A6B', display: 'inline-flex' }}><AdminIcon name="cart" size={16} /></span>
           Conversion funnel
         </h2>
         <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#9ca3af' }}>

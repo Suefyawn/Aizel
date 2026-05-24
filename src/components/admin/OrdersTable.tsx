@@ -9,7 +9,7 @@ import type { Order, OrderStatus } from '@/types';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const payBadge: Record<string, { bg: string; color: string; label: string }> = {
   cod:  { bg: '#fef3c7', color: '#92400e', label: 'COD' },
@@ -123,7 +123,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                 checked={selected.size === orders.length && orders.length > 0}
                 onChange={toggleAll}
                 title="Select all"
-                style={{ cursor: 'pointer', accentColor: '#C5286A' }}
+                style={{ cursor: 'pointer', accentColor: '#4A1A6B' }}
               />
             </th>
             {['Order #', 'Customer', 'Total', 'Status', 'Payment', 'Date'].map(h => (
@@ -143,11 +143,11 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                     checked={isSelected}
                     onChange={() => toggle(o.id!)}
                     aria-label={`Select order ${o.order_number}`}
-                    style={{ cursor: 'pointer', accentColor: '#C5286A' }}
+                    style={{ cursor: 'pointer', accentColor: '#4A1A6B' }}
                   />
                 </td>
                 <td style={{ padding: '12px 16px' }}>
-                  <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '0.875rem', color: '#C5286A', textDecoration: 'none', fontFamily: 'monospace' }}>
+                  <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '0.875rem', color: '#4A1A6B', textDecoration: 'none', fontFamily: 'monospace' }}>
                     {o.order_number}
                   </Link>
                 </td>
@@ -183,9 +183,9 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                     checked={isSelected}
                     onChange={() => toggle(o.id!)}
                     aria-label={`Select order ${o.order_number}`}
-                    style={{ cursor: 'pointer', accentColor: '#C5286A', width: 18, height: 18, flexShrink: 0 }}
+                    style={{ cursor: 'pointer', accentColor: '#4A1A6B', width: 18, height: 18, flexShrink: 0 }}
                   />
-                  <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '1rem', color: '#C5286A', textDecoration: 'none', fontFamily: 'monospace' }}>
+                  <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '1rem', color: '#4A1A6B', textDecoration: 'none', fontFamily: 'monospace' }}>
                     {o.order_number}
                   </Link>
                   <span style={{ marginLeft: 'auto' }}><StatusBadge status={st} /></span>

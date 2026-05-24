@@ -18,8 +18,16 @@
   --ink-500: #595959;
   --ink-400: #7A7A7A;
   --ink-300: #B0B0B0;
-  --paper: #FAF6EE;
-  --paper2: #F2EDE2;
+  /* Plain white as the primary surface. Was a warm cream (#FFFFFF) in the
+   * YellowPink era — picked at the time to soften the pink/yellow palette
+   * and feel "boutique". Against Aizel's purple/gold the cream read as
+   * pale-yellow undertone and clashed; pure white lets brand accents pop
+   * and matches the e-commerce convention for hair/body care photography. */
+  --paper: #FFFFFF;
+  /* Second-tier surface — input fields, hover states, soft cards. A very
+   * light neutral grey gives subtle layering without pushing back toward
+   * a cream tone. */
+  --paper2: #F5F5F5;
   /* Aizel gold — warm metallic accent. Used for borders, hover glows,
    * seasonal highlights, and the PWA theme tile. */
   --brand-yellow: #D4A437;
@@ -59,10 +67,14 @@
  * to clear WCAG AA on that theme's --paper. Tune the hex freely; keep
  * that contrast. */
 
-/* Festive / formal — richer gold against deep aubergine. */
+/* Seasonal themes only swap the brand-palette + accent — every theme keeps
+ * the same neutral white surface so the body never goes back to the cream/
+ * pink tint the brand has moved away from. The optional background motifs
+ * below add a faint texture that gives each season its own personality
+ * without changing the underlying canvas colour. */
+
+/* Festive / formal — richer gold + deep aubergine. */
 :root[data-theme="eid"] {
-  --paper: #FBF6EA;
-  --paper2: #F1E8D4;
   --brand-yellow: #C99230;
   --brand-pink: #4F1F6E;
   --brand-pink-text: #341148;
@@ -71,8 +83,6 @@
 
 /* High-energy sale: brighter gold + electric violet. */
 :root[data-theme="sale"] {
-  --paper: #FFFFFF;
-  --paper2: #F4F4F5;
   --brand-yellow: #E5B538;
   --brand-pink: #8A2BE2;
   --brand-pink-text: #5D17A6;
@@ -81,8 +91,6 @@
 
 /* Christmas: warm gold + plum-burgundy. */
 :root[data-theme="christmas"] {
-  --paper: #FBF4EF;
-  --paper2: #EEE3DB;
   --brand-yellow: #C99A3C;
   --brand-pink: #5A1240;
   --brand-pink-text: #3B0928;
@@ -91,8 +99,6 @@
 
 /* Easter / spring: soft champagne + lavender. */
 :root[data-theme="easter"] {
-  --paper: #FBF7F4;
-  --paper2: #EFE8F1;
   --brand-yellow: #E2C97C;
   --brand-pink: #8E62B5;
   --brand-pink-text: #5D3D85;
@@ -260,7 +266,7 @@ a.underline,
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 14px 32px;
-  /* --brand-pink-cta (#C5286A) — passes WCAG AA for the small uppercase
+  /* --brand-pink-cta (#4A1A6B) — passes WCAG AA for the small uppercase
    * white label below. The lighter --brand-pink fails 1.4.3 at 13px. */
   background: var(--brand-pink-cta);
   color: #fff;
@@ -724,7 +730,7 @@ a.underline,
   .adm-settings-nav { width: 100% !important; padding-right: 0 !important; padding-bottom: 12px; overflow-x: auto; }
   .adm-settings-nav nav { flex-direction: row !important; min-width: max-content; gap: 4px !important; }
   .adm-settings-nav-link { white-space: nowrap; border-left: 0 !important; border-bottom: 3px solid transparent !important; padding: 8px 12px !important; }
-  .adm-settings-nav-link[aria-current="page"] { border-bottom-color: #C5286A !important; }
+  .adm-settings-nav-link[aria-current="page"] { border-bottom-color: #4A1A6B !important; }
   .adm-settings-nav-link > div:last-child { display: none; }
 }
 

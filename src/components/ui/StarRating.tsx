@@ -32,7 +32,7 @@ export function StarRating({ rating, count, size = 13, showCount = true }: StarR
         <span style={{
           position: 'absolute', top: 0, left: 0,
           width: `${pct}%`, overflow: 'hidden', whiteSpace: 'nowrap',
-          color: '#F7C948',
+          color: '#D4A437',
         }}>★★★★★</span>
       </span>
       {showCount && (

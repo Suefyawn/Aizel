@@ -9,9 +9,9 @@ import { NoAccess } from '@/components/admin/NoAccess';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const fmtDateTime = (s: string) =>
-  new Date(s).toLocaleString('en-PK', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 const statusColors: Record<string, string> = {
   pending: '#f59e0b', processing: '#3b82f6', shipped: '#8b5cf6', delivered: '#10b981', cancelled: '#ef4444',
@@ -174,7 +174,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   return (
                     <tr key={o.id} style={{ borderTop: i > 0 ? '1px solid #f9fafb' : 'none' }}>
                       <td style={{ padding: '10px 12px' }}>
-                        <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '0.875rem', color: '#C5286A', textDecoration: 'none', fontFamily: 'monospace' }}>
+                        <Link href={`/admin/orders/${o.id}`} style={{ fontWeight: 700, fontSize: '0.875rem', color: '#4A1A6B', textDecoration: 'none', fontFamily: 'monospace' }}>
                           {o.order_number}
                         </Link>
                       </td>
@@ -238,7 +238,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               const detail = activityDetail(a);
               return (
                 <div key={a.id} style={{ display: 'flex', gap: 12, padding: '10px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C5286A', marginTop: 6, flexShrink: 0 }} />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4A1A6B', marginTop: 6, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '0.875rem', color: '#111827', fontWeight: 500 }}>{activityLabel(a.action)}</div>
                     {detail && <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 1 }}>{detail}</div>}

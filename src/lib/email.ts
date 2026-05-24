@@ -45,7 +45,7 @@ const DB_TIMEOUT_MS = 8000;
 // templates. Hex values now reflect the Aizel purple + gold palette.
 const BRAND_PINK = '#6B2C91';
 const BRAND_YELLOW = '#D4A437';
-const PAPER = '#FAF6EE';
+const PAPER = '#FFFFFF';
 const INK = '#111827';
 const INK_700 = '#374151';
 const MUTED = '#6b7280';

@@ -38,7 +38,7 @@ const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
 };
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleString('en-PK', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  new Date(s).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 function stockBadge(stock: number): { label: string; bg: string; fg: string } {
   if (stock <= 0) return { label: 'Out of stock', bg: '#fee2e2', fg: '#991b1b' };
@@ -168,7 +168,7 @@ export default async function InventoryPage({
                         </span>
                       </td>
                       <td style={{ ...td, textAlign: 'right' }}>
-                        <Link href={`/admin/products/${p.id}`} style={{ color: '#C5286A', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
+                        <Link href={`/admin/products/${p.id}`} style={{ color: '#4A1A6B', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
                           Edit →
                         </Link>
                       </td>
@@ -253,7 +253,7 @@ export default async function InventoryPage({
                     <td style={{ ...td, color: '#6b7280', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
                     <td style={td}>
                       {product
-                        ? <Link href={`/admin/products/${product.id}`} style={{ color: '#C5286A', textDecoration: 'none' }}>{brandPlusName(product.brand, product.name)}</Link>
+                        ? <Link href={`/admin/products/${product.id}`} style={{ color: '#4A1A6B', textDecoration: 'none' }}>{brandPlusName(product.brand, product.name)}</Link>
                         : <span style={{ color: '#9ca3af' }}>(variant {r.variant_id?.slice(0, 8)}…)</span>}
                     </td>
                     <td style={{ ...td, fontFamily: 'monospace', fontWeight: 700, color: r.qty_delta < 0 ? '#991b1b' : '#065f46' }}>
@@ -267,11 +267,11 @@ export default async function InventoryPage({
                     </td>
                     <td style={{ ...td, fontFamily: 'monospace', fontSize: '0.75rem' }}>
                       {order
-                        ? <Link href={`/admin/orders/${order.id}`} style={{ color: '#C5286A', textDecoration: 'none' }}>{order.order_number}</Link>
+                        ? <Link href={`/admin/orders/${order.id}`} style={{ color: '#4A1A6B', textDecoration: 'none' }}>{order.order_number}</Link>
                         : '—'}
                     </td>
                     <td style={{ ...td, fontSize: '0.75rem', color: '#374151' }}>
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: r.actor_kind === 'owner' ? '#C5286A' : r.actor_kind === 'staff' ? '#3b82f6' : '#6b7280', textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: r.actor_kind === 'owner' ? '#4A1A6B' : r.actor_kind === 'staff' ? '#3b82f6' : '#6b7280', textTransform: 'uppercase' }}>
                         {r.actor_kind}
                       </span>
                       {r.actor_email && <div style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{r.actor_email}</div>}
@@ -291,13 +291,13 @@ export default async function InventoryPage({
 
 const lbl: React.CSSProperties = { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#374151', marginBottom: 4 };
 const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.875rem', background: 'white' };
-const btn: React.CSSProperties = { padding: '9px 18px', background: '#C5286A', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' };
+const btn: React.CSSProperties = { padding: '9px 18px', background: '#4A1A6B', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' };
 const th:  React.CSSProperties = { padding: '11px 16px', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' };
 const td:  React.CSSProperties = { padding: '10px 16px', verticalAlign: 'top' };
 const chipLink = (active: boolean): React.CSSProperties => ({
   padding: '6px 12px',
   borderRadius: 6,
-  border: '1px solid ' + (active ? '#C5286A' : '#e5e7eb'),
+  border: '1px solid ' + (active ? '#4A1A6B' : '#e5e7eb'),
   background: active ? '#fce7f3' : 'white',
   color: active ? '#9d174d' : '#374151',
   textDecoration: 'none',

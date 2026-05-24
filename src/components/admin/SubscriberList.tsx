@@ -16,7 +16,7 @@ export interface Subscriber {
 }
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 // Source values stored by the signup flows ('footer', 'modal', 'checkout', …) —
 // shown as a friendlier label where one is known.
@@ -56,7 +56,7 @@ export function SubscriberList({ subscribers }: { subscribers: Subscriber[] }) {
   const chip = (key: StatusFilter): React.CSSProperties => ({
     padding: '5px 12px', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600,
     cursor: 'pointer', border: '1px solid',
-    borderColor: status === key ? '#C5286A' : '#e5e7eb',
+    borderColor: status === key ? '#4A1A6B' : '#e5e7eb',
     background: status === key ? '#fdf2f8' : 'white',
     color: status === key ? '#9d174d' : '#6b7280',
   });
@@ -104,7 +104,7 @@ export function SubscriberList({ subscribers }: { subscribers: Subscriber[] }) {
           type="button"
           onClick={() => { setShowAdd(v => !v); setFeedback(null); }}
           style={{
-            padding: '7px 14px', background: showAdd ? '#f3f4f6' : '#C5286A',
+            padding: '7px 14px', background: showAdd ? '#f3f4f6' : '#4A1A6B',
             color: showAdd ? '#374151' : 'white',
             border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
           }}
@@ -282,7 +282,7 @@ function AddSubscriberRow({
         type="submit"
         disabled={pending || !email.trim()}
         style={{
-          padding: '8px 16px', background: '#C5286A', color: 'white',
+          padding: '8px 16px', background: '#4A1A6B', color: 'white',
           border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600,
           cursor: pending ? 'not-allowed' : 'pointer', opacity: pending ? 0.6 : 1,
         }}

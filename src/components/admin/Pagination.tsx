@@ -54,9 +54,9 @@ export function Pagination({ total, pageSize, currentPage, basePath }: Props) {
         ) : (
           <Link key={p} href={pageUrl(p as number)} style={{
             ...btn,
-            background: p === currentPage ? '#C5286A' : 'white',
+            background: p === currentPage ? '#4A1A6B' : 'white',
             color: p === currentPage ? 'white' : '#374151',
-            borderColor: p === currentPage ? '#C5286A' : '#e5e7eb',
+            borderColor: p === currentPage ? '#4A1A6B' : '#e5e7eb',
           }}>{p}</Link>
         )
       )}

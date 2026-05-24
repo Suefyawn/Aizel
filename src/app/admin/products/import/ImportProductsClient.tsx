@@ -85,7 +85,7 @@ export function ImportProductsClient() {
             onClick={runImport}
             disabled={!csv.trim() || pending}
             style={{
-              padding: '10px 20px', background: pending ? '#9ca3af' : '#C5286A',
+              padding: '10px 20px', background: pending ? '#9ca3af' : '#4A1A6B',
               color: 'white', border: 'none', borderRadius: 8,
               fontSize: '0.875rem', fontWeight: 600,
               cursor: pending || !csv.trim() ? 'not-allowed' : 'pointer',

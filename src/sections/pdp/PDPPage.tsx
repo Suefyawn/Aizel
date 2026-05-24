@@ -517,14 +517,14 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               }}>
                 {product.key_benefits.map((b, i) => (
                   <li key={i} style={{
-                    padding: '10px 14px', background: 'var(--paper2, #faf6ee)', borderRadius: 8,
+                    padding: '10px 14px', background: 'var(--paper2, #f5f5f5)', borderRadius: 8,
                     display: 'flex', alignItems: 'center', gap: 10,
                     fontSize: '0.8125rem', color: 'var(--ink-700)', lineHeight: 1.4,
                   }}>
                     {b.icon && (
                       <span aria-hidden="true" style={{
                         flex: '0 0 auto', display: 'inline-flex', alignItems: 'center',
-                        color: 'var(--brand-pink-text, #C5286A)',
+                        color: 'var(--brand-pink-text, #4A1A6B)',
                       }}>
                         <BenefitIcon name={b.icon} size={18} />
                       </span>
@@ -547,7 +547,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
             {product.social_proof && (
               <blockquote style={{
                 margin: '0 0 24px', padding: '14px 18px',
-                background: 'var(--paper2, #faf6ee)', borderLeft: '3px solid var(--brand-pink, #C5286A)',
+                background: 'var(--paper2, #f5f5f5)', borderLeft: '3px solid var(--brand-pink, #4A1A6B)',
                 borderRadius: 6,
                 fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--ink-700)', lineHeight: 1.5,
               }}>
@@ -605,7 +605,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           style={{
             position: 'absolute', top: -80, left: -60,
             width: 220, height: 220, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(247,201,72,0.22), transparent 65%)',
+            background: 'radial-gradient(circle, rgba(212, 164, 55,0.22), transparent 65%)',
           }}
         />
         <div
@@ -613,7 +613,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           style={{
             position: 'absolute', bottom: -100, right: -80,
             width: 280, height: 280, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(232,72,127,0.16), transparent 65%)',
+            background: 'radial-gradient(circle, rgba(107, 44, 145,0.16), transparent 65%)',
           }}
         />
 

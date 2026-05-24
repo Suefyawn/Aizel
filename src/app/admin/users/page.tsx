@@ -12,7 +12,7 @@ import type { AdminUser } from '@/types';
 const PAGE_SIZE = 20;
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const fmtMoney = (n: number) => `£${Math.round(n).toLocaleString()}`;
 
 interface OrderStat {

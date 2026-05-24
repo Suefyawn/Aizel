@@ -31,7 +31,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 We updated the site while this tab was open. Refresh to continue.
               </p>
               <button onClick={refresh} style={{
-                padding: '11px 24px', background: '#C5286A', color: 'white',
+                padding: '11px 24px', background: '#4A1A6B', color: 'white',
                 border: 'none', borderRadius: 8, fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer',
               }}>
                 Refresh page
@@ -39,11 +39,11 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             </>
           ) : (
             <>
-              <div style={{ fontSize: '4rem', fontWeight: 700, color: '#E8487F', marginBottom: 16 }}>!</div>
+              <div style={{ fontSize: '4rem', fontWeight: 700, color: '#6B2C91', marginBottom: 16 }}>!</div>
               <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Critical error</h1>
               <p style={{ color: '#6b7280', margin: '0 0 28px' }}>The application encountered a critical error.</p>
               <button onClick={reset} style={{
-                padding: '11px 24px', background: '#C5286A', color: 'white',
+                padding: '11px 24px', background: '#4A1A6B', color: 'white',
                 border: 'none', borderRadius: 8, fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer',
               }}>
                 Try again

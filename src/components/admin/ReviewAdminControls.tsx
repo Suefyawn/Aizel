@@ -34,7 +34,7 @@ export function AddReviewToggle({ products }: { products: ProductOption[] }) {
           onClick={() => setOpen(v => !v)}
           style={{
             padding: '7px 14px',
-            background: open ? '#f3f4f6' : '#C5286A',
+            background: open ? '#f3f4f6' : '#4A1A6B',
             color: open ? '#374151' : 'white',
             border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
           }}

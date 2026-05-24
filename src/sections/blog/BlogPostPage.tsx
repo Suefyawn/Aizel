@@ -69,7 +69,7 @@ export function BlogPostPage({ post, relatedPosts, relatedProducts }: BlogPostPa
       style={{
         marginTop: 40,
         padding: '24px 28px',
-        background: 'var(--paper2, #faf6ee)',
+        background: 'var(--paper2, #f5f5f5)',
         border: '1px solid var(--line)',
         borderRadius: 'var(--radius-card)',
         textAlign: 'left',

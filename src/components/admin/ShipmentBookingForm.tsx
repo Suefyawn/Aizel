@@ -47,7 +47,7 @@ export function ShipmentBookingForm({ orderId, apiAdapters, shipment }: Props) {
           </div>
           {trackUrl && (
             <a href={trackUrl} target="_blank" rel="noreferrer noopener"
-               style={{ fontSize: '0.75rem', color: '#C5286A', textDecoration: 'underline' }}>
+               style={{ fontSize: '0.75rem', color: '#4A1A6B', textDecoration: 'underline' }}>
               Open on {shipment.courier} ↗
             </a>
           )}
@@ -163,7 +163,7 @@ export function ShipmentBookingForm({ orderId, apiAdapters, shipment }: Props) {
             type="submit"
             disabled={bookPending}
             style={{
-              padding: '10px 16px', background: bookPending ? '#f9a8d4' : '#C5286A',
+              padding: '10px 16px', background: bookPending ? '#f9a8d4' : '#4A1A6B',
               color: 'white', border: 'none', borderRadius: 6,
               fontSize: '0.875rem', fontWeight: 600,
               cursor: bookPending ? 'not-allowed' : 'pointer',

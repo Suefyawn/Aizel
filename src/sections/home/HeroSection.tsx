@@ -39,9 +39,9 @@ const GradientFallback = () => (
     style={{
       position: 'absolute', inset: 0,
       background: `
-        radial-gradient(at 78% 22%, rgba(212, 164, 55, 0.40), transparent 55%),
-        radial-gradient(at 22% 78%, rgba(107, 44, 145, 0.30), transparent 55%),
-        linear-gradient(135deg, #FAF6EE 0%, #F2EDE2 50%, #FAF6EE 100%)`,
+        radial-gradient(at 78% 22%, rgba(212, 164, 55, 0.30), transparent 55%),
+        radial-gradient(at 22% 78%, rgba(107, 44, 145, 0.22), transparent 55%),
+        linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 50%, #FFFFFF 100%)`,
     }}
   />
 );

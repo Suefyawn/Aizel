@@ -5,7 +5,7 @@ interface Data { items: Row[] }
 
 const fmtWeek = (iso: string) => {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 };
 
 export async function RetentionWidget() {
@@ -50,9 +50,9 @@ export async function RetentionWidget() {
         Distinct visitors per week (a retention proxy). Up-trend = customers returning.
       </p>
       <svg width="100%" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Weekly active users trend" style={{ display: 'block', marginBottom: 8 }}>
-        <polyline points={pts} fill="none" stroke="#C5286A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <polyline points={pts} fill="none" stroke="#4A1A6B" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {items.map((it, idx) => (
-          <circle key={idx} cx={x(idx)} cy={y(it.users)} r="2.5" fill="#C5286A" />
+          <circle key={idx} cx={x(idx)} cy={y(it.users)} r="2.5" fill="#4A1A6B" />
         ))}
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6875rem', color: '#9ca3af' }}>

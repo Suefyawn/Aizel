@@ -161,7 +161,7 @@ export default function RewardsPage() {
                       {l.delta > 0 ? '+' : ''}{l.delta}
                     </td>
                     <td style={{ padding: '8px 0', textAlign: 'right', color: 'var(--ink-500)', fontSize: '0.75rem' }}>
-                      {new Date(l.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                   </tr>
                 ))}

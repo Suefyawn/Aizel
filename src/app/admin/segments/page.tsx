@@ -105,7 +105,7 @@ export default async function SegmentsPage({ searchParams }: { searchParams: Pro
                   <td data-label="Orders" style={{ padding: '10px 16px', fontVariantNumeric: 'tabular-nums' }}>{r.orders}</td>
                   <td data-label="Revenue" style={{ padding: '10px 16px', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmt(Number(r.revenue))}</td>
                   <td data-label="Last order" style={{ padding: '10px 16px', color: '#6b7280', fontSize: '0.75rem' }}>
-                    {new Date(r.last_order_at).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: '2-digit' })}
+                    {new Date(r.last_order_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}
                   </td>
                 </tr>
               ))}

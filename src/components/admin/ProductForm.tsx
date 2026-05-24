@@ -189,7 +189,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
                 type="checkbox"
                 checked={!trackInv}
                 onChange={e => setTrackInv(!e.target.checked)}
-                style={{ marginTop: 2, accentColor: '#C5286A' }}
+                style={{ marginTop: 2, accentColor: '#4A1A6B' }}
               />
               <span>
                 <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#374151' }}>Inventory managed externally</span>
@@ -382,7 +382,7 @@ export function ProductForm({ product, vendors = [] }: { product?: Product; vend
                 Cancel
               </Link>
               <button type="submit" disabled={pending} style={{
-                padding: '10px 24px', background: pending ? '#9ca3af' : '#C5286A',
+                padding: '10px 24px', background: pending ? '#9ca3af' : '#4A1A6B',
                 color: 'white', border: 'none', borderRadius: 7,
                 fontSize: '0.8125rem', fontWeight: 600, cursor: pending ? 'not-allowed' : 'pointer',
               }}>

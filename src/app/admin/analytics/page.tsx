@@ -129,7 +129,7 @@ export default async function AnalyticsPage({
                 style={{
                   padding: '6px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600,
                   textDecoration: 'none',
-                  background: active ? '#C5286A' : '#f3f4f6',
+                  background: active ? '#4A1A6B' : '#f3f4f6',
                   color: active ? 'white' : '#6b7280',
                 }}
               >
@@ -153,8 +153,8 @@ export default async function AnalyticsPage({
               href={`/admin/analytics?tab=${key}&days=${window}`}
               style={{
                 padding: '10px 18px', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none',
-                color: active ? '#C5286A' : '#6b7280',
-                borderBottom: active ? '2px solid #C5286A' : '2px solid transparent',
+                color: active ? '#4A1A6B' : '#6b7280',
+                borderBottom: active ? '2px solid #4A1A6B' : '2px solid transparent',
                 marginBottom: -1,
               }}
             >
@@ -195,7 +195,7 @@ export default async function AnalyticsPage({
                     <div key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.8125rem' }}>
                       <span style={{ width: 120, color: '#374151' }}>{ORDER_STATUS_LABELS[s.status as OrderStatus] ?? s.status}</span>
                       <div style={{ flex: 1, height: 8, background: '#f3f4f6', borderRadius: 4, overflow: 'hidden' }}>
-                        <div style={{ width: `${p}%`, height: '100%', background: '#C5286A' }} />
+                        <div style={{ width: `${p}%`, height: '100%', background: '#4A1A6B' }} />
                       </div>
                       <span style={{ width: 50, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#111827', fontWeight: 600 }}>{s.count}</span>
                     </div>
@@ -334,7 +334,7 @@ export default async function AnalyticsPage({
                       {cohortMatrix.months.map(m => (
                         <tr key={m}>
                           <td style={{ padding: '4px 8px', color: '#111827', fontWeight: 600 }}>
-                            {new Date(m).toLocaleDateString('en-PK', { month: 'short', year: '2-digit' })}
+                            {new Date(m).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}
                           </td>
                           {cohortMatrix.offsets.map(o => {
                             const v = cohortMatrix.lookup.get(`${m}:${o}`) ?? 0;

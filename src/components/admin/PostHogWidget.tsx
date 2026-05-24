@@ -19,7 +19,7 @@ function MiniSparkline({ trend }: { trend: { date: string; count: number }[] }) 
   }).join(' ');
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }} role="img" aria-label="Pageviews trend">
-      <polyline points={pts} fill="none" stroke="#C5286A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={pts} fill="none" stroke="#4A1A6B" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
@@ -35,7 +35,7 @@ export async function PostHogWidget() {
     return (
       <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <span style={{ color: '#C5286A', display: 'inline-flex' }}><AdminIcon name="bar-chart" size={18} /></span>
+          <span style={{ color: '#4A1A6B', display: 'inline-flex' }}><AdminIcon name="bar-chart" size={18} /></span>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>PostHog analytics</h2>
         </div>
         <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No data yet — hit Refresh analytics.</p>
@@ -45,7 +45,7 @@ export async function PostHogWidget() {
 
   const { data: stats, updatedAt } = result;
   const statItems = [
-    { label: 'Pageviews',    value: stats.pageviews,   color: '#C5286A' },
+    { label: 'Pageviews',    value: stats.pageviews,   color: '#4A1A6B' },
     { label: 'Unique users', value: stats.uniqueUsers, color: '#8b5cf6' },
     { label: 'Sessions',     value: stats.sessions,    color: '#3b82f6' },
   ];
@@ -54,13 +54,13 @@ export async function PostHogWidget() {
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ color: '#C5286A', display: 'inline-flex' }}><AdminIcon name="bar-chart" size={18} /></span>
+          <span style={{ color: '#4A1A6B', display: 'inline-flex' }}><AdminIcon name="bar-chart" size={18} /></span>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>PostHog analytics</h2>
         </div>
         <a
           href="https://us.posthog.com/project/429225"
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: '0.8125rem', color: '#C5286A', textDecoration: 'none' }}
+          style={{ fontSize: '0.8125rem', color: '#4A1A6B', textDecoration: 'none' }}
         >
           Open PostHog →
         </a>

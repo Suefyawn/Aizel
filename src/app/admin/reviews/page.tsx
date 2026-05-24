@@ -14,13 +14,13 @@ import {
 import { approveReview, deleteReview } from './actions';
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 function Stars({ rating }: { rating: number }) {
   return (
     <span>
       {[1, 2, 3, 4, 5].map(i => (
-        <span key={i} style={{ color: i <= rating ? '#F7C948' : '#e5e7eb', fontSize: '1rem' }}>★</span>
+        <span key={i} style={{ color: i <= rating ? '#D4A437' : '#e5e7eb', fontSize: '1rem' }}>★</span>
       ))}
     </span>
   );

@@ -132,7 +132,7 @@ export function CouponEditModal({ coupon }: { coupon: Coupon }) {
                   disabled={pending}
                   style={{
                     padding: '8px 20px', borderRadius: 7, border: 'none',
-                    background: pending ? '#9ca3af' : '#C5286A', color: 'white',
+                    background: pending ? '#9ca3af' : '#4A1A6B', color: 'white',
                     fontSize: '0.875rem', fontWeight: 600, cursor: pending ? 'not-allowed' : 'pointer',
                   }}
                 >

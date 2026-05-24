@@ -52,7 +52,7 @@ function RecipientRow({ r }: { r: NotificationRecipient }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: '#fdf2f8', color: '#C5286A',
+              background: '#fdf2f8', color: '#4A1A6B',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: '0.875rem', flexShrink: 0,
             }}>
@@ -147,7 +147,7 @@ export default async function SettingsNotificationsPage({ searchParams }: { sear
 
           <div>
             <button type="submit" style={{
-              padding: '10px 22px', background: '#C5286A', color: 'white',
+              padding: '10px 22px', background: '#4A1A6B', color: 'white',
               border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer',
             }}>
               Add recipient

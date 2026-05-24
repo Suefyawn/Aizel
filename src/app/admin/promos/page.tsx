@@ -14,7 +14,7 @@ import type { Promo } from '@/lib/promos';
 // the row is treated as always-live + everyone-targeted.
 
 const fmtDateTime = (s: string | null) =>
-  s ? new Date(s).toLocaleString('en-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+  s ? new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
 
 const inp: React.CSSProperties = {
   padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 7,
@@ -146,7 +146,7 @@ export default async function AdminPromosPage({
             <PromoFields promo={editingPromo} />
             <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
               <button type="submit" style={{
-                padding: '10px 24px', background: '#C5286A', color: 'white',
+                padding: '10px 24px', background: '#4A1A6B', color: 'white',
                 border: 'none', borderRadius: 7, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
               }}>Save changes</button>
             </div>
@@ -168,7 +168,7 @@ export default async function AdminPromosPage({
             <PromoFields />
             <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
               <button type="submit" style={{
-                padding: '10px 24px', background: '#C5286A', color: 'white',
+                padding: '10px 24px', background: '#4A1A6B', color: 'white',
                 border: 'none', borderRadius: 7, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
               }}>Create promo</button>
             </div>
@@ -229,7 +229,7 @@ export default async function AdminPromosPage({
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'flex-end' }}>
-                        <Link href={`/admin/promos?edit=${p.id}`} style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#C5286A', textDecoration: 'none' }}>
+                        <Link href={`/admin/promos?edit=${p.id}`} style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#4A1A6B', textDecoration: 'none' }}>
                           Edit
                         </Link>
                         <DeleteButton id={p.id} action={deletePromo} confirmMsg={`Delete "${p.headline.slice(0, 40)}…"?`} />

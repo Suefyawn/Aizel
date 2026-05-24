@@ -10,7 +10,7 @@ import { NewsletterComposer } from '@/components/admin/NewsletterComposer';
 import { SubscriberList, type Subscriber } from '@/components/admin/SubscriberList';
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 interface CampaignRow {
   id: string;

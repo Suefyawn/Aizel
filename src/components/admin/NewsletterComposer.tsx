@@ -88,7 +88,7 @@ export function NewsletterComposer({ activeCount }: { activeCount: number }) {
           disabled={pending || activeCount === 0}
           style={{
             padding: '10px 20px', borderRadius: 8, border: 'none',
-            background: pending || activeCount === 0 ? '#9ca3af' : '#C5286A',
+            background: pending || activeCount === 0 ? '#9ca3af' : '#4A1A6B',
             color: 'white', fontSize: '0.875rem', fontWeight: 600,
             cursor: pending || activeCount === 0 ? 'not-allowed' : 'pointer',
           }}

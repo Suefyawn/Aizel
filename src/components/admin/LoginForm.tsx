@@ -9,10 +9,10 @@ const inp: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 const btn: React.CSSProperties = {
-  // Brand pink CTA (#C5286A) — passes WCAG AA at 15 px / 600 wt.
+  // Brand pink CTA (#4A1A6B) — passes WCAG AA at 15 px / 600 wt.
   // Was Tailwind pink-500 (#ec4899), which fails 4.5:1 with white text.
   width: '100%', padding: 11,
-  background: '#C5286A', color: 'white',
+  background: '#4A1A6B', color: 'white',
   border: 'none', borderRadius: 8,
   fontSize: '0.9375rem', fontWeight: 600,
   cursor: 'pointer',
@@ -95,9 +95,8 @@ export function LoginForm() {
     }}>
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 6 }}>
-          <span style={{ color: '#C5286A' }}>Yellow</span>
-          <span style={{ color: '#111827' }}>Pink</span>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 6, color: '#4A1A6B' }}>
+          Aizel
         </div>
         <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>Sign in to admin panel</p>
       </div>

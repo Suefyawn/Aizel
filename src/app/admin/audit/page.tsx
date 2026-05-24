@@ -45,7 +45,7 @@ function entityHref(entity: string | null, entityId: string | null): string | nu
 }
 
 const ACTOR_COLORS: Record<string, string> = {
-  owner: '#C5286A', staff: '#3b82f6', customer: '#16a34a', system: '#6b7280',
+  owner: '#4A1A6B', staff: '#3b82f6', customer: '#16a34a', system: '#6b7280',
 };
 
 const FILTERS: { key: string; label: string }[] = [
@@ -134,7 +134,7 @@ export default async function ActivityLogPage({
           }}
         />
         <button type="submit" style={{
-          padding: '8px 16px', background: '#C5286A', color: 'white', border: 'none',
+          padding: '8px 16px', background: '#4A1A6B', color: 'white', border: 'none',
           borderRadius: 8, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
         }}>Search</button>
         {search && (
@@ -163,7 +163,7 @@ export default async function ActivityLogPage({
               {rows.map(r => (
                 <tr key={r.id} style={{ borderTop: '1px solid #f3f4f6' }}>
                   <td data-label="When" style={{ padding: '10px 16px', whiteSpace: 'nowrap', color: '#6b7280', fontSize: '0.75rem' }}>
-                    {new Date(r.created_at).toLocaleString('en-PK', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    {new Date(r.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                   </td>
                   <td data-label="Actor" style={{ padding: '10px 16px', color: '#111827' }}>
                     <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: ACTOR_COLORS[r.actor_kind] ?? '#6b7280', textTransform: 'uppercase' }}>
@@ -180,7 +180,7 @@ export default async function ActivityLogPage({
                       const label = `${r.entity}${r.entity_id ? ` ${r.entity_id.slice(0, 8)}…` : ''}`;
                       const href = entityHref(r.entity, r.entity_id);
                       return href
-                        ? <Link href={href} style={{ color: '#C5286A', textDecoration: 'none' }}>{label}</Link>
+                        ? <Link href={href} style={{ color: '#4A1A6B', textDecoration: 'none' }}>{label}</Link>
                         : <span style={{ color: '#6b7280' }}>{label}</span>;
                     })()}
                   </td>

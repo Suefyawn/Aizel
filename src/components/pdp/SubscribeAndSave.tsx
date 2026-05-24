@@ -27,7 +27,7 @@ function CycleIcon() {
 const cardStyle: React.CSSProperties = {
   border: '1px solid var(--line)',
   borderRadius: 'var(--radius-card)',
-  background: 'var(--paper2, #faf6ee)',
+  background: 'var(--paper2, #f5f5f5)',
   padding: '16px 18px',
 };
 

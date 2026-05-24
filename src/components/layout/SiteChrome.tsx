@@ -74,7 +74,7 @@ export function SiteChrome({ children, settings, promos, searchTrending, searchC
           subline={settings.promo_subline ?? ''}
           ctaText={settings.promo_cta_text ?? 'Shop Sale'}
           ctaUrl={settings.promo_cta_url ?? '/shop'}
-          bgColor={settings.promo_bg_color ?? '#E8487F'}
+          bgColor={settings.promo_bg_color ?? '#6B2C91'}
           textColor={settings.promo_text_color ?? '#ffffff'}
           endDate={settings.promo_end_date ?? ''}
         />

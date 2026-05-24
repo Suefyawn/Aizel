@@ -64,7 +64,7 @@ export async function FunnelBySourceWidget() {
                 <td style={{ padding: '8px', textAlign: 'right', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>{pct(r.cart, r.product)}</td>
                 <td style={{ padding: '8px', textAlign: 'right', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>{pct(r.checkout, r.cart)}</td>
                 <td style={{ padding: '8px', textAlign: 'right', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>{pct(r.purchase, r.checkout)}</td>
-                <td style={{ padding: '8px', textAlign: 'right', color: '#C5286A', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{pct(r.purchase, r.home)}</td>
+                <td style={{ padding: '8px', textAlign: 'right', color: '#4A1A6B', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{pct(r.purchase, r.home)}</td>
               </tr>
             ))}
           </tbody>

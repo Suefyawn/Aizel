@@ -31,7 +31,7 @@ function statusLabel(s: OrderStatus | null): string {
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleString('en-PK', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 const payLabel: Record<string, string> = { cod: 'Cash on Delivery', card: 'Card Payment', bank: 'Bank Transfer' };
 
@@ -208,8 +208,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div id="print-invoice" style={{ fontFamily: 'sans-serif', color: '#111827', maxWidth: 700, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32, borderBottom: '2px solid #111827', paddingBottom: 16 }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.02em' }}>
-              <span style={{ color: '#E8487F' }}>Yellow</span>Pink
+            <div style={{ fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.02em', color: '#6B2C91' }}>
+              Aizel
             </div>
             <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginTop: 4 }}>aizel.co.uk</div>
           </div>
@@ -304,7 +304,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             ) : (
               <form action={setOrderConfirmed.bind(null, o.id!, true)}>
                 <button type="submit" style={{
-                  padding: '9px 16px', background: '#C5286A', color: 'white', border: 'none',
+                  padding: '9px 16px', background: '#4A1A6B', color: 'white', border: 'none',
                   borderRadius: 7, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
                 }}>
                   Mark customer-confirmed
@@ -347,7 +347,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <div style={{ alignSelf: 'center', marginLeft: 'auto' }}>
-              <Link href="/admin/vendors" style={{ color: '#C5286A', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
+              <Link href="/admin/vendors" style={{ color: '#4A1A6B', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>
                 Manage payouts →
               </Link>
             </div>
@@ -364,7 +364,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {customerStats && customerStats.count > 1 && (
                 <span
-                  title={customerStats.first ? `First ordered ${new Date(customerStats.first).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}` : undefined}
+                  title={customerStats.first ? `First ordered ${new Date(customerStats.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : undefined}
                   style={{
                     fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.05em',
                     textTransform: 'uppercase',
@@ -376,7 +376,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 </span>
               )}
               {o.user_id && (
-                <Link href={`/admin/users/${o.user_id}`} style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#C5286A', textDecoration: 'none' }}>
+                <Link href={`/admin/users/${o.user_id}`} style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#4A1A6B', textDecoration: 'none' }}>
                   View profile →
                 </Link>
               )}
@@ -525,7 +525,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 700, borderTop: '1px solid #e5e7eb', paddingTop: 10 }}>
               <span>Total</span>
-              <span style={{ color: '#C5286A' }}>{fmt(o.total)}</span>
+              <span style={{ color: '#4A1A6B' }}>{fmt(o.total)}</span>
             </div>
             <div style={{ marginTop: 4, fontSize: '0.8125rem', color: '#6b7280' }}>
               Method: <strong style={{ color: '#374151' }}>{payLabel[o.pay_method] ?? o.pay_method}</strong>

@@ -12,7 +12,7 @@ interface VendorLite {
 }
 
 const fmtDate = (s: string) =>
-  new Date(s).toLocaleString('en-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 // Forward a confirmed order to a supplier over WhatsApp. The owner picks a
 // vendor, the prefilled wa.me link updates live, and sending also records
@@ -38,7 +38,7 @@ export function VendorDispatch({
         <div style={lbl}>Vendor</div>
         <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '4px 0 0' }}>
           No vendors yet.{' '}
-          <Link href="/admin/vendors" style={{ color: '#C5286A', fontWeight: 600 }}>
+          <Link href="/admin/vendors" style={{ color: '#4A1A6B', fontWeight: 600 }}>
             Add a vendor
           </Link>{' '}
           to forward orders.

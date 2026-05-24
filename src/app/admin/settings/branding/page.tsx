@@ -34,16 +34,16 @@ export default async function SettingsBrandingPage({ searchParams }: { searchPar
           <Divider />
           <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
             <div>
-              <label style={lbl}>Brand pink</label>
-              <ColorPicker name="brand_pink"   value={g('brand_pink',   '#E8487F')} label="Primary" />
+              <label style={lbl}>Brand purple</label>
+              <ColorPicker name="brand_pink"   value={g('brand_pink',   '#6B2C91')} label="Primary" />
             </div>
             <div>
-              <label style={lbl}>Brand yellow</label>
-              <ColorPicker name="brand_yellow" value={g('brand_yellow', '#F7C948')} label="Accent" />
+              <label style={lbl}>Brand gold</label>
+              <ColorPicker name="brand_yellow" value={g('brand_yellow', '#D4A437')} label="Accent" />
             </div>
             <div>
-              <label style={lbl}>Ink</label>
-              <ColorPicker name="ink_900"      value={g('ink_900',      '#111827')} label="Text" />
+              <label style={lbl}>Ink (black)</label>
+              <ColorPicker name="ink_900"      value={g('ink_900',      '#0A0A0A')} label="Text" />
             </div>
           </div>
         </Card>

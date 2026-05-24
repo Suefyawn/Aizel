@@ -31,7 +31,7 @@ export function RefreshAnalyticsButton() {
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 14px',
-          background: isPending ? '#f3f4f6' : '#C5286A',
+          background: isPending ? '#f3f4f6' : '#4A1A6B',
           color: isPending ? '#9ca3af' : 'white',
           border: 'none', borderRadius: 8,
           fontSize: '0.8125rem', fontWeight: 600,

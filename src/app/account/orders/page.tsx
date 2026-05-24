@@ -11,7 +11,7 @@ import { brandPlusName } from '@/lib/product-display';
 import type { Order, OrderStatus } from '@/types';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
-const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const statusColors: Record<string, string> = {
   pending: '#f59e0b', processing: '#3b82f6', shipped: '#8b5cf6', delivered: '#10b981', cancelled: '#ef4444',
