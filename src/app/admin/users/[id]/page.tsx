@@ -7,6 +7,8 @@ import { ORDER_STATUS_LABELS, type Order, type AdminUser, type OrderStatus } fro
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import { CustomerGDPRPanel } from '@/components/admin/CustomerGDPRPanel';
+import { CustomerProfileExtras } from '@/components/admin/CustomerProfileExtras';
+import { getCustomerExtras } from '@/app/admin/users/[id]/profile-extras-actions';
 import { TierBadge } from '@/components/ui/TierBadge';
 import { tierFor } from '@/lib/loyalty-tiers';
 import { whatsappUrlForCustomer } from '@/lib/whatsapp';
@@ -69,7 +71,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   // orders is RLS-locked; the `get_admin_user` RPC already uses
   // SECURITY DEFINER but route via service-role for consistency.
   const admin = supabaseAdmin();
-  const [{ data: userData }, { data: orders }, { data: activity }] = await Promise.all([
+  const [{ data: userData }, { data: orders }, { data: activity }, extras] = await Promise.all([
     admin.rpc('get_admin_user' as never, { p_id: id } as never),
     admin.from('orders').select('*').eq('user_id', id).order('created_at', { ascending: false }),
     // The customer's own journey — activity_log rows where they are the actor
@@ -79,6 +81,9 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
       .eq('actor_id', id)
       .order('created_at', { ascending: false })
       .limit(50),
+    // Staff-curated notes + tags. Defaults to empty for customers we
+    // haven't tagged yet — no row inserted until the first edit.
+    getCustomerExtras(id),
   ]);
 
   // get_admin_user RETURNS TABLE — a set-returning RPC, so `.rpc()` yields an
@@ -270,6 +275,16 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           )}
         </div>
       </div>
+
+      {/* Notes + tags surface here, just below the profile/orders pair —
+          they're the first thing CSR / cashier wants to see when they
+          open a customer, and feed into the POS lookup sheet. */}
+      <CustomerProfileExtras
+        userId={id}
+        initialNotes={extras.notes}
+        initialTags={extras.tags}
+        canEdit={canManageCustomer}
+      />
 
       {/* UK GDPR controls — sit ABOVE the activity timeline because the
           timeline can be very long; we want the rights-handling actions

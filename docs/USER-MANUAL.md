@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till.*
 
 ---
 
@@ -170,8 +170,8 @@ together. Here's what each link is for:
 **People** — customers and incentives
 | Section | What it's for |
 |---|---|
-| **Customers** | Everyone who has an account — search the list and open a customer to see their orders, lifetime spend, and activity. |
-| **Segments** | Customer groupings (e.g. high-spenders) for targeting and analysis. |
+| **Customers** | Everyone who has an account — search the list and open a customer to see their orders, lifetime spend, and activity. Add internal staff **notes and tags** (e.g. "VIP", "Allergic to fragrance") that the cashier sees at the till. Use the **Export CSV** button to download the current view. |
+| **Segments** | Customer groupings (e.g. high-spenders) for targeting and analysis. Reached from the **Segments** tab on the Customers page (it used to have its own sidebar entry — same data, fewer top-level items). |
 | **Coupons** | Discount codes — create, edit, set limits and expiry, and turn them on/off. |
 
 **Marketing** — content and campaigns
@@ -180,15 +180,13 @@ together. Here's what each link is for:
 | **Promos** | The promotional banner shown on the storefront — content, colours, and on/off. |
 | **Blog** | Editorial posts shown in the storefront "Journal" and at `/blog`. |
 | **Reviews** | Moderate customer reviews (approve, unapprove, edit, delete) and seed reviews yourself. |
-| **Newsletter** | Compose and send newsletter emails. Manage the subscriber list directly — add, edit, unsubscribe, or resubscribe people. |
+| **Newsletter** | Compose and send newsletter emails. Manage the subscriber list directly — add, edit, unsubscribe, or resubscribe people. **Compose blast** (segment-targeted send) lives as a tab on this page. |
 
 **Store** — admin internals
 | Section | What it's for |
 |---|---|
-| **Email log** | A record of every email the system has sent (order emails, newsletters, etc.). |
-| **Activity log** | An audit trail of admin actions — who changed what, and when. Owner only. |
 | **Team** | Staff accounts and their roles. Owner only. |
-| **Settings** | Store-wide configuration — see [section 6](#6-store-settings). |
+| **Settings** | Store-wide configuration — see [section 6](#6-store-settings). The **Activity log** (who did what) and **Email log** (every sent message) live here as cards on the Settings landing page; they used to have their own sidebar entries but the sidebar's been tightened to daily-use sections. |
 
 ---
 

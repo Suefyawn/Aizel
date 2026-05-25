@@ -318,37 +318,64 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
             <div style={{ marginBottom: 12 }}>
               {attachedCustomer ? (
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 12px', borderRadius: 8,
                   background: '#1F1F22', border: '1px solid #2A2A2D',
                 }}>
-                  <span style={{
-                    width: 28, height: 28, borderRadius: '50%',
-                    background: '#6B2C91', color: '#fff',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0,
-                  }}>
-                    {(attachedCustomer.first_name?.[0] ?? attachedCustomer.email[0]).toUpperCase()}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#F5F5F7', fontSize: '0.875rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {[attachedCustomer.first_name, attachedCustomer.last_name].filter(Boolean).join(' ') || attachedCustomer.email}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: '#6B2C91', color: '#fff',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0,
+                    }}>
+                      {(attachedCustomer.first_name?.[0] ?? attachedCustomer.email[0]).toUpperCase()}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: '#F5F5F7', fontSize: '0.875rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {[attachedCustomer.first_name, attachedCustomer.last_name].filter(Boolean).join(' ') || attachedCustomer.email}
+                      </div>
+                      <div style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>
+                        {attachedCustomer.tier.label} · {attachedCustomer.order_count} order{attachedCustomer.order_count === 1 ? '' : 's'} · {fmtGBP(attachedCustomer.lifetime_spend)} lifetime
+                      </div>
                     </div>
-                    <div style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>
-                      {attachedCustomer.tier.label} · {attachedCustomer.order_count} order{attachedCustomer.order_count === 1 ? '' : 's'} · {fmtGBP(attachedCustomer.lifetime_spend)} lifetime
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAttachedCustomer(null)}
+                      aria-label="Detach customer from this sale"
+                      style={{
+                        background: 'transparent', border: '1px solid #4B5563', borderRadius: 6,
+                        color: '#9CA3AF', fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+                        padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em',
+                        minHeight: 28,
+                      }}
+                    >Detach</button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setAttachedCustomer(null)}
-                    aria-label="Detach customer from this sale"
-                    style={{
-                      background: 'transparent', border: '1px solid #4B5563', borderRadius: 6,
-                      color: '#9CA3AF', fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
-                      padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.06em',
-                      minHeight: 28,
-                    }}
-                  >Detach</button>
+                  {/* Staff-curated tags + note — the cashier sees them
+                      the moment a customer is attached. "Has allergy" /
+                      "Wholesale" need to surface BEFORE the sale rings up. */}
+                  {attachedCustomer.tags.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                      {attachedCustomer.tags.map(t => (
+                        <span key={t} style={{
+                          padding: '2px 8px', borderRadius: 10,
+                          background: '#3A1D52', color: '#E0BFFF',
+                          fontSize: '0.6875rem', fontWeight: 700,
+                          textTransform: 'uppercase', letterSpacing: '0.04em',
+                        }}>{t}</span>
+                      ))}
+                    </div>
+                  )}
+                  {attachedCustomer.notes && (
+                    <div style={{
+                      marginTop: 8, padding: '6px 8px', borderRadius: 6,
+                      background: '#2A2415', border: '1px solid #4D3F1F',
+                      color: '#FFE9A8', fontSize: '0.75rem', lineHeight: 1.4,
+                      whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                    }}>
+                      <span aria-hidden="true" style={{ marginRight: 4 }}>📝</span>
+                      {attachedCustomer.notes}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button
@@ -1336,6 +1363,27 @@ function CustomerLookupSheet({ onClose, onAttach }: {
                 <div style={{ fontSize: '0.6875rem', color: '#6B2C91', fontWeight: 700, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {c.tier.label} · {c.order_count} order{c.order_count === 1 ? '' : 's'} · {fmtGBP(c.lifetime_spend)} lifetime
                 </div>
+                {/* Staff-curated tags inline on the lookup row so the
+                    cashier can spot "VIP" / "Has allergy" before they
+                    even pick the customer. Truncated to 3 — full list
+                    appears on the attached-customer pill. */}
+                {c.tags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                    {c.tags.slice(0, 3).map(t => (
+                      <span key={t} style={{
+                        padding: '1px 6px', borderRadius: 8,
+                        background: '#3A1D52', color: '#E0BFFF',
+                        fontSize: '0.625rem', fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.04em',
+                      }}>{t}</span>
+                    ))}
+                    {c.tags.length > 3 && (
+                      <span style={{ fontSize: '0.625rem', color: '#9CA3AF', alignSelf: 'center' }}>
+                        +{c.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <span style={{ color: '#6B2C91', fontSize: '1.25rem', fontWeight: 700, flexShrink: 0 }}>＋</span>
             </button>

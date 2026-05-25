@@ -31,6 +31,12 @@ export interface PosCustomerResult {
   order_count: number;
   /** Aizel loyalty tier derived from lifetime_spend. */
   tier: ReturnType<typeof tierFor>;
+  /** Staff-curated tags ("VIP", "Has allergy", etc.). Shown as chips on
+   *  the lookup row + the attached-customer pill. Empty array when none. */
+  tags: string[];
+  /** Freeform staff note. Shown as a small banner on the attached-
+   *  customer pill so the cashier sees context without leaving the till. */
+  notes: string | null;
 }
 
 async function assertPos() {
@@ -65,13 +71,13 @@ export async function searchPosCustomers(input: unknown): Promise<PosCustomerRes
   }>;
   if (profiles.length === 0) return [];
 
-  // Lifetime spend + order count — one query for the whole result set.
+  // Lifetime spend + order count + staff extras — one query each,
+  // all keyed by user_id so we can hydrate in a single pass.
   const ids = profiles.map(p => p.id);
-  const { data: orderAgg } = await admin
-    .from('orders')
-    .select('user_id, total')
-    .in('user_id', ids)
-    .eq('status', 'delivered');
+  const [{ data: orderAgg }, { data: extrasRows }] = await Promise.all([
+    admin.from('orders').select('user_id, total').in('user_id', ids).eq('status', 'delivered'),
+    admin.from('customer_profile_extras').select('user_id, tags, notes').in('user_id', ids),
+  ]);
 
   const aggMap = new Map<string, { spend: number; count: number }>();
   for (const row of (orderAgg ?? []) as Array<{ user_id: string | null; total: number }>) {
@@ -82,8 +88,14 @@ export async function searchPosCustomers(input: unknown): Promise<PosCustomerRes
     aggMap.set(row.user_id, cur);
   }
 
+  const extrasMap = new Map<string, { tags: string[]; notes: string | null }>();
+  for (const row of (extrasRows ?? []) as Array<{ user_id: string; tags: string[] | null; notes: string | null }>) {
+    extrasMap.set(row.user_id, { tags: row.tags ?? [], notes: row.notes });
+  }
+
   return profiles.map(p => {
     const agg = aggMap.get(p.id) ?? { spend: 0, count: 0 };
+    const extras = extrasMap.get(p.id) ?? { tags: [], notes: null };
     return {
       id: p.id,
       first_name: p.first_name,
@@ -93,6 +105,8 @@ export async function searchPosCustomers(input: unknown): Promise<PosCustomerRes
       lifetime_spend: agg.spend,
       order_count:    agg.count,
       tier:           tierFor(agg.spend),
+      tags:           extras.tags,
+      notes:          extras.notes,
     };
   });
 }
