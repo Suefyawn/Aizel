@@ -4,6 +4,7 @@ import { AdminSidebar } from './AdminSidebar';
 import { AdminBottomNav } from './AdminBottomNav';
 import { NotificationsBell } from './NotificationsBell';
 import { KeyboardShortcutsCheatSheet } from './KeyboardShortcutsCheatSheet';
+import { CommandPalette } from './CommandPalette';
 import { useBodyScrollLock, useEscapeKey, useFocusTrap } from '@/lib/hooks/useBodyScrollLock';
 import { useAdminHotkeys } from '@/lib/hooks/useAdminHotkeys';
 import type { StaffSession } from '@/lib/permissions';
@@ -213,6 +214,8 @@ export function AdminShell({
           /* Header brand on a phone should keep "Aizel" visible without
            * spilling under the bell. */
           .adm-topbar h1, .adm-topbar > span { font-size: 0.875rem !important; }
+          .adm-cmdk-hint .adm-cmdk-label { display: none; }
+          .adm-cmdk-hint kbd { display: none; }
 
           /* Per-page header rows (h1 + side action button) often use
            * justifyContent space-between on desktop — let them stack on phones. */
@@ -364,6 +367,35 @@ export function AdminShell({
             <span style={{ color: '#4A1A6B' }}>Aizel</span>
             <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>Admin</span>
           </span>
+          {/* ⌘K palette opener — clickable for trackpad / mouse users
+              + serves as a discoverability hint for the keyboard shortcut.
+              Owns no state of its own; the CommandPalette listens for
+              the same Ctrl/Cmd+K on the window. */}
+          <button
+            type="button"
+            onClick={() => {
+              // Dispatch a synthetic Ctrl+K so the palette's existing
+              // window listener picks it up. Avoids passing a ref or
+              // hoisting open-state out of CommandPalette.
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+            }}
+            aria-label="Open command palette"
+            className="adm-cmdk-hint"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 7,
+              padding: '6px 10px', cursor: 'pointer', color: '#6b7280',
+              fontSize: '0.75rem', fontWeight: 500, minHeight: 32,
+            }}
+          >
+            <span aria-hidden="true">🔍</span>
+            <span className="adm-cmdk-label">Search…</span>
+            <kbd style={{
+              padding: '1px 6px', background: 'white', border: '1px solid #e5e7eb',
+              borderRadius: 4, fontSize: '0.625rem', fontWeight: 600,
+              fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+            }}>⌘K</kbd>
+          </button>
           <NotificationsBell notifications={notifications} />
         </div>
         {children}
@@ -379,6 +411,11 @@ export function AdminShell({
           the root of the shell so it overlays any page. Renders nothing
           until opened, so the rest of the admin pays no render cost. */}
       <KeyboardShortcutsCheatSheet open={isCheatSheetOpen} onClose={closeCheatSheet} />
+
+      {/* ⌘K command palette — universal navigate + search. Owns its own
+          open state via a global keybind listener; renders nothing until
+          opened. Mounted here so every admin page gets it for free. */}
+      <CommandPalette session={session} />
     </>
   );
 }
