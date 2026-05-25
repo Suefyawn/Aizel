@@ -42,8 +42,11 @@ const GROUPS: NavGroup[] = [
     { href: '/admin/returns',   label: 'Returns',   icon: '↩', permission: 'returns' },
   ]},
   { label: 'People', items: [
+    // Glyphs are deliberately distinct from any other nav row so the
+    // icon column reads correctly at a glance — Customers ◉ (filled
+    // dot = a person), Segments ⬢ (hex = a grouping), Coupons ◇.
     { href: '/admin/users',     label: 'Customers', icon: '◉', permission: 'customers.view' },
-    { href: '/admin/segments',  label: 'Segments',  icon: '◐', permission: 'customers.view' },
+    { href: '/admin/segments',  label: 'Segments',  icon: '⬢', permission: 'customers.view' },
     { href: '/admin/coupons',   label: 'Coupons',   icon: '◇', permission: 'coupons' },
   ]},
   { label: 'Marketing', items: [
@@ -55,7 +58,9 @@ const GROUPS: NavGroup[] = [
     { href: '/admin/emails',    label: 'Email log', icon: '❏', permission: 'settings' },
   ]},
   { label: 'Store', items: [
-    { href: '/admin/audit',     label: 'Activity log', icon: '◉', ownerOnly: true },
+    // Audit log = ⌘ (command-history / oversight); Team = ⬡ (people-grid);
+    // Settings = ⚙. All distinct from the Customers ◉ above.
+    { href: '/admin/audit',     label: 'Activity log', icon: '⌘', ownerOnly: true },
     { href: '/admin/team',      label: 'Team',      icon: '⬡', ownerOnly: true },
     { href: '/admin/settings',  label: 'Settings',  icon: '⚙', permission: 'settings' },
   ]},

@@ -61,8 +61,12 @@ export default async function CouponsPage({
   const totalDiscount = [...impact.values()].reduce((s, v) => s + v.discount, 0);
 
   const inp: React.CSSProperties = {
-    padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 7,
-    fontSize: '0.875rem', color: '#111827', background: 'white', outline: 'none',
+    width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 7,
+    fontSize: '0.875rem', color: '#111827', background: 'white', outline: 'none', boxSizing: 'border-box',
+  };
+  const lblWide: React.CSSProperties = {
+    display: 'block', fontSize: '0.75rem', fontWeight: 600,
+    color: '#374151', marginBottom: 5,
   };
 
   return (
@@ -91,42 +95,51 @@ export default async function CouponsPage({
         </div>
       )}
 
-      {/* Create coupon form */}
+      {/* Create coupon form — 3-col grid that collapses to 2 then 1
+          via .adm-form-3col so it stops overflowing on tablets. */}
       <div style={{ background: 'white', borderRadius: 10, padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', marginBottom: 24 }}>
-        <h2 style={{ margin: '0 0 16px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Create Coupon</h2>
-        <form action={createCoupon} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Code</label>
-            <input name="code" required placeholder="SAVE10" style={{ ...inp, textTransform: 'uppercase', fontFamily: 'monospace', width: 120 }} />
+        <h2 style={{ margin: '0 0 4px', fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Create coupon</h2>
+        <p style={{ margin: '0 0 16px', fontSize: '0.75rem', color: '#6b7280' }}>
+          Code is uppercased on save. Leave Max uses / Expires blank for unlimited.
+        </p>
+        <form action={createCoupon}>
+          <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+            <div>
+              <label htmlFor="cp-code" style={lblWide}>Code</label>
+              <input id="cp-code" name="code" required placeholder="SAVE10" style={{ ...inp, textTransform: 'uppercase', fontFamily: 'monospace' }} />
+            </div>
+            <div>
+              <label htmlFor="cp-type" style={lblWide}>Type</label>
+              <select id="cp-type" name="type" style={inp}>
+                <option value="percent">Percent (%)</option>
+                <option value="fixed">Fixed (£)</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="cp-value" style={lblWide}>Value</label>
+              <input id="cp-value" name="value" type="number" required min={1} placeholder="10" style={inp} />
+            </div>
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Type</label>
-            <select name="type" style={inp}>
-              <option value="percent">Percent %</option>
-              <option value="fixed">Fixed GBP</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Value</label>
-            <input name="value" type="number" required min={1} placeholder="10" style={{ ...inp, width: 80 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Min Order (GBP)</label>
-            <input name="min_order" type="number" min={0} defaultValue={0} placeholder="0" style={{ ...inp, width: 100 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Max Uses</label>
-            <input name="max_uses" type="number" min={1} placeholder="Unlimited" style={{ ...inp, width: 100 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Expires</label>
-            <input name="expires_at" type="date" style={inp} />
+          <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 18 }}>
+            <div>
+              <label htmlFor="cp-min" style={lblWide}>Min order (£)</label>
+              <input id="cp-min" name="min_order" type="number" min={0} defaultValue={0} placeholder="0" style={inp} />
+            </div>
+            <div>
+              <label htmlFor="cp-max" style={lblWide}>Max uses</label>
+              <input id="cp-max" name="max_uses" type="number" min={1} placeholder="Unlimited" style={inp} />
+            </div>
+            <div>
+              <label htmlFor="cp-exp" style={lblWide}>Expires</label>
+              <input id="cp-exp" name="expires_at" type="date" style={inp} />
+            </div>
           </div>
           <button type="submit" style={{
-            padding: '8px 20px', background: '#4A1A6B', color: 'white',
+            padding: '10px 22px', background: '#4A1A6B', color: 'white',
             border: 'none', borderRadius: 7, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
+            minHeight: 40,
           }}>
-            + Create
+            + Create coupon
           </button>
         </form>
       </div>

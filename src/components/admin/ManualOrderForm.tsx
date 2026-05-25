@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useMemo, useState } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { createManualOrder } from '@/app/admin/orders/manual-actions';
 
 export interface ProductOption {
@@ -36,6 +36,34 @@ export function ManualOrderForm({ products }: Props) {
   const [shipping, setShipping] = useState('0');
   const [silent, setSilent] = useState(false);
   const [state, formAction, pending] = useActionState(createManualOrder, null);
+  // Dropdown open/closed state. Open when the input is focused AND has
+  // a query; outside-click or Esc closes. Without this the dropdown
+  // floated forever over the form below, blocking clicks on real fields.
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Auto-focus the search field on mount — operators want to start
+  // typing immediately, no extra click to focus.
+  useEffect(() => { searchInputRef.current?.focus(); }, []);
+
+  // Close on outside-click + Escape. Single listener pair, cleaned up
+  // on unmount. We bind to mousedown not click so a click on a
+  // dropdown row (which calls addProduct) doesn't race the close.
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      const wrap = searchWrapRef.current;
+      if (wrap && !wrap.contains(e.target as Node)) setDropdownOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false); };
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [dropdownOpen]);
 
   const matches = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -105,22 +133,25 @@ export function ManualOrderForm({ products }: Props) {
       {/* ── Items ────────────────────────────────────────────────────── */}
       <section style={sectionStyle}>
         <h2 style={h2Style}>Items</h2>
-        <div style={{ position: 'relative', marginBottom: 12 }}>
+        <div ref={searchWrapRef} style={{ position: 'relative', marginBottom: 12 }}>
           <input
+            ref={searchInputRef}
             type="search"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setDropdownOpen(true); }}
+            onFocus={() => { if (search.trim()) setDropdownOpen(true); }}
             placeholder="Search products by brand or name…"
             style={inputStyle}
             aria-label="Search products"
+            aria-expanded={dropdownOpen && matches.length > 0}
           />
-          {matches.length > 0 && (
+          {dropdownOpen && matches.length > 0 && (
             <ul role="listbox" style={dropdownStyle}>
               {matches.map(p => (
                 <li key={p.id}>
                   <button
                     type="button"
-                    onClick={() => addProduct(p)}
+                    onClick={() => { addProduct(p); setDropdownOpen(false); }}
                     style={dropdownRowStyle}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>

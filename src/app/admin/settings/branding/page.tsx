@@ -32,6 +32,14 @@ export default async function SettingsBrandingPage({ searchParams }: { searchPar
             desc="Used by emails and storefront accents. CSS variables in globals.css are the source of truth for the storefront; these copies are for email + future theming."
           />
           <Divider />
+          {/* Note on field names: the DB columns are still called
+              `brand_pink` and `brand_yellow` for back-compat with the
+              YellowPink-era schema. The labels here are the correct
+              Aizel terms ("Brand purple" / "Brand gold") — what the
+              operator sees, not what Postgres stores. Renaming the
+              columns would need a migration + a cross-deploy window
+              where both names co-exist, so we keep the names and only
+              correct the labels. */}
           <div className="adm-form-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
             <div>
               <label style={lbl}>Brand purple</label>

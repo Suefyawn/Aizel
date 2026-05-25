@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { ConfirmButton } from '@/components/admin/ConfirmButton';
 import { createPromo, updatePromo, togglePromo, deletePromo } from '@/app/admin/promo-actions';
 import type { Promo } from '@/lib/promos';
 
@@ -33,71 +34,120 @@ function Field({ label, children, wide }: { label: string; children: React.React
 // Shared field set for the create + edit forms. `promo` non-null = edit mode.
 // datetime-local needs a `YYYY-MM-DDTHH:mm` value, so stored ISO timestamps
 // are sliced to 16 chars for the default.
+// Small section wrapper so the promo editor reads as named groups
+// instead of a 14-field free-for-all. Audit flagged the
+// repeat(auto-fill, minmax(160px, 1fr)) grid produced unreadable
+// scatterings of related fields.
+function PromoSection({ title, desc, cols, children }: {
+  title: string;
+  desc?: string;
+  cols: 2 | 3;
+  children: React.ReactNode;
+}) {
+  return (
+    <section style={{ marginTop: 16 }}>
+      <h3 style={{ margin: '0 0 4px', fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {title}
+      </h3>
+      {desc && <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: '#6b7280' }}>{desc}</p>}
+      <div
+        className={cols === 3 ? 'adm-form-3col' : 'adm-form-2col'}
+        style={{ display: 'grid', gridTemplateColumns: cols === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap: 12 }}
+      >
+        {children}
+      </div>
+    </section>
+  );
+}
+
 function PromoFields({ promo }: { promo?: Promo }) {
   return (
-    <>
-      <Field label="Slot">
-        <select name="position" style={inp} defaultValue={promo?.position ?? 'top_bar'} required>
-          <option value="top_bar">Top bar (thin)</option>
-          <option value="hero_strip">Hero strip (card)</option>
-        </select>
-      </Field>
-      <Field label="Kind">
-        <select name="kind" style={inp} defaultValue={promo?.kind ?? 'announcement'} required>
-          <option value="announcement">Announcement</option>
-          <option value="promo">Promo</option>
-        </select>
-      </Field>
-      <Field label="Label (pill)">
-        <input name="label" placeholder="NEW" defaultValue={promo?.label ?? ''} style={inp} />
-      </Field>
-      <Field label="Headline" wide>
-        <input name="headline" required placeholder="Free UK delivery over £15 · Cantu, ORS, Palmer's & more" defaultValue={promo?.headline ?? ''} style={inp} />
-      </Field>
-      <Field label="Subline" wide>
-        <input name="subline" placeholder="(optional)" defaultValue={promo?.subline ?? ''} style={inp} />
-      </Field>
-      <Field label="CTA text">
-        <input name="cta_text" placeholder="Shop now" defaultValue={promo?.cta_text ?? ''} style={inp} />
-      </Field>
-      <Field label="CTA URL">
-        <input name="cta_url" placeholder="/shop" defaultValue={promo?.cta_url ?? ''} style={inp} />
-      </Field>
-      <Field label="Background">
-        <input name="bg_color" type="color" defaultValue={promo?.bg_color ?? '#111827'} style={{ ...inp, padding: 4, height: 36 }} />
-      </Field>
-      <Field label="Text colour">
-        <input name="text_color" type="color" defaultValue={promo?.text_color ?? '#ffffff'} style={{ ...inp, padding: 4, height: 36 }} />
-      </Field>
-      <Field label="Start at">
-        <input name="start_at" type="datetime-local" defaultValue={promo?.start_at ? promo.start_at.slice(0, 16) : ''} style={inp} />
-      </Field>
-      <Field label="End at">
-        <input name="end_at" type="datetime-local" defaultValue={promo?.end_at ? promo.end_at.slice(0, 16) : ''} style={inp} />
-      </Field>
-      <Field label="Audience">
-        <select name="audience" style={inp} defaultValue={promo?.audience ?? ''}>
-          <option value="">Everyone</option>
-          <option value="guest">Guests (not logged in)</option>
-          <option value="logged_in">Logged-in customers</option>
-          <option value="first_time">First-time (no orders yet)</option>
-          <option value="returning">Returning (≥1 order)</option>
-        </select>
-      </Field>
-      <Field label="Priority (higher wins)">
-        <input name="priority" type="number" min={0} max={1000} defaultValue={promo?.priority ?? 0} style={inp} />
-      </Field>
-      <Field label="Countdown timer">
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem' }}>
-          <input type="checkbox" name="show_countdown" value="true" defaultChecked={promo?.show_countdown ?? false} /> Show on hero strip
-        </label>
-      </Field>
-      <Field label="Enabled">
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem' }}>
-          <input type="checkbox" name="enabled" value="true" defaultChecked={promo ? promo.enabled : true} /> Active
-        </label>
-      </Field>
-    </>
+    <div style={{ gridColumn: '1 / -1' }}>
+      {/* ── Slot — where on the storefront this promo lives ──────────── */}
+      <PromoSection title="Slot" desc="Where on the storefront the promo appears." cols={2}>
+        <Field label="Slot">
+          <select name="position" style={inp} defaultValue={promo?.position ?? 'top_bar'} required>
+            <option value="top_bar">Top bar (thin)</option>
+            <option value="hero_strip">Hero strip (card)</option>
+          </select>
+        </Field>
+        <Field label="Kind">
+          <select name="kind" style={inp} defaultValue={promo?.kind ?? 'announcement'} required>
+            <option value="announcement">Announcement</option>
+            <option value="promo">Promo</option>
+          </select>
+        </Field>
+      </PromoSection>
+
+      {/* ── Content — what the promo says ────────────────────────────── */}
+      <PromoSection title="Content" desc="What customers read on the bar / strip." cols={2}>
+        <Field label="Label (pill)">
+          <input name="label" placeholder="NEW" defaultValue={promo?.label ?? ''} style={inp} />
+        </Field>
+        <Field label="CTA text">
+          <input name="cta_text" placeholder="Shop now" defaultValue={promo?.cta_text ?? ''} style={inp} />
+        </Field>
+        <Field label="Headline" wide>
+          <input name="headline" required placeholder="Free UK delivery over £15 · Cantu, ORS, Palmer's & more" defaultValue={promo?.headline ?? ''} style={inp} />
+        </Field>
+        <Field label="Subline" wide>
+          <input name="subline" placeholder="(optional)" defaultValue={promo?.subline ?? ''} style={inp} />
+        </Field>
+        <Field label="CTA URL" wide>
+          <input name="cta_url" placeholder="/shop" defaultValue={promo?.cta_url ?? ''} style={inp} />
+        </Field>
+      </PromoSection>
+
+      {/* ── Visual — bg + text colour ────────────────────────────────── */}
+      <PromoSection title="Visual" cols={2}>
+        <Field label="Background">
+          <input name="bg_color" type="color" defaultValue={promo?.bg_color ?? '#111827'} style={{ ...inp, padding: 4, height: 40 }} />
+        </Field>
+        <Field label="Text colour">
+          <input name="text_color" type="color" defaultValue={promo?.text_color ?? '#ffffff'} style={{ ...inp, padding: 4, height: 40 }} />
+        </Field>
+      </PromoSection>
+
+      {/* ── Schedule — when it runs ──────────────────────────────────── */}
+      <PromoSection title="Schedule" desc="Leave blank to run indefinitely." cols={2}>
+        <Field label="Start at">
+          <input name="start_at" type="datetime-local" defaultValue={promo?.start_at ? promo.start_at.slice(0, 16) : ''} style={inp} />
+        </Field>
+        <Field label="End at">
+          <input name="end_at" type="datetime-local" defaultValue={promo?.end_at ? promo.end_at.slice(0, 16) : ''} style={inp} />
+        </Field>
+      </PromoSection>
+
+      {/* ── Targeting — who sees it, in what order, with what extras ── */}
+      <PromoSection title="Targeting" cols={3}>
+        <Field label="Audience">
+          <select name="audience" style={inp} defaultValue={promo?.audience ?? ''}>
+            <option value="">Everyone</option>
+            <option value="guest">Guests (not logged in)</option>
+            <option value="logged_in">Logged-in customers</option>
+            <option value="first_time">First-time (no orders yet)</option>
+            <option value="returning">Returning (≥1 order)</option>
+          </select>
+        </Field>
+        <Field label="Priority (higher wins)">
+          <input name="priority" type="number" min={0} max={1000} defaultValue={promo?.priority ?? 0} style={inp} />
+        </Field>
+        <Field label="Countdown timer">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem', minHeight: 40 }}>
+            <input type="checkbox" name="show_countdown" value="true" defaultChecked={promo?.show_countdown ?? false} /> Show on hero strip
+          </label>
+        </Field>
+      </PromoSection>
+
+      {/* ── Live toggle — last because it's the publishing gate ──────── */}
+      <PromoSection title="Status" cols={2}>
+        <Field label="Enabled">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem', minHeight: 40 }}>
+            <input type="checkbox" name="enabled" value="true" defaultChecked={promo ? promo.enabled : true} /> Active
+          </label>
+        </Field>
+      </PromoSection>
+    </div>
   );
 }
 
@@ -217,14 +267,27 @@ export default async function AdminPromosPage({
                     </td>
                     <td data-label="Status" style={{ padding: '12px 16px' }}>
                       <form action={togglePromo.bind(null, p.id, !p.enabled)}>
-                        <button type="submit" style={{
-                          padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
-                          background: live ? '#f0fdf4' : '#f3f4f6',
-                          color: live ? '#15803d' : '#9ca3af',
-                          minHeight: 30,
-                        }}>
-                          {p.enabled ? (live ? 'Live' : 'Scheduled') : 'Paused'}
-                        </button>
+                        {/* Confirm before pausing a LIVE promo — accidentally
+                            killing a hero strip mid-promotion is a footgun. */}
+                        {live ? (
+                          <ConfirmButton
+                            message={`Pause "${p.headline.slice(0, 60)}"? It'll disappear from the storefront until you switch it back on.`}
+                            style={{
+                              padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                              fontSize: '0.75rem', fontWeight: 600,
+                              background: '#f0fdf4', color: '#15803d', minHeight: 30,
+                            }}
+                          >Live</ConfirmButton>
+                        ) : (
+                          <button type="submit" style={{
+                            padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
+                            background: '#f3f4f6',
+                            color: '#9ca3af',
+                            minHeight: 30,
+                          }}>
+                            {p.enabled ? 'Scheduled' : 'Paused'}
+                          </button>
+                        )}
                       </form>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
