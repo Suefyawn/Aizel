@@ -7,6 +7,8 @@ import { NoAccess } from '@/components/admin/NoAccess';
 import { RevenueChart } from '@/components/admin/RevenueChart';
 import { SentryWidget } from '@/components/admin/SentryWidget';
 import { RefreshAnalyticsButton } from '@/components/admin/RefreshAnalyticsButton';
+import { ActivityFeedWidget } from '@/components/admin/ActivityFeedWidget';
+import { getRecentActivity } from '@/app/admin/activity-feed-actions';
 import { brandPlusName } from '@/lib/product-display';
 import { can, canAny } from '@/lib/permissions';
 import { ORDER_STATUS_LABELS } from '@/types';
@@ -79,6 +81,11 @@ export default async function DashboardPage() {
     // orders and zeroes refunds.
     admin.from('v_orders_revenue').select('revenue, created_at').gte('created_at', thirtyDaysAgo),
   ]);
+
+  // Hydrated activity feed — same server action the widget polls, but
+  // we paint the first page ourselves so there's no empty state on
+  // initial load. Gated on `analytics` (same as the overview block).
+  const initialActivity = canOverview ? await getRecentActivity(20) : [];
 
   // Build 30-day revenue series — reuse the `nowMs` we pinned above so the
   // bucket boundaries match the `thirtyDaysAgo` window we queried with.
@@ -274,9 +281,13 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Recent Orders (overview-gated) */}
+      {/* Activity feed + Recent Orders sit side-by-side on desktop, stack
+          on tablet/mobile. The feed polls every 30s; the orders table
+          stays server-rendered. */}
       {canOverview && (
-      <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+      <div className="adm-analytics-grid" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 20, marginBottom: 32 }}>
+        <ActivityFeedWidget initial={initialActivity} />
+        <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Recent Orders</h2>
           <Link href="/admin/orders" style={{ fontSize: '0.8125rem', color: '#4A1A6B', textDecoration: 'none' }}>View all →</Link>
@@ -353,6 +364,7 @@ export default async function DashboardPage() {
           </table>
           </div>
         )}
+        </div>
       </div>
       )}
     </div>
