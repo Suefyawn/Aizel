@@ -361,10 +361,41 @@ function AddStaffModal({ roles, onClose }: { roles: Role[]; onClose: () => void 
           <p style={{ margin: '0 0 8px', fontSize: '0.8125rem', fontWeight: 600, color: '#92400e' }}>
             Temporary password — share this once and ask them to change it:
           </p>
-          <code style={{
-            display: 'block', fontSize: '1.125rem', fontWeight: 700,
-            letterSpacing: '0.1em', color: '#111827',
-          }}>{state.tempPassword}</code>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <code style={{
+              display: 'inline-block', fontSize: '1.125rem', fontWeight: 700,
+              letterSpacing: '0.1em', color: '#111827',
+              padding: '6px 10px', background: 'white', borderRadius: 6,
+              border: '1px solid #fcd34d',
+              userSelect: 'all',
+            }}>{state.tempPassword}</code>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(state.tempPassword as string);
+                  // Quickly flash the button label so the cashier sees it
+                  // worked without needing a toast component here.
+                  const el = document.activeElement as HTMLButtonElement | null;
+                  if (el && el.tagName === 'BUTTON') {
+                    const original = el.textContent;
+                    el.textContent = '✓ Copied';
+                    setTimeout(() => { if (el) el.textContent = original; }, 1500);
+                  }
+                } catch {
+                  // Clipboard refused (insecure context, etc.) — fall back
+                  // to a select-all on the code so they can Cmd-C.
+                  const code = document.querySelector('code[data-temp-pw]') as HTMLElement | null;
+                  code && window.getSelection()?.selectAllChildren(code);
+                }
+              }}
+              style={{
+                padding: '8px 14px', background: '#92400e', color: 'white',
+                border: 'none', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+              }}
+            >📋 Copy</button>
+          </div>
         </div>
         <button style={btn('#111827')} onClick={onClose}>Done</button>
       </div>

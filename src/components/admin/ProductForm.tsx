@@ -374,7 +374,23 @@ export function ProductForm({ product }: { product?: Product }) {
                   ? <>Editing <strong style={{ color: '#111827' }}>{product?.name ?? 'product'}</strong></>
                   : 'Creating a new product'}
             </div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* View on storefront — only meaningful for an existing
+                  published product. Opens in a new tab so the admin
+                  doesn't lose their edit. */}
+              {isEdit && product?.status === 'published' && (
+                <a
+                  href={`/product/${slug || product.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '9px 14px', background: 'white', color: '#374151',
+                    border: '1px solid #d1d5db', borderRadius: 7,
+                    fontSize: '0.8125rem', textDecoration: 'none',
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                  }}
+                >View on storefront ↗</a>
+              )}
               <Link href="/admin/products" style={{
                 padding: '9px 18px', background: 'white', color: '#374151',
                 border: '1px solid #d1d5db', borderRadius: 7,

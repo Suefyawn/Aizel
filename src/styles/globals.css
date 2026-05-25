@@ -763,6 +763,17 @@ form[role='search']:focus-within {
   .adm-orders-search { min-width: 0 !important; flex: 1 1 100% !important; }
 }
 
+/* Dashboard KPI cards — subtle hover affordance so the operator
+ * knows they're clickable. Lifts the card 2px with a deeper shadow.
+ * @media (hover: hover) so a finger-tap on a touchscreen doesn't
+ * leave the card stuck in the lifted state until a tap-outside. */
+@media (hover: hover) {
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10) !important;
+  }
+}
+
 /* AdminSidebar 1024–1280 px tight zone — the desktop 240 px sidebar
  * leaves a narrow content column on laptops. Pull it down to the same
  * 200 px the 768–1024 rule uses; group labels still fit and the

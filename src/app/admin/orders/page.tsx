@@ -80,7 +80,7 @@ async function OrdersPageInner({
       </Suspense>
 
       <div className="adm-table-scroll" style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-        <OrdersTable orders={list} />
+        <OrdersTable orders={list} hasFilters={Boolean(q) || (!!status && status !== 'all')} />
       </div>
 
       <Suspense fallback={null}>

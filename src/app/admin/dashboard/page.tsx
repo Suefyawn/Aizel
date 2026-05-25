@@ -135,11 +135,15 @@ export default async function DashboardPage() {
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 32 }} className="adm-stat-grid">
         {stats.map(s => (
-          <Link key={s.label} href={s.href} style={{
+          // `kpi-card` class for the hover lift defined in globals.css.
+          // Plain inline styles can't react to :hover; the class adds
+          // a subtle shadow + translate that signals "I'm clickable".
+          <Link key={s.label} href={s.href} className="kpi-card" style={{
             background: 'white', borderRadius: 10, padding: '24px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
             display: 'flex', flexDirection: 'column', gap: 12,
             textDecoration: 'none', color: 'inherit',
+            transition: 'box-shadow 150ms ease-out, transform 150ms ease-out',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ color: '#6b7280', fontSize: '0.8125rem', fontWeight: 500 }}>{s.label}</span>
@@ -278,8 +282,21 @@ export default async function DashboardPage() {
           <Link href="/admin/orders" style={{ fontSize: '0.8125rem', color: '#4A1A6B', textDecoration: 'none' }}>View all →</Link>
         </div>
         {!recentOrders || recentOrders.length === 0 ? (
-          <div style={{ padding: '40px 24px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
-            No orders yet
+          <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <div style={{ color: '#374151', fontWeight: 600, fontSize: '0.9375rem' }}>No orders yet</div>
+            <p style={{ margin: '6px 0 16px', color: '#9ca3af', fontSize: '0.8125rem' }}>
+              Take your first sale at the till, or create a manual order for a phone customer.
+            </p>
+            <div style={{ display: 'inline-flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Link href="/admin/pos" style={{
+                padding: '8px 16px', background: '#4A1A6B', color: 'white',
+                borderRadius: 7, textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 600,
+              }}>→ Open the till</Link>
+              <Link href="/admin/orders/new" style={{
+                padding: '8px 16px', background: 'white', color: '#374151',
+                border: '1px solid #d1d5db', borderRadius: 7, textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 600,
+              }}>+ Manual order</Link>
+            </div>
           </div>
         ) : (
           <div className="adm-table-scroll">

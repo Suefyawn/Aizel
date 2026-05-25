@@ -65,7 +65,7 @@ export default async function ProductsPage({
 
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
+      <div className="adm-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Products</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <Link href="/admin/products/import" style={{

@@ -59,7 +59,7 @@ function PayBadge({ method }: { method: string }) {
   );
 }
 
-export function OrdersTable({ orders }: { orders: Order[] }) {
+export function OrdersTable({ orders, hasFilters = false }: { orders: Order[]; hasFilters?: boolean }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const toast = useToast();
@@ -116,8 +116,28 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
 
   if (orders.length === 0) {
     return (
-      <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
-        No orders found
+      <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+        <div aria-hidden="true" style={{ fontSize: '2.5rem', marginBottom: 10, color: '#d1d5db' }}>◎</div>
+        <div style={{ color: '#374151', fontWeight: 600, fontSize: '0.9375rem', marginBottom: 4 }}>
+          {hasFilters ? 'No orders match this filter' : 'No orders yet'}
+        </div>
+        <p style={{ margin: '0 0 16px', color: '#9ca3af', fontSize: '0.8125rem' }}>
+          {hasFilters
+            ? 'Try clearing the filter or pick a different status.'
+            : 'Web orders appear here as soon as a customer checks out. In-store sales come in through the POS till.'}
+        </p>
+        {!hasFilters && (
+          <div style={{ display: 'inline-flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link href="/admin/pos" style={{
+              padding: '8px 16px', background: '#4A1A6B', color: 'white',
+              borderRadius: 7, textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 600,
+            }}>→ Open the till</Link>
+            <Link href="/admin/orders/new" style={{
+              padding: '8px 16px', background: 'white', color: '#374151',
+              border: '1px solid #d1d5db', borderRadius: 7, textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 600,
+            }}>+ Manual order</Link>
+          </div>
+        )}
       </div>
     );
   }
