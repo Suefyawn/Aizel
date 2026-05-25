@@ -9,6 +9,10 @@ import {
 } from '@/app/admin/bulk-product-actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { useToast } from '@/components/admin/Toast';
+import {
+  Modal, ModalActions, ModalPrimaryButton, ModalSecondaryButton,
+  modalLabel, modalInput, modalHint, modalError,
+} from '@/components/admin/Modal';
 import type { Product } from '@/types';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
@@ -73,6 +77,15 @@ export function ProductsTable({ products }: { products: Product[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  // Modal state — drives the bulk-price + bulk-stock dialogs that
+  // replaced the window.prompt calls the audit flagged as amateurish.
+  const [priceModal, setPriceModal] = useState(false);
+  const [priceValue, setPriceValue] = useState('-10');
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [stockModal, setStockModal] = useState(false);
+  const [stockMode, setStockMode] = useState<'set' | 'delta'>('delta');
+  const [stockValue, setStockValue] = useState('+10');
+  const [stockError, setStockError] = useState<string | null>(null);
 
   const allSelected = products.length > 0 && selected.size === products.length;
   const toggle = (id: string) => setSelected(prev => {
@@ -286,37 +299,16 @@ export function ProductsTable({ products }: { products: Product[] }) {
             <option value="__clear__">&mdash; Clear tag &mdash;</option>
           </select>
 
-          <button onClick={() => {
-            const v = window.prompt('Adjust price by %? (e.g. -10 = 10% off, +5 = 5% mark-up)');
-            if (v === null || v === '') return;
-            const n = Number(v);
-            if (!isFinite(n)) return;
-            wrap(async () => { await bulkPriceAdjustProducts(Array.from(selected), n); }, `Price ${n >= 0 ? '+' : ''}${n}%`);
-          }} disabled={pending} style={btn('#3b82f6')}>Adjust price&hellip;</button>
+          <button onClick={() => { setPriceValue('-10'); setPriceError(null); setPriceModal(true); }} disabled={pending} style={btn('#3b82f6')}>
+            Adjust price&hellip;
+          </button>
 
-          {/* Stock adjuster — accepts both an absolute "20" (set to) and a
-              signed "+10 / -5" (delta). Products with track_inventory=false
-              are skipped server-side and reported in the toast. */}
-          <button onClick={() => {
-            const raw = window.prompt('Adjust stock — enter +10 / -5 to add/remove, or a plain number to set absolute (e.g. 20)');
-            if (raw === null || raw.trim() === '') return;
-            const trimmed = raw.trim();
-            const hasSign = /^[+-]/.test(trimmed);
-            const n = Number(trimmed);
-            if (!isFinite(n)) return;
-            const mode: 'set' | 'delta' = hasSign ? 'delta' : 'set';
-            const ids = Array.from(selected);
-            const count = selected.size;
-            startTransition(async () => {
-              const { updated, skipped } = await bulkAdjustStock(ids, { mode, value: n });
-              setSelected(new Set());
-              const what = mode === 'set'
-                ? `Stock set to ${Math.max(0, Math.round(n))}`
-                : `Stock ${n >= 0 ? '+' : ''}${n}`;
-              const tail = skipped > 0 ? ` (${skipped} skipped — managed externally)` : '';
-              toast(`${what} on ${updated}/${count}${tail}`, 'success');
-            });
-          }} disabled={pending} style={btn('#8b5cf6')}>Adjust stock&hellip;</button>
+          {/* Stock adjuster — accepts both an absolute "20" (set to) and
+              a signed "+10 / -5" (delta). Products with track_inventory
+              =false are skipped server-side and reported in the toast. */}
+          <button onClick={() => { setStockMode('delta'); setStockValue('+10'); setStockError(null); setStockModal(true); }} disabled={pending} style={btn('#8b5cf6')}>
+            Adjust stock&hellip;
+          </button>
 
           <button onClick={handleBulkDelete} disabled={pending} style={btn('#ef4444')}>Delete</button>
 
@@ -329,6 +321,160 @@ export function ProductsTable({ products }: { products: Product[] }) {
           </button>
         </div>
       )}
+
+      {/* Bulk-price modal — applies a % adjustment to every selected
+          product. Live preview of what 3 sample products will become. */}
+      {priceModal && (() => {
+        const n = Number(priceValue);
+        const valid = priceValue.trim() !== '' && isFinite(n) && n !== 0;
+        const samples = products.filter(p => selected.has(p.id)).slice(0, 3);
+        return (
+          <Modal
+            title={`Adjust price for ${selected.size} product${selected.size === 1 ? '' : 's'}`}
+            desc="Applies a percentage change. -10 = 10% off, +5 = 5% mark-up. Original price (compare-at) is left alone."
+            onClose={() => setPriceModal(false)}
+          >
+            <label htmlFor="bulk-price-pct" style={modalLabel}>Adjust by (%)</label>
+            <input
+              id="bulk-price-pct"
+              type="number" step="0.1"
+              value={priceValue}
+              onChange={e => setPriceValue(e.target.value)}
+              style={modalInput}
+              autoFocus
+              placeholder="-10"
+            />
+            <p style={modalHint}>
+              {valid ? `Each price multiplied by ${(1 + n / 100).toFixed(3)}` : 'Enter a non-zero number.'}
+            </p>
+            {valid && samples.length > 0 && (
+              <div style={{ marginTop: 14, padding: '12px 14px', background: '#f9fafb', borderRadius: 7, border: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                  Preview
+                </div>
+                {samples.map(p => {
+                  const newPrice = Math.max(0, p.price * (1 + n / 100));
+                  return (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', padding: '3px 0' }}>
+                      <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 12 }}>
+                        {p.name.length > 38 ? p.name.slice(0, 35) + '…' : p.name}
+                      </span>
+                      <span style={{ fontVariantNumeric: 'tabular-nums', color: '#111827' }}>
+                        £{p.price.toFixed(2)} → <strong>£{newPrice.toFixed(2)}</strong>
+                      </span>
+                    </div>
+                  );
+                })}
+                {selected.size > 3 && (
+                  <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 4 }}>
+                    …and {selected.size - 3} more.
+                  </div>
+                )}
+              </div>
+            )}
+            {priceError && <div style={modalError}>{priceError}</div>}
+            <ModalActions>
+              <ModalSecondaryButton onClick={() => setPriceModal(false)}>Cancel</ModalSecondaryButton>
+              <ModalPrimaryButton
+                disabled={!valid || pending}
+                onClick={() => {
+                  if (!valid) { setPriceError('Enter a non-zero number'); return; }
+                  setPriceModal(false);
+                  wrap(async () => { await bulkPriceAdjustProducts(Array.from(selected), n); }, `Price ${n >= 0 ? '+' : ''}${n}%`);
+                }}
+              >
+                Apply to {selected.size}
+              </ModalPrimaryButton>
+            </ModalActions>
+          </Modal>
+        );
+      })()}
+
+      {/* Bulk-stock modal — set absolute or delta. Mode toggle is a
+          segmented control so the operator can't mis-read +/- syntax. */}
+      {stockModal && (() => {
+        const trimmed = stockValue.trim();
+        const n = Number(trimmed);
+        const valid = trimmed !== '' && isFinite(n) && (stockMode === 'set' ? n >= 0 : n !== 0);
+        return (
+          <Modal
+            title={`Adjust stock for ${selected.size} product${selected.size === 1 ? '' : 's'}`}
+            desc="Untracked products (services / made-to-order) are skipped server-side and reported in the success toast."
+            onClose={() => setStockModal(false)}
+          >
+            <label style={modalLabel}>Mode</label>
+            <div role="radiogroup" aria-label="Stock adjustment mode" style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {[
+                { v: 'delta', label: 'Add / remove (±)' },
+                { v: 'set',   label: 'Set absolute (=)' },
+              ].map(opt => {
+                const active = stockMode === opt.v;
+                return (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => {
+                      setStockMode(opt.v as 'set' | 'delta');
+                      setStockValue(opt.v === 'set' ? '0' : '+10');
+                    }}
+                    style={{
+                      flex: 1, padding: '10px 14px',
+                      border: '1px solid ' + (active ? '#4A1A6B' : '#d1d5db'),
+                      background: active ? '#F5EFF8' : 'white',
+                      color: active ? '#4A1A6B' : '#374151',
+                      fontWeight: 600, fontSize: '0.8125rem', borderRadius: 7,
+                      cursor: 'pointer', minHeight: 40,
+                    }}
+                  >{opt.label}</button>
+                );
+              })}
+            </div>
+            <label htmlFor="bulk-stock-value" style={modalLabel}>
+              {stockMode === 'set' ? 'Set every selected product to' : 'Add (+) or remove (−)'}
+            </label>
+            <input
+              id="bulk-stock-value"
+              type="text"
+              inputMode="numeric"
+              value={stockValue}
+              onChange={e => setStockValue(e.target.value)}
+              style={modalInput}
+              placeholder={stockMode === 'set' ? '20' : '+10'}
+            />
+            <p style={modalHint}>
+              {stockMode === 'set'
+                ? 'Every selected product\'s stock will be overwritten with this number.'
+                : 'Positive adds to stock; negative removes. Stock floors at 0.'}
+            </p>
+            {stockError && <div style={modalError}>{stockError}</div>}
+            <ModalActions>
+              <ModalSecondaryButton onClick={() => setStockModal(false)}>Cancel</ModalSecondaryButton>
+              <ModalPrimaryButton
+                disabled={!valid || pending}
+                onClick={() => {
+                  if (!valid) { setStockError('Enter a valid number'); return; }
+                  setStockModal(false);
+                  const ids = Array.from(selected);
+                  const count = selected.size;
+                  startTransition(async () => {
+                    const { updated, skipped } = await bulkAdjustStock(ids, { mode: stockMode, value: n });
+                    setSelected(new Set());
+                    const what = stockMode === 'set'
+                      ? `Stock set to ${Math.max(0, Math.round(n))}`
+                      : `Stock ${n >= 0 ? '+' : ''}${n}`;
+                    const tail = skipped > 0 ? ` (${skipped} skipped — untracked)` : '';
+                    toast(`${what} on ${updated}/${count}${tail}`, 'success');
+                  });
+                }}
+              >
+                Apply to {selected.size}
+              </ModalPrimaryButton>
+            </ModalActions>
+          </Modal>
+        );
+      })()}
     </>
   );
 }

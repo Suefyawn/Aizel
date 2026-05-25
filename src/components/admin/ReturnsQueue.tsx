@@ -4,6 +4,10 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { approveReturn, rejectReturn, markReturnReceived } from '@/app/account/orders/returns/actions';
 import { useToast } from '@/components/admin/Toast';
+import {
+  Modal, ModalActions, ModalPrimaryButton, ModalSecondaryButton,
+  modalLabel, modalInput, modalHint,
+} from '@/components/admin/Modal';
 
 interface ReturnRow {
   id: string;
@@ -31,6 +35,11 @@ export function ReturnsQueue({ rows, orderMap }: {
   const [acting, startTransition] = useTransition();
   const toast = useToast();
   const [decisionFor, setDecisionFor] = useState<string | null>(null);
+  // Modal state for the receive + reject flows that used to fire
+  // window.confirm / window.prompt.
+  const [receiveModal, setReceiveModal] = useState<ReturnRow | null>(null);
+  const [rejectModal, setRejectModal] = useState<ReturnRow | null>(null);
+  const [rejectNote, setRejectNote] = useState('');
 
   if (rows.length === 0) {
     return (
@@ -41,6 +50,7 @@ export function ReturnsQueue({ rows, orderMap }: {
   }
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {rows.map(r => {
         const order = orderMap[r.order_id];
@@ -105,14 +115,7 @@ export function ReturnsQueue({ rows, orderMap }: {
                     ledger (record_stock_change reason='return'). This is the
                     bridge that closes the place_order → return loop. */}
                 <button
-                  onClick={() => {
-                    if (!window.confirm('Mark this return as received and restock the items?')) return;
-                    startTransition(async () => {
-                      const res = await markReturnReceived(r.id);
-                      if ('success' in res && res.success) toast('Return marked received — stock restored', 'success');
-                      else toast(('error' in res && res.error) ? res.error : 'Failed', 'error');
-                    });
-                  }}
+                  onClick={() => setReceiveModal(r)}
                   disabled={acting}
                   style={{ padding: '6px 14px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}
                 >
@@ -132,14 +135,7 @@ export function ReturnsQueue({ rows, orderMap }: {
                       Approve…
                     </button>
                     <button
-                      onClick={() => {
-                        const note = window.prompt('Why are you rejecting? (optional)') ?? '';
-                        startTransition(async () => {
-                          const res = await rejectReturn(r.id, note);
-                          if ('success' in res && res.success) toast('Return rejected', 'success');
-                          else toast(('error' in res && res.error) ? res.error : 'Failed', 'error');
-                        });
-                      }}
+                      onClick={() => { setRejectNote(''); setRejectModal(r); }}
                       disabled={acting}
                       style={{ padding: '6px 14px', background: 'transparent', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 6, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}
                     >
@@ -169,6 +165,83 @@ export function ReturnsQueue({ rows, orderMap }: {
         );
       })}
     </div>
+
+    {/* ── Receive + restock confirmation modal ────────────────────── */}
+    {receiveModal && (
+      <Modal
+        title="Mark return as received?"
+        desc={`Restocks the ${receiveModal.items.reduce((s, i) => s + i.qty, 0)} item${receiveModal.items.reduce((s, i) => s + i.qty, 0) === 1 ? '' : 's'} on this return into inventory and closes the return as received.`}
+        onClose={() => setReceiveModal(null)}
+      >
+        <div style={{ background: '#f9fafb', borderRadius: 7, border: '1px solid #e5e7eb', padding: '12px 14px', fontSize: '0.8125rem' }}>
+          {receiveModal.items.map((it, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#374151' }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 12 }}>
+                {it.qty} × {it.name}
+              </span>
+              <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280' }}>+{it.qty}</span>
+            </div>
+          ))}
+        </div>
+        <p style={modalHint}>Stock changes are written to the inventory ledger with reason &ldquo;return&rdquo;.</p>
+        <ModalActions>
+          <ModalSecondaryButton onClick={() => setReceiveModal(null)}>Cancel</ModalSecondaryButton>
+          <ModalPrimaryButton
+            tone="ok"
+            disabled={acting}
+            onClick={() => {
+              const id = receiveModal.id;
+              setReceiveModal(null);
+              startTransition(async () => {
+                const res = await markReturnReceived(id);
+                if ('success' in res && res.success) toast('Return marked received — stock restored', 'success');
+                else toast(('error' in res && res.error) ? res.error : 'Failed', 'error');
+              });
+            }}
+          >Mark received &amp; restock</ModalPrimaryButton>
+        </ModalActions>
+      </Modal>
+    )}
+
+    {/* ── Reject return modal — captures a reason for the customer ── */}
+    {rejectModal && (
+      <Modal
+        title="Reject this return?"
+        desc="The customer is emailed your reason. Leave blank to send a generic rejection — better to give them context."
+        onClose={() => setRejectModal(null)}
+      >
+        <label htmlFor="reject-note" style={modalLabel}>Reason (shown to the customer)</label>
+        <textarea
+          id="reject-note"
+          rows={4}
+          value={rejectNote}
+          onChange={e => setRejectNote(e.target.value)}
+          placeholder="e.g. The product is outside our 14-day return window…"
+          style={{ ...modalInput, fontFamily: 'inherit', resize: 'vertical', minHeight: 96 }}
+          maxLength={500}
+          autoFocus
+        />
+        <p style={modalHint}>{rejectNote.length} / 500 characters</p>
+        <ModalActions>
+          <ModalSecondaryButton onClick={() => setRejectModal(null)}>Cancel</ModalSecondaryButton>
+          <ModalPrimaryButton
+            tone="danger"
+            disabled={acting}
+            onClick={() => {
+              const id = rejectModal.id;
+              const note = rejectNote;
+              setRejectModal(null);
+              startTransition(async () => {
+                const res = await rejectReturn(id, note);
+                if ('success' in res && res.success) toast('Return rejected', 'success');
+                else toast(('error' in res && res.error) ? res.error : 'Failed', 'error');
+              });
+            }}
+          >Reject return</ModalPrimaryButton>
+        </ModalActions>
+      </Modal>
+    )}
+    </>
   );
 }
 
