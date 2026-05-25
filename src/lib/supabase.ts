@@ -17,6 +17,36 @@ const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseUrl = envUrl || 'https://demo.invalid';
 const supabaseAnonKey = envKey || 'demo-anon-key';
 
+// In demo mode (no Supabase env), every supabase-js call targets the
+// placeholder `https://demo.invalid` host. On Windows / long-lived Node
+// processes the OS-level connect failure for that unreachable hostname
+// takes ~7 seconds — and each admin page fires several parallel reads
+// (AdminLayout adds 2 by itself, before the page's own queries), so the
+// whole admin stalls for 7+ s on every render in demo mode.
+//
+// Short-circuit at the fetch layer: any request whose URL contains the
+// placeholder host resolves immediately with an empty PostgREST response
+// (`[]` body + `content-range: */0` for HEAD count queries). supabase-js
+// parses it as `{ data: [], error: null }` and the page renders in
+// milliseconds. Storefront getters that override empty data with demo
+// fixtures (getProducts → DEMO_PRODUCTS, getBlogPosts → DEMO_BLOG_POSTS)
+// already check `isDemo` BEFORE the supabase call, so they're not
+// affected by the empty `[]` from this fast path.
+const demoTimeoutFetch: typeof fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+  if (url.includes('demo.invalid')) {
+    return Promise.resolve(new Response('[]', {
+      status: 200,
+      headers: {
+        'content-type': 'application/json',
+        'content-range': '*/0',
+      },
+    }));
+  }
+  return fetch(input, init);
+};
+const clientFetch = isDemo ? demoTimeoutFetch : undefined;
+
 // Anonymous storefront read client. It NEVER manages a user session — the
 // logged-in customer session is owned exclusively by the @supabase/ssr
 // cookie client (lib/supabase-browser + lib/supabase-server). persistSession
@@ -25,6 +55,7 @@ const supabaseAnonKey = envKey || 'demo-anon-key';
 // races the cookie client and makes signed-in customers look logged-out.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: { persistSession: false, autoRefreshToken: false },
+  ...(clientFetch && { global: { fetch: clientFetch } }),
 });
 
 // ─── Service-role client (server-only) ──────────────────────────────────────
