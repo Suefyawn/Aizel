@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useRef, useTransition } from 'react';
+import { SavedViewsMenu } from '@/components/admin/SavedViewsMenu';
 
 const CATEGORIES = ['All', 'Hair Care', 'Body Care', 'Styling & Tools', 'Grooming'];
 const TAGS = ['All', 'New', 'Sale', 'Bestseller', 'Featured', 'Limited'];
@@ -93,6 +94,10 @@ export function ProductsFilter({ total }: { total: number }) {
             Clear ✕
           </button>
         )}
+        {/* Same saved-views pattern as Orders — name a filter combo and
+            re-apply with one click. Per-staff, surfaced via the Views
+            dropdown next to the filter row. */}
+        <SavedViewsMenu surface="products" basePath="/admin/products" />
         <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8125rem', color: '#6b7280' }}>
           Sort
           <select

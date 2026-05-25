@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on the Orders page; live activity feed widget on the dashboard; receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on Orders, Products, and Customers; live activity feed widget on the dashboard; receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.*
 
 ---
 
@@ -198,7 +198,10 @@ open the **order detail page**. From there:
 
 > **Tip — saved views.** The **Views** dropdown next to the filter lets you
 > save the current filter under a name (e.g. "Open today", "Refund queue")
-> and re-apply it in one click. Each staff member has their own list.
+> and re-apply it in one click. Each staff member has their own list. The
+> same dropdown also appears on **Products** ("Out-of-stock published",
+> "Bestsellers under £10"…) and **Customers** ("VIPs", "Top spenders this
+> quarter"…) — anywhere you filter, you can save the filter.
 
 **Step 1 — Confirm with the customer (optional).**
 If you take orders over WhatsApp, tap the **WhatsApp** button at the top of

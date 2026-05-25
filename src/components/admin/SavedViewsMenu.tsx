@@ -19,7 +19,7 @@ import {
 interface Props {
   /** Which list page this menu belongs to. Must be a valid value in the
    *  server-side Surface zod enum. */
-  surface: 'orders';
+  surface: 'orders' | 'products' | 'customers';
   /** The base path to navigate to when applying a view. */
   basePath: string;
 }

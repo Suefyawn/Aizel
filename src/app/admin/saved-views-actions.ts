@@ -15,7 +15,7 @@ import { getStaffSession } from '@/lib/staff-auth';
 // permission for it because they can't see surfaces they don't already
 // have permission for.
 
-const Surface = z.enum(['orders']);
+const Surface = z.enum(['orders', 'products', 'customers']);
 type SurfaceKind = z.infer<typeof Surface>;
 
 const NameSchema  = z.string().trim().min(1).max(40);
@@ -77,7 +77,7 @@ export async function saveView(input: {
     .select('id, name, query, created_at')
     .single();
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/admin/${surfaceParsed.data}`);
+  revalidatePath(surfaceToPath(surfaceParsed.data));
   return { ok: true, view: data as SavedView };
 }
 
@@ -93,6 +93,13 @@ export async function deleteView(id: string, surfaceInput: string): Promise<{ ok
     .eq('id', id)
     .eq('user_id', session.id);
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/admin/${surfaceParsed.data}`);
+  revalidatePath(surfaceToPath(surfaceParsed.data));
   return { ok: true };
+}
+
+// `customers` is the data concept; the page lives at /admin/users for
+// historical reasons. The other surfaces match their routes 1:1.
+function surfaceToPath(surface: SurfaceKind): string {
+  if (surface === 'customers') return '/admin/users';
+  return `/admin/${surface}`;
 }

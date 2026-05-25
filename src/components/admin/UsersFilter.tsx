@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useRef, useTransition } from 'react';
+import { SavedViewsMenu } from '@/components/admin/SavedViewsMenu';
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: 'recent',     label: 'Recently joined' },
@@ -79,6 +80,9 @@ export function UsersFilter({ total }: { total: number }) {
           Clear ✕
         </button>
       )}
+      {/* Saved-views (same pattern as Orders + Products). Good for
+          "VIP customers", "Top spenders this quarter", etc. */}
+      <SavedViewsMenu surface="customers" basePath="/admin/users" />
       <span style={{ fontSize: '0.8125rem', color: '#9ca3af', marginLeft: 'auto' }}>
         {total} customer{total !== 1 ? 's' : ''}
       </span>
