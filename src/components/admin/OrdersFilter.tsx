@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useRef, useTransition } from 'react';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/types';
+import { SavedViewsMenu } from '@/components/admin/SavedViewsMenu';
 
 // Pill order + colour. Labels come from the shared ORDER_STATUS_LABELS map so
 // the filter can't drift from the Orders table and the order detail page.
@@ -96,6 +97,9 @@ export function OrdersFilter({ total }: { total: number }) {
           Clear ✕
         </button>
       )}
+      {/* Saved views — Linear / Jira pattern. Lives at the end of the
+          filter row so it sits next to Clear. */}
+      <SavedViewsMenu surface="orders" basePath="/admin/orders" />
       <span style={{ fontSize: '0.8125rem', color: '#9ca3af', marginLeft: 'auto' }}>
         {total} order{total !== 1 ? 's' : ''}
       </span>

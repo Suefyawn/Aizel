@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on the Orders page.*
 
 ---
 
@@ -195,6 +195,10 @@ together. Here's what each link is for:
 This is the core day-to-day task. When an order comes in, open **Orders**, find
 it (new ones show a red count badge on the Orders menu item), and click it to
 open the **order detail page**. From there:
+
+> **Tip — saved views.** The **Views** dropdown next to the filter lets you
+> save the current filter under a name (e.g. "Open today", "Refund queue")
+> and re-apply it in one click. Each staff member has their own list.
 
 **Step 1 — Confirm with the customer (optional).**
 If you take orders over WhatsApp, tap the **WhatsApp** button at the top of
