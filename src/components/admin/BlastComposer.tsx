@@ -2,32 +2,55 @@
 
 import { useState, useTransition } from 'react';
 import { useToast } from '@/components/admin/Toast';
+import {
+  Modal, ModalActions, ModalPrimaryButton, ModalSecondaryButton,
+  modalLabel, modalInput, modalHint, modalError,
+} from '@/components/admin/Modal';
 import { sendBlast, type SegmentSummary, type SegmentKey } from '@/app/admin/marketing/blast/actions';
 
 interface Props {
   segments: SegmentSummary[];
 }
 
+// Once a segment is bigger than this, the real-send modal demands the
+// operator type the word "SEND" before the Send button enables. Mailchimp /
+// Klaviyo pattern — small sends are one-click, big sends need a deliberate
+// keystroke that breaks "muscle-memory yes" before a 1,000-recipient blast.
+const HARD_CONFIRM_THRESHOLD = 100;
+
 // Three-step composer: pick segment → write subject + body → preview + send.
 // Test-send and real-send are the same button shape so the operator doesn't
-// misclick — both go through a confirm dialog with the recipient count.
+// misclick — both go through a confirm modal with the recipient count.
 export function BlastComposer({ segments }: Props) {
   const [segment, setSegment] = useState<SegmentKey>(segments[0]?.key ?? 'newsletter');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [pending, startTransition] = useTransition();
   const toast = useToast();
+  // The send-confirm modal — `kind` decides whether we render the test
+  // confirmation (one button) or the destructive real-send confirmation
+  // (with the "type SEND" guard above the threshold).
+  const [confirmKind, setConfirmKind] = useState<'test' | 'real' | null>(null);
+  const [typedConfirm, setTypedConfirm] = useState('');
 
   const selected = segments.find(s => s.key === segment);
-  const canSend = subject.trim().length > 0 && body.trim().length >= 30 && !pending;
+  const recipientCount = selected?.count ?? 0;
+  const requiresTyped = recipientCount >= HARD_CONFIRM_THRESHOLD;
+  // canSend gates BOTH buttons identically except that the real-send
+  // button additionally requires a non-empty segment.
+  const canCompose = subject.trim().length > 0 && body.trim().length >= 30 && !pending;
+  const canTest = canCompose;
+  const canSendReal = canCompose && recipientCount > 0;
 
-  function doSend(testOnly: boolean) {
-    if (!canSend) return;
-    const confirmCopy = testOnly
-      ? 'Send a test copy to your staff email only?'
-      : `Send "${subject}" to ${selected?.count ?? 0} customers in segment "${selected?.label}"? Sends are NOT reversible.`;
-    if (!window.confirm(confirmCopy)) return;
+  function openConfirm(kind: 'test' | 'real') {
+    if (kind === 'test' && !canTest) return;
+    if (kind === 'real' && !canSendReal) return;
+    setTypedConfirm('');
+    setConfirmKind(kind);
+  }
 
+  function performSend(testOnly: boolean) {
+    setConfirmKind(null);
     startTransition(async () => {
       const result = await sendBlast({ segment, subject, body, testOnly });
       if (!result.ok) {
@@ -46,6 +69,10 @@ export function BlastComposer({ segments }: Props) {
       }
     });
   }
+
+  // Real-send guard: when the segment is large, we require the operator to
+  // type SEND. The Send button stays disabled until the input matches.
+  const typedConfirmOk = !requiresTyped || typedConfirm.trim().toUpperCase() === 'SEND';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -131,36 +158,101 @@ export function BlastComposer({ segments }: Props) {
       </section>
 
       {/* ── Send ────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        {recipientCount === 0 && canCompose && (
+          // Quick explainer rather than a silent disabled button — the
+          // operator will be hunting for a reason otherwise.
+          <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginRight: 'auto' }}>
+            This segment has 0 opted-in recipients — nothing to send.
+          </span>
+        )}
         <button
           type="button"
-          onClick={() => doSend(true)}
-          disabled={!canSend}
+          onClick={() => openConfirm('test')}
+          disabled={!canTest}
           style={{
             padding: '10px 18px',
-            background: 'transparent', color: canSend ? '#4A1A6B' : '#9ca3af',
-            border: '1px solid ' + (canSend ? '#4A1A6B' : '#e5e7eb'),
+            background: 'transparent', color: canTest ? '#4A1A6B' : '#9ca3af',
+            border: '1px solid ' + (canTest ? '#4A1A6B' : '#e5e7eb'),
             borderRadius: 8, fontSize: '0.875rem', fontWeight: 600,
-            cursor: canSend ? 'pointer' : 'not-allowed', minHeight: 40,
+            cursor: canTest ? 'pointer' : 'not-allowed', minHeight: 40,
           }}
         >
           Send test to me
         </button>
         <button
           type="button"
-          onClick={() => doSend(false)}
-          disabled={!canSend}
+          onClick={() => openConfirm('real')}
+          disabled={!canSendReal}
           style={{
             padding: '10px 22px',
-            background: canSend ? '#dc2626' : '#9ca3af', color: 'white',
+            background: canSendReal ? '#dc2626' : '#9ca3af', color: 'white',
             border: 'none', borderRadius: 8,
             fontSize: '0.9375rem', fontWeight: 600,
-            cursor: canSend ? 'pointer' : 'not-allowed', minHeight: 40,
+            cursor: canSendReal ? 'pointer' : 'not-allowed', minHeight: 40,
           }}
         >
-          {pending ? 'Sending…' : `Send to ${selected?.count ?? 0} customer${selected?.count !== 1 ? 's' : ''}`}
+          {pending ? 'Sending…' : `Send to ${recipientCount} customer${recipientCount !== 1 ? 's' : ''}`}
         </button>
       </div>
+
+      {/* Test-send confirmation — single click, no typed guard. */}
+      {confirmKind === 'test' && (
+        <Modal
+          title="Send a test to your inbox?"
+          desc="The test goes only to your staff email (subject prefixed with [TEST]). Use it to check rendering before firing the real blast."
+          onClose={() => setConfirmKind(null)}
+        >
+          <ModalActions>
+            <ModalSecondaryButton onClick={() => setConfirmKind(null)}>Cancel</ModalSecondaryButton>
+            <ModalPrimaryButton onClick={() => performSend(true)} disabled={pending}>
+              Send test
+            </ModalPrimaryButton>
+          </ModalActions>
+        </Modal>
+      )}
+
+      {/* Real-send confirmation — extra typed guard above 100 recipients. */}
+      {confirmKind === 'real' && (
+        <Modal
+          title={`Send to ${recipientCount} customer${recipientCount !== 1 ? 's' : ''}?`}
+          desc={`Subject: "${subject}". Segment: ${selected?.label ?? 'unknown'}. This is NOT reversible — every recipient gets the email immediately.`}
+          onClose={() => setConfirmKind(null)}
+        >
+          {requiresTyped && (
+            <>
+              <label htmlFor="blast-typed-confirm" style={modalLabel}>
+                Type <strong style={{ fontFamily: 'monospace' }}>SEND</strong> to confirm
+              </label>
+              <input
+                id="blast-typed-confirm"
+                autoFocus
+                value={typedConfirm}
+                onChange={e => setTypedConfirm(e.target.value)}
+                style={modalInput}
+                placeholder="SEND"
+                autoComplete="off"
+              />
+              <p style={modalHint}>
+                The extra step is here on purpose — once an email goes to {recipientCount} people you can&apos;t take it back.
+              </p>
+              {typedConfirm && !typedConfirmOk && (
+                <div style={modalError}>That doesn&apos;t match. Type SEND (in caps) to enable the button.</div>
+              )}
+            </>
+          )}
+          <ModalActions>
+            <ModalSecondaryButton onClick={() => setConfirmKind(null)}>Cancel</ModalSecondaryButton>
+            <ModalPrimaryButton
+              tone="danger"
+              onClick={() => performSend(false)}
+              disabled={pending || !typedConfirmOk}
+            >
+              Send to {recipientCount}
+            </ModalPrimaryButton>
+          </ModalActions>
+        </Modal>
+      )}
     </div>
   );
 }
