@@ -116,21 +116,39 @@ export default async function AnalyticsPage({
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Analytics</h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.8125rem', color: '#6b7280' }}>
-            Showing the last {window} days
+            Showing {window === 1 ? 'today' : window === 365 ? 'the last year' : `the last ${window} days`}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {[{ d: 7, l: '7 days' }, { d: 30, l: '30 days' }, { d: 90, l: '90 days' }, { d: 365, l: '1 year' }].map(opt => {
+        {/* Date-range presets — Stripe / Shopify segmented control.
+            Six presets covering 95% of analytics needs (today through
+            "last year"). Visually grouped as one connected unit so the
+            operator sees them as a single picker, not stray pills. */}
+        <div role="radiogroup" aria-label="Date range" style={{
+          display: 'inline-flex', background: '#f3f4f6', borderRadius: 8,
+          padding: 3, gap: 0,
+        }}>
+          {[
+            { d: 1,   l: 'Today' },
+            { d: 7,   l: '7 days' },
+            { d: 30,  l: '30 days' },
+            { d: 90,  l: '90 days' },
+            { d: 365, l: '1 year' },
+          ].map(opt => {
             const active = window === opt.d;
             return (
               <Link
                 key={opt.d}
+                role="radio"
+                aria-checked={active}
                 href={`/admin/analytics?tab=${tab}&days=${opt.d}`}
                 style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600,
+                  padding: '6px 14px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600,
                   textDecoration: 'none',
-                  background: active ? '#4A1A6B' : '#f3f4f6',
-                  color: active ? 'white' : '#6b7280',
+                  background: active ? 'white' : 'transparent',
+                  color: active ? '#4A1A6B' : '#6b7280',
+                  boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  minHeight: 28,
+                  display: 'inline-flex', alignItems: 'center',
                 }}
               >
                 {opt.l}

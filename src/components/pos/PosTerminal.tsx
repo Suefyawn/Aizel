@@ -368,14 +368,72 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
             </div>
 
             <Row label="Subtotal" value={fmtGBP(subtotal)} muted />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', fontSize: '0.8125rem', color: '#9CA3AF' }}>
-              <span>Cart discount (£)</span>
-              <input
-                type="number" step="0.01" min={0} max={subtotal} value={cartDiscount}
-                onChange={e => setCartDiscount(Math.max(0, Number(e.target.value) || 0))}
-                style={{ ...priceInput, width: 90, textAlign: 'right' }}
-              />
+
+            {/* Cart discount — one-tap tiles (Square / Toast pattern)
+                + a small typed override for arbitrary amounts. Tiles
+                cover the 90% case: 5% / 10% / 15% / 20% / £5 / round
+                down to the nearest pound. */}
+            <div style={{ padding: '6px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, fontSize: '0.75rem' }}>
+                <span style={{ color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, fontSize: '0.6875rem' }}>
+                  Discount
+                </span>
+                {cartDiscount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCartDiscount(0)}
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: '#fca5a5', fontSize: '0.6875rem', fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: '0.04em',
+                    }}
+                  >Clear</button>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                {[
+                  { label: '5%',  fn: () => subtotal * 0.05 },
+                  { label: '10%', fn: () => subtotal * 0.10 },
+                  { label: '15%', fn: () => subtotal * 0.15 },
+                  { label: '20%', fn: () => subtotal * 0.20 },
+                  { label: '£5',  fn: () => 5 },
+                  { label: 'Round down', fn: () => subtotal - Math.floor(subtotal) },
+                ].map(t => {
+                  const amount = Math.min(subtotal, Math.round(t.fn() * 100) / 100);
+                  const active = cartDiscount > 0 && Math.abs(cartDiscount - amount) < 0.005;
+                  const disabled = subtotal === 0 || amount <= 0;
+                  return (
+                    <button
+                      key={t.label}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => setCartDiscount(amount)}
+                      style={{
+                        padding: '8px 4px',
+                        background: active ? '#6B2C91' : '#1F1F22',
+                        border: '1px solid ' + (active ? '#6B2C91' : '#2A2A2D'),
+                        borderRadius: 6,
+                        color: disabled ? '#4B5563' : active ? '#fff' : '#F5F5F7',
+                        fontSize: '0.75rem', fontWeight: 700,
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.5 : 1,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {cartDiscount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, fontSize: '0.8125rem' }}>
+                  <span style={{ color: '#9CA3AF' }}>Discount applied</span>
+                  <span style={{ color: '#FCA5A5', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                    − {fmtGBP(clampedDiscount)}
+                  </span>
+                </div>
+              )}
             </div>
+
             <Row label="Total" value={fmtGBP(total)} big />
 
             <input
@@ -995,6 +1053,56 @@ function TenderModal({ total, terminalEnabled, onClose, onComplete }: {
                 </button>
               ))}
             </div>
+
+            {/* Full numeric keypad — big touch targets for a counter
+                tablet, ergonomically arranged like a calculator
+                (Square / Toast pattern). Cashier can type without a
+                physical keyboard. The text input above stays primary
+                so a keyboard user still has direct typing. */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 8 }}>
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', '⌫'].map(k => {
+                const isBackspace = k === '⌫';
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      const cur = cashIn.toFixed(2);
+                      // Drop trailing .00 so the first keystroke replaces
+                      // (typing 25 yields "25" not "0.0025"). Once the
+                      // cashier hits a digit the running string is the
+                      // shown value, formatted on each keystroke so the
+                      // input stays a real number not a free-text string.
+                      const text =
+                        cashIn === 0 ? ''
+                        : cur.endsWith('.00') ? cur.slice(0, -3)
+                        : cur;
+                      let next: string;
+                      if (isBackspace) {
+                        next = text.slice(0, -1);
+                      } else if (k === '.') {
+                        next = text.includes('.') ? text : (text || '0') + '.';
+                      } else {
+                        next = text + k;
+                      }
+                      const n = Number(next);
+                      setCashIn(Number.isFinite(n) ? Math.max(0, n) : 0);
+                    }}
+                    style={{
+                      padding: '14px 0',
+                      background: '#1F1F22', border: '1px solid #2A2A2D',
+                      borderRadius: 8, color: isBackspace ? '#fca5a5' : '#F5F5F7',
+                      fontSize: '1.125rem', fontWeight: 700,
+                      cursor: 'pointer', fontVariantNumeric: 'tabular-nums',
+                      minHeight: 48,
+                    }}
+                  >
+                    {k}
+                  </button>
+                );
+              })}
+            </div>
+
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: '1.125rem' }}>
               <span style={{ color: '#9CA3AF' }}>Change</span>
               <strong style={{ color: change > 0 ? '#34D399' : '#9CA3AF', fontVariantNumeric: 'tabular-nums' }}>
