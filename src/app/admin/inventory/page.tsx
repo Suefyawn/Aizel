@@ -21,10 +21,19 @@ interface LedgerRow {
   created_at: string;
 }
 
-interface ProductLite { id: string; name: string; brand: string | null; stock: number; track_inventory?: boolean; created_at?: string | null }
+interface ProductLite {
+  id: string; name: string; brand: string | null; stock: number;
+  track_inventory?: boolean;
+  /** Per-product re-order threshold. NULL = inherit DEFAULT_REORDER_POINT. */
+  reorder_point?: number | null;
+  created_at?: string | null;
+}
 interface OrderLite { id: string; order_number: string }
 
-const LOW_STOCK_THRESHOLD = 5;
+/** Default re-order point when a product hasn't set its own. */
+const DEFAULT_REORDER_POINT = 5;
+// Legacy alias used by the KPI card label. Kept as a name only.
+const LOW_STOCK_THRESHOLD = DEFAULT_REORDER_POINT;
 // A product is "dead stock" when it's sitting in stock, has been on the
 // shelves long enough that we can't blame "still launching", and hasn't
 // shifted a unit in the same window. The 90-day cut-off matches Aizel's
@@ -47,9 +56,9 @@ const reasonColors: Record<LedgerRow['reason'], { bg: string; fg: string }> = {
 const fmtDate = (s: string) =>
   new Date(s).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-function stockBadge(stock: number): { label: string; bg: string; fg: string } {
+function stockBadge(stock: number, reorderPoint: number = DEFAULT_REORDER_POINT): { label: string; bg: string; fg: string } {
   if (stock <= 0) return { label: 'Out of stock', bg: '#fee2e2', fg: '#991b1b' };
-  if (stock <= LOW_STOCK_THRESHOLD) return { label: 'Low', bg: '#fef3c7', fg: '#92400e' };
+  if (stock <= reorderPoint) return { label: 'Low', bg: '#fef3c7', fg: '#92400e' };
   return { label: 'In stock', bg: '#d1fae5', fg: '#065f46' };
 }
 
@@ -82,7 +91,7 @@ export default async function InventoryPage({
   // under any sane limit; ledger query is bounded by date so it scales.
   const [{ data: ledgerData }, { data: productData }, { data: recentSales }] = await Promise.all([
     ledgerQuery,
-    admin.from('products').select('id, name, brand, stock, track_inventory, created_at').order('name'),
+    admin.from('products').select('id, name, brand, stock, track_inventory, reorder_point, created_at').order('name'),
     admin.from('inventory_ledger')
       .select('product_id')
       .eq('reason', 'order')
@@ -91,14 +100,20 @@ export default async function InventoryPage({
   const rows = (ledgerData ?? []) as LedgerRow[];
   const allProducts = (productData ?? []) as ProductLite[];
   const productMap = new Map<string, ProductLite>(allProducts.map(p => [p.id, p]));
-  // Only tracked products belong on the inventory screen — untracked products
-  // have their stock managed by an external vendor, so there is nothing here
-  // to count or adjust.
+  // Only tracked products belong on the inventory screen — untracked
+  // products are always-sellable (services / made-to-order) so there's
+  // nothing here to count or adjust.
   const products = allProducts.filter(p => p.track_inventory !== false);
+
+  // Per-product re-order threshold — falls back to DEFAULT_REORDER_POINT
+  // when the product hasn't set its own. Lets a fast-moving SKU sit at
+  // "low" while a slow-mover at the same stock level stays "in stock".
+  const reorderPointFor = (p: ProductLite) =>
+    p.reorder_point != null ? p.reorder_point : DEFAULT_REORDER_POINT;
 
   // Stock overview — buckets + the lowest-first sorted list.
   const outOfStock = products.filter(p => p.stock <= 0);
-  const lowStock = products.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD);
+  const lowStock = products.filter(p => p.stock > 0 && p.stock <= reorderPointFor(p));
   const healthyCount = products.length - outOfStock.length - lowStock.length;
   // Dead stock = in stock + older than the cut-off + no sale in the window.
   // We also filter out products with no created_at (very old rows from a
@@ -118,7 +133,7 @@ export default async function InventoryPage({
   const currentView: 'attention' | 'all' | 'dead' =
     view === 'all' ? 'all' : view === 'dead' ? 'dead' : 'attention';
   const stockList = [...products].sort((a, b) => a.stock - b.stock);
-  const attentionList = stockList.filter(p => p.stock <= LOW_STOCK_THRESHOLD);
+  const attentionList = stockList.filter(p => p.stock <= reorderPointFor(p));
   const visibleStock = currentView === 'all'
     ? stockList
     : currentView === 'dead'
@@ -134,10 +149,20 @@ export default async function InventoryPage({
 
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
-      <h1 style={{ margin: '0 0 6px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Inventory</h1>
-      <p style={{ margin: '0 0 24px', fontSize: '0.8125rem', color: '#6b7280' }}>
-        Current stock levels at a glance, plus a permanent audit trail of every movement.
-      </p>
+      <div className="adm-page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Inventory</h1>
+          <p style={{ margin: '4px 0 0', fontSize: '0.8125rem', color: '#6b7280' }}>
+            Stock levels, manual adjustments, stocktakes, purchase orders — and an audit trail of every movement.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/admin/inventory/stocktake" style={secondaryLinkStyle}>📋 Stocktake</Link>
+          <Link href="/admin/inventory/purchase-orders" style={secondaryLinkStyle}>📦 Purchase orders</Link>
+        </div>
+      </div>
+      <div style={{ marginBottom: 24 }} />
+
 
       {errMsg && (
         <div role="alert" style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: '0.875rem' }}>{errMsg}</div>
@@ -197,7 +222,7 @@ export default async function InventoryPage({
               </thead>
               <tbody>
                 {visibleStock.map(p => {
-                  const badge = stockBadge(p.stock);
+                  const badge = stockBadge(p.stock, reorderPointFor(p));
                   // In the dead-stock view, surface "X days on shelf" in
                   // place of the in-stock/low/out badge — the badge would
                   // always read "In stock" for every dead-stock row (by
@@ -366,3 +391,17 @@ const chipLink = (active: boolean): React.CSSProperties => ({
   textDecoration: 'none',
   fontWeight: active ? 700 : 500,
 });
+const secondaryLinkStyle: React.CSSProperties = {
+  padding: '8px 14px',
+  background: 'white',
+  border: '1px solid #d1d5db',
+  borderRadius: 7,
+  color: '#374151',
+  fontSize: '0.8125rem',
+  fontWeight: 600,
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  minHeight: 36,
+};

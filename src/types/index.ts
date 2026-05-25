@@ -57,6 +57,10 @@ export interface Product {
    *  The legacy column name `vendor_cost` is kept so the DB column doesn't
    *  need a rename migration. */
   vendor_cost?: number | null;
+  /** Per-product re-order threshold. When stock drops to or below this
+   *  number the product appears on the low-stock dashboard / inventory
+   *  "Needs attention" view. NULL = inherit the system default (5). */
+  reorder_point?: number | null;
   image_url?: string;
   description?: string;
   short_description?: string;

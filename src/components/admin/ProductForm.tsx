@@ -171,12 +171,26 @@ export function ProductForm({ product }: { product?: Product }) {
                   <>
                     <input type="hidden" name="stock" value={product?.stock ?? 0} />
                     <div style={{ ...inp, color: '#6b7280', background: '#f9fafb', display: 'flex', alignItems: 'center' }}>
-                      Managed externally
+                      Not tracked
                     </div>
                   </>
                 )}
               </div>
             </div>
+            {trackInv && (
+              <div style={{ marginTop: 12 }}>
+                <label htmlFor="reorder_point" style={lbl}>Re-order point</label>
+                <input
+                  id="reorder_point" name="reorder_point" type="number" min={0} step={1}
+                  defaultValue={product?.reorder_point ?? ''}
+                  placeholder="Leave blank to inherit the default (5)"
+                  style={{ ...inp, maxWidth: 240 }}
+                />
+                <span style={hint}>
+                  When stock drops to or below this number the product appears on the dashboard&apos;s low-stock list and the inventory &ldquo;Needs attention&rdquo; view.
+                </span>
+              </div>
+            )}
             {/* Always submit track_inventory so an unchecked box reads as false. */}
             <input type="hidden" name="track_inventory" value={trackInv ? 'true' : 'false'} />
             <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#f9fafb' }}>

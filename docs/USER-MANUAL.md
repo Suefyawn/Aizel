@@ -164,7 +164,7 @@ together. Here's what each link is for:
 | **POS Till** | The full-screen touchscreen till for in-shop sales. Scan barcodes or tap products, take cash or card payment, hold/resume sales mid-flow, and print receipts. See [section 4.b](#4b-in-shop-pos-sales) for the walk-through. |
 | **POS Dashboard** | Back-office view of the till — today's takings, hourly heatmap, tender split (cash vs card), top SKUs, recent transactions, and the open-shifts table. |
 | **Products** | The catalogue. Create, edit, publish, archive, and delete products; manage variants, images, pricing, and descriptions. Bulk price tools and CSV import are here — including the eBay importer at `npm run import:ebay`. Each product now carries an optional SKU and barcode for till scanning. |
-| **Inventory** | Stock levels. See low-stock items and adjust stock counts. POS sales deduct from the same stock counts as web orders so you never oversell across channels. |
+| **Inventory** | Stock levels, manual adjustments, stocktakes, purchase orders, and a permanent ledger of every movement. POS sales deduct from the same stock counts as web orders so you never oversell across channels. Each product has its own re-order point — drop below it and it appears on the dashboard's low-stock list. |
 | **Returns** | Customer return requests awaiting your approval, and refund processing. |
 
 **People** — customers and incentives
