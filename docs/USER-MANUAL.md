@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on Orders, Products, and Customers; live activity feed widget on the dashboard; receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on Orders, Products, and Customers; live activity feed widget on the dashboard (now Server-Sent Events with a polling backstop); receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.*
 
 ---
 
@@ -154,7 +154,7 @@ together. Here's what each link is for:
 **Insights**
 | Section | What it's for |
 |---|---|
-| **Dashboard** | At-a-glance health of the store — revenue, order counts by status, top products, low-stock alerts, recent orders, and a **live activity feed** that auto-refreshes every 30 seconds (orders placed, signups, reviews, edits — each row clicks through to the entity). |
+| **Dashboard** | At-a-glance health of the store — revenue, order counts by status, top products, low-stock alerts, recent orders, and a **live activity feed** that streams orders / signups / reviews / edits within seconds via Server-Sent Events (with a 30-second poll as a backstop). The widget header shows a green dot for "Live" or amber "Polling" when the live stream isn't available. Each row clicks through to the entity. |
 | **Analytics** | Deeper performance data — revenue trends, customer cohorts (RFM segments + retention), and (if connected) website-traffic widgets including top user journeys, funnel-by-traffic-source, a weekly-active-users curve, and inline links to PostHog session recordings. |
 
 **Sell** — day-to-day commerce operations

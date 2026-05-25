@@ -46,25 +46,30 @@ function meta(action: string) {
   return ACTION_META[action] ?? { label: action.replace(/[._]/g, ' '), icon: '·', color: '#6b7280' };
 }
 
+// Connection mode powers the "Live / Polling" pill in the header.
+// 'sse' = server-pushing updates within seconds. 'poll' = fallback when
+// EventSource fails (older browser, dropped websocket, blocked by a
+// corporate proxy). Either way the feed stays fresh.
+type ConnMode = 'sse' | 'poll';
+
 export function ActivityFeedWidget({ initial }: Props) {
   const [items, setItems] = useState<ActivityItem[]>(initial);
   const [refreshedAt, setRefreshedAt] = useState<string>(new Date().toISOString());
+  const [connMode, setConnMode] = useState<ConnMode>('poll');
   // Track which item IDs are new (vs. the initial server render) so we
   // can give them a tiny entrance flash without re-flashing on every poll.
   const [seenIds] = useState<Set<string>>(() => new Set(initial.map(i => i.id)));
 
   useEffect(() => {
     let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    let es: EventSource | null = null;
 
-    async function tick() {
+    // Refresh the hydrated feed from the server action. Shared by SSE
+    // ("something changed, go fetch") and the polling fallback.
+    async function refresh() {
       if (cancelled) return;
-      // Skip the network call when the tab is hidden — picks back up
-      // the moment it's visible again via the visibilitychange handler.
-      if (typeof document !== 'undefined' && document.hidden) {
-        timer = setTimeout(tick, 30_000);
-        return;
-      }
+      if (typeof document !== 'undefined' && document.hidden) return;
       try {
         const next = await getRecentActivity(20);
         if (!cancelled) {
@@ -72,23 +77,60 @@ export function ActivityFeedWidget({ initial }: Props) {
           setRefreshedAt(new Date().toISOString());
         }
       } catch {
-        // Soft-fail: keep the existing items, try again next tick.
-      } finally {
-        if (!cancelled) timer = setTimeout(tick, 30_000);
+        // Soft-fail: keep current items.
       }
     }
-    timer = setTimeout(tick, 30_000);
+
+    // ─── Polling fallback ───────────────────────────────────────────
+    function schedulePoll() {
+      if (pollTimer) clearTimeout(pollTimer);
+      pollTimer = setTimeout(async () => {
+        await refresh();
+        if (!cancelled) schedulePoll();
+      }, 30_000);
+    }
+
+    // ─── Server-Sent Events (primary) ───────────────────────────────
+    // EventSource is supported everywhere except very old IE — but the
+    // typeof guard means we degrade gracefully in any environment that
+    // lacks it (test runners, old polyfilled bundles).
+    if (typeof window !== 'undefined' && typeof window.EventSource !== 'undefined') {
+      try {
+        es = new window.EventSource(`/api/admin/activity/stream?since=${encodeURIComponent(new Date().toISOString())}`);
+        es.addEventListener('hello', () => {
+          if (!cancelled) setConnMode('sse');
+        });
+        es.addEventListener('activity', () => {
+          // Server pushed "new rows since cursor" — refetch the
+          // hydrated feed (carries the entity-name lookups).
+          void refresh();
+        });
+        es.addEventListener('error', () => {
+          // EventSource auto-reconnects on transient errors. If it
+          // never recovers, flip the indicator to amber so the user
+          // knows the live channel is down — polling still keeps the
+          // data fresh.
+          if (!cancelled) setConnMode('poll');
+        });
+      } catch {
+        // Constructor failure (CSP, etc.) — fall through to polling.
+        es = null;
+      }
+    }
+
+    // Polling always runs as a backstop. It's a no-op when the tab is
+    // hidden, and at 30s it's cheap even when SSE is also delivering.
+    schedulePoll();
 
     function onVisibility() {
-      if (!document.hidden) {
-        if (timer) clearTimeout(timer);
-        void tick();
-      }
+      if (!document.hidden) void refresh();
     }
     document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
       cancelled = true;
-      if (timer) clearTimeout(timer);
+      if (pollTimer) clearTimeout(pollTimer);
+      if (es) es.close();
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
@@ -109,13 +151,21 @@ export function ActivityFeedWidget({ initial }: Props) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
       }}>
         <h2 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#111827' }}>Activity</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          title={connMode === 'sse'
+            ? 'Server-pushed updates over a live stream.'
+            : 'Live stream unavailable — polling every 30 seconds as a backstop.'}
+        >
           <span aria-hidden="true" style={{
-            width: 6, height: 6, borderRadius: '50%', background: '#10b981',
-            boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.18)',
+            width: 6, height: 6, borderRadius: '50%',
+            background: connMode === 'sse' ? '#10b981' : '#d97706',
+            boxShadow: connMode === 'sse'
+              ? '0 0 0 3px rgba(16, 185, 129, 0.18)'
+              : '0 0 0 3px rgba(217, 119, 6, 0.18)',
           }} />
           <span style={{ fontSize: '0.6875rem', color: '#9ca3af' }}>
-            Live · refreshed <RelativeTime iso={refreshedAt} />
+            {connMode === 'sse' ? 'Live' : 'Polling'} · refreshed <RelativeTime iso={refreshedAt} />
           </span>
         </div>
       </div>
