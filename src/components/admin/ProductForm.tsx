@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { createProduct, updateProduct } from '@/app/admin/actions';
 import { ImageUpload } from './ImageUpload';
 import { KeyBenefitsEditor, FaqEditor } from './ProductContentEditors';
+import { RelativeTime } from './RelativeTime';
 import { TAXONS } from '@/lib/category-taxonomy';
 import type { Product } from '@/types';
 
@@ -367,12 +368,22 @@ export function ProductForm({ product }: { product?: Product }) {
               zIndex: 5,
             }}
           >
-            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-              {pending
-                ? 'Saving…'
-                : isEdit
-                  ? <>Editing <strong style={{ color: '#111827' }}>{product?.name ?? 'product'}</strong></>
-                  : 'Creating a new product'}
+            <div style={{ fontSize: '0.75rem', color: '#6b7280', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span>
+                {pending
+                  ? 'Saving…'
+                  : isEdit
+                    ? <>Editing <strong style={{ color: '#111827' }}>{product?.name ?? 'product'}</strong></>
+                    : 'Creating a new product'}
+              </span>
+              {/* Stripe / Notion-style "last saved" timestamp — gives the
+                  operator confidence the latest changes are persisted
+                  without a dedicated toast on every save. */}
+              {isEdit && (product?.updated_at || product?.created_at) && (
+                <span style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600 }}>
+                  ✓ <RelativeTime iso={(product.updated_at ?? product.created_at)!} prefix="Saved" />
+                </span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               {/* View on storefront — only meaningful for an existing

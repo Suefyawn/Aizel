@@ -72,6 +72,10 @@ export interface Product {
   weight_grams?: number | null;
   wp_product_id?: number | null;
   created_at?: string;
+  /** Set by a DB trigger on every UPDATE. Used by the admin product
+   *  editor to render a "Saved 2 minutes ago" badge in the sticky
+   *  save bar — Stripe / Notion-style at-a-glance confirmation. */
+  updated_at?: string;
   // Migration 076 — homepage curation flags.
   is_bestseller?: boolean | null;
   is_featured?: boolean | null;
