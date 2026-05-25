@@ -15,6 +15,7 @@ const ITEMS: Item[] = [
   { href: '/admin/settings/homepage',      label: 'Homepage',         desc: 'Hero, sale, banner' },
   { href: '/admin/settings/shipping',      label: 'Shipping & tax',   desc: 'Rates, thresholds' },
   { href: '/admin/settings/payments',      label: 'Payments',         desc: 'Methods, bank accounts' },
+  { href: '/admin/settings/receipts',      label: 'Receipts',         desc: 'Till + invoice copy' },
   { href: '/admin/settings/loyalty',       label: 'Loyalty',          desc: 'Points & rewards' },
   { href: '/admin/settings/notifications', label: 'Notifications',    desc: 'Staff alerts' },
   { href: '/admin/settings/integrations',  label: 'Integrations',     desc: 'GA4, Sentry, email' },

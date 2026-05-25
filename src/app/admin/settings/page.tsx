@@ -18,6 +18,7 @@ const CARDS: SettingsCard[] = [
   { href: '/admin/settings/homepage',      icon: '🏠', title: 'Homepage',            desc: 'Hero headline, sub-line, trust strip copy.' },
   { href: '/admin/settings/shipping',      icon: '📦', title: 'Shipping',            desc: 'Couriers, zones, free-delivery threshold, weights.' },
   { href: '/admin/settings/payments',      icon: '💳', title: 'Payments',            desc: 'Which payment methods appear at checkout.' },
+  { href: '/admin/settings/receipts',      icon: '🧾', title: 'Receipts',            desc: 'Header tagline, footer message, return policy, VAT details.' },
   { href: '/admin/settings/loyalty',       icon: '⭐', title: 'Loyalty',             desc: 'Tier thresholds (Bronze → Platinum) and rewards copy.' },
   { href: '/admin/settings/integrations',  icon: '🔌', title: 'Integrations',        desc: 'WhatsApp, Stripe, Twilio, Klarna, GA4, Plausible, Sentry.' },
   { href: '/admin/settings/notifications', icon: '🔔', title: 'Notifications',       desc: 'Who gets emailed for new orders, low stock, payment failures.' },

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin, getSiteSettings } from '@/lib/supabase';
 import { OrderStatusForm } from '@/components/admin/OrderStatusForm';
 import { PrintInvoiceButton } from '@/components/admin/PrintInvoiceButton';
 import { Suspense } from 'react';
@@ -85,6 +85,20 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   // Used by the RefundPanel to render the live remaining balance.
   const refundSummary = await loadRefundSummary(o.id!);
   const stripeReady = stripeIsConfigured();
+
+  // Receipt customisation — tagline / footer / return-policy / optional
+  // VAT block. Owner edits these under /admin/settings/receipts; we
+  // fall back to sensible defaults so receipts still print on a fresh
+  // install with no settings configured.
+  const siteSettings = await getSiteSettings();
+  const receipt = {
+    headerTagline: siteSettings.receipt_header_tagline ?? 'aizel.co.uk',
+    footerMessage: siteSettings.receipt_footer_message ?? '',
+    returnPolicy:  siteSettings.receipt_return_policy ?? '',
+    vatEnabled:    siteSettings.receipt_vat_enabled === 'true',
+    vatNumber:     siteSettings.receipt_vat_number ?? '',
+    vatLine:       siteSettings.receipt_vat_line ?? '',
+  };
 
   // Customer history block — lifetime orders + total spend for the same
   // (user_id OR phone OR email). Cheap query — admin-only view, no caching
@@ -193,7 +207,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div style={{ fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.02em', color: '#6B2C91' }}>
               Aizel
             </div>
-            <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginTop: 4 }}>aizel.co.uk</div>
+            <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginTop: 4 }}>{receipt.headerTagline}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '1.125rem' }}>{o.order_number}</div>
@@ -253,6 +267,32 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             Payment: <strong style={{ color: '#374151' }}>{payLabel[o.pay_method] ?? o.pay_method}</strong>
           </div>
         </div>
+
+        {/* Owner-configurable footer — return policy, VAT block, thank-you
+            message. Spans the full receipt width because it's a customer-
+            facing message rather than a totals column. Each piece is
+            independently optional so an empty setting means an empty
+            section, not a stray heading. */}
+        {(receipt.returnPolicy || receipt.vatEnabled || receipt.footerMessage) && (
+          <div style={{
+            marginTop: 28, paddingTop: 16,
+            borderTop: '1px dashed #d1d5db',
+            fontSize: '0.75rem', color: '#6b7280', lineHeight: 1.6, textAlign: 'center',
+          }}>
+            {receipt.returnPolicy && <div>{receipt.returnPolicy}</div>}
+            {receipt.vatEnabled && (
+              <div style={{ marginTop: 4 }}>
+                {receipt.vatLine}
+                {receipt.vatNumber ? ` · VAT ${receipt.vatNumber}` : ''}
+              </div>
+            )}
+            {receipt.footerMessage && (
+              <div style={{ marginTop: 8, fontWeight: 600, color: '#374151' }}>
+                {receipt.footerMessage}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Customer confirmation — edit-gated */}

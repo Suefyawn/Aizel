@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on the Orders page; live activity feed widget on the dashboard.*
+> *Last updated: 25 May 2026 — vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on the Orders page; live activity feed widget on the dashboard; receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.*
 
 ---
 
@@ -322,6 +322,7 @@ what — pick a page, edit, hit **Save changes** at the bottom.
 | **Homepage** (`/admin/settings/homepage`) | The big **Homepage Hero** (wording, buttons, image, brand logos), the store-wide **Sale** on/off switch, and the thin **Announcement Bar** at the top of every page. |
 | **Shipping & tax** (`/admin/settings/shipping`) | Default shipping rate (the fallback), tax rate, and per-zone overrides — add named zones (e.g. UK Mainland, Highlands & Islands, Northern Ireland) with their own rate, free-shipping threshold (default £15), and estimated delivery days. |
 | **Payments** (`/admin/settings/payments`) | Turn each payment method on or off, and manage the bank accounts shown to customers paying by transfer. Stripe is the recommended card processor. |
+| **Receipts** (`/admin/settings/receipts`) | Customise the printed till receipt and the order invoice — header tagline (e.g. your website or phone), footer thank-you, return-policy line, and an optional VAT block (number + line text) for once you're VAT-registered. A live preview pane shows the current look. |
 | **Loyalty** (`/admin/settings/loyalty`) | How customers earn and redeem loyalty points. |
 | **Notifications** (`/admin/settings/notifications`) | Add as many staff email addresses as you like and pick which alerts each one receives — **New orders** (every order, immediately) and **Low stock** (daily digest when items drop below 5 units). If nobody is configured for an event, the alert falls back to the `OWNER_EMAIL` env var. |
 | **Integrations** (`/admin/settings/integrations`) | Live status for every third-party service the store uses — Resend (email), Stripe (payments), PayPal (optional), PostHog, Sentry, Upstash, Search Console, WhatsApp. Each card shows whether its env vars are set and (for analytics services) when data last synced. Secret values are never displayed. |
