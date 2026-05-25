@@ -44,23 +44,29 @@ const GROUPS: NavGroup[] = [
   { label: 'People', items: [
     // Glyphs are deliberately distinct from any other nav row so the
     // icon column reads correctly at a glance — Customers ◉ (filled
-    // dot = a person), Segments ⬢ (hex = a grouping), Coupons ◇.
+    // dot = a person), Coupons ◇.
+    //
+    // Segments was a top-level item but it's really a slice of the
+    // customer list — moved to a tab on /admin/users so the sidebar
+    // stays tight. Reachable in 2 clicks (Customers → Segments tab)
+    // or via the ⌘K command palette.
     { href: '/admin/users',     label: 'Customers', icon: '◉', permission: 'customers.view' },
-    { href: '/admin/segments',  label: 'Segments',  icon: '⬢', permission: 'customers.view' },
     { href: '/admin/coupons',   label: 'Coupons',   icon: '◇', permission: 'coupons' },
   ]},
   { label: 'Marketing', items: [
-    { href: '/admin/promos',    label: 'Promos',    icon: '✧', permission: 'promos' },
-    { href: '/admin/blog',      label: 'Blog',      icon: '✦', permission: 'blog' },
-    { href: '/admin/reviews',   label: 'Reviews',   icon: '★', permission: 'reviews' },
+    // Email blast was its own row but it lives at /admin/marketing/blast
+    // which is part of the newsletter surface — folded into Newsletter
+    // as a tab. Email log is a debug / audit surface — moved into the
+    // Settings nav rail. Both still reachable in 2 clicks or via ⌘K.
+    { href: '/admin/promos',     label: 'Promos',     icon: '✧', permission: 'promos' },
+    { href: '/admin/blog',       label: 'Blog',       icon: '✦', permission: 'blog' },
+    { href: '/admin/reviews',    label: 'Reviews',    icon: '★', permission: 'reviews' },
     { href: '/admin/newsletter', label: 'Newsletter', icon: '✉', permission: 'newsletter' },
-    { href: '/admin/marketing/blast', label: 'Email blast', icon: '⌁', permission: 'newsletter' },
-    { href: '/admin/emails',    label: 'Email log', icon: '❏', permission: 'settings' },
   ]},
   { label: 'Store', items: [
-    // Audit log = ⌘ (command-history / oversight); Team = ⬡ (people-grid);
-    // Settings = ⚙. All distinct from the Customers ◉ above.
-    { href: '/admin/audit',     label: 'Activity log', icon: '⌘', ownerOnly: true },
+    // Team = ⬡ (people-grid); Settings = ⚙. Activity log moved into
+    // the Settings nav rail — it's an audit / debug surface checked
+    // weekly at most, not a daily-use page that deserves its own slot.
     { href: '/admin/team',      label: 'Team',      icon: '⬡', ownerOnly: true },
     { href: '/admin/settings',  label: 'Settings',  icon: '⚙', permission: 'settings' },
   ]},

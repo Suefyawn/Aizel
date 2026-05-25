@@ -21,6 +21,10 @@ const CARDS: SettingsCard[] = [
   { href: '/admin/settings/loyalty',       icon: '⭐', title: 'Loyalty',             desc: 'Tier thresholds (Bronze → Platinum) and rewards copy.' },
   { href: '/admin/settings/integrations',  icon: '🔌', title: 'Integrations',        desc: 'WhatsApp, Stripe, Twilio, Klarna, GA4, Plausible, Sentry.' },
   { href: '/admin/settings/notifications', icon: '🔔', title: 'Notifications',       desc: 'Who gets emailed for new orders, low stock, payment failures.' },
+  // Audit / debug surfaces — these are full pages elsewhere but they're
+  // checked weekly at most, so they live here rather than in the sidebar.
+  { href: '/admin/audit',                  icon: '📋', title: 'Activity log',        desc: 'Who did what, when — staff sign-ins, edits, deletes.' },
+  { href: '/admin/emails',                 icon: '✉️', title: 'Email log',           desc: 'Every transactional + marketing email Aizel sent.' },
 ];
 
 export default function SettingsIndex() {

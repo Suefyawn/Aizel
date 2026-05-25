@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
+import { PageTabs } from '@/components/admin/PageTabs';
 
 interface SegmentRow {
   cust_key: string;
@@ -55,10 +56,21 @@ export default async function SegmentsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div style={{ padding: '32px 36px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Customer segments</h1>
         <Link href="/admin/analytics" style={{ fontSize: '0.8125rem', color: '#6b7280', textDecoration: 'none' }}>→ Analytics</Link>
       </div>
+
+      {/* Segments share the customer surface — both pages render the same
+          tab strip so the user can flip between them in one click without
+          needing the sidebar entry that used to live here. */}
+      <PageTabs
+        current="/admin/segments"
+        tabs={[
+          { label: 'All customers', href: '/admin/users' },
+          { label: 'Segments',      href: '/admin/segments' },
+        ]}
+      />
 
       {/* Segment chips */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>

@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { Pagination } from '@/components/admin/Pagination';
 import { UsersFilter } from '@/components/admin/UsersFilter';
+import { PageTabs } from '@/components/admin/PageTabs';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import type { AdminUser } from '@/types';
@@ -98,10 +99,20 @@ export default async function UsersPage({
 
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 16 }}>
         <h1 style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Customers</h1>
         <p style={{ margin: 0, color: '#6b7280', fontSize: '0.875rem' }}>{total} registered account{total !== 1 ? 's' : ''}</p>
       </div>
+
+      {/* Customers + Segments share this surface — Segments used to be its
+          own sidebar item but it's really a slice of the customer list. */}
+      <PageTabs
+        current="/admin/users"
+        tabs={[
+          { label: 'All customers', href: '/admin/users' },
+          { label: 'Segments',      href: '/admin/segments' },
+        ]}
+      />
 
       <Suspense fallback={null}>
         <UsersFilter total={total} />

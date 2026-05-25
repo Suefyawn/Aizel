@@ -8,6 +8,7 @@ import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import { NewsletterComposer } from '@/components/admin/NewsletterComposer';
 import { SubscriberList, type Subscriber } from '@/components/admin/SubscriberList';
+import { PageTabs } from '@/components/admin/PageTabs';
 
 const fmtDate = (s: string) =>
   new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -54,10 +55,20 @@ export default async function NewsletterPage() {
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
       <h1 style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Newsletter</h1>
-      <p style={{ margin: '0 0 24px', color: '#6b7280', fontSize: '0.875rem' }}>
+      <p style={{ margin: '0 0 16px', color: '#6b7280', fontSize: '0.875rem' }}>
         Write a note and send it to everyone on the mailing list.{' '}
         <strong style={{ color: '#111827' }}>{activeSubscribers}</strong> active subscriber{activeSubscribers === 1 ? '' : 's'}.
       </p>
+
+      {/* Newsletter (full list) and the targeted Blast composer share this
+          surface — Blast lost its sidebar slot and is reachable via this tab. */}
+      <PageTabs
+        current="/admin/newsletter"
+        tabs={[
+          { label: 'Subscribers',   href: '/admin/newsletter' },
+          { label: 'Compose blast', href: '/admin/marketing/blast' },
+        ]}
+      />
 
       <NewsletterComposer activeCount={activeSubscribers} />
 

@@ -18,6 +18,11 @@ const ITEMS: Item[] = [
   { href: '/admin/settings/loyalty',       label: 'Loyalty',          desc: 'Points & rewards' },
   { href: '/admin/settings/notifications', label: 'Notifications',    desc: 'Staff alerts' },
   { href: '/admin/settings/integrations',  label: 'Integrations',     desc: 'GA4, Sentry, email' },
+  // Audit / debug surfaces — pulled in from the sidebar (top-level entries
+  // had outsized real-estate for pages checked weekly at most). They keep
+  // their existing routes so the URLs / deep-links don't break.
+  { href: '/admin/audit',                  label: 'Activity log',     desc: 'Who did what, when' },
+  { href: '/admin/emails',                 label: 'Email log',        desc: 'Sent + failed messages' },
 ];
 
 export function SettingsNav() {
