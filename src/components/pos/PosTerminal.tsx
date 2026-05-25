@@ -90,7 +90,16 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
     setHeldList(list);
     setHeldCount(list.length);
   }, []);
-  useEffect(() => { void refreshHeldCount(); }, [refreshHeldCount]);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const list = await listHeldSales().catch(() => []);
+      if (cancelled) return;
+      setHeldList(list);
+      setHeldCount(list.length);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   function handlePark() {
     setParkError(null);
@@ -1255,9 +1264,13 @@ function CustomerLookupSheet({ onClose, onAttach }: {
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
-  // Debounced search — 250ms after the cashier stops typing.
+  // Debounced search — 250ms after the cashier stops typing. The
+  // too-short branch is handled in render (the JSX guards on
+  // q.trim().length < 2), so the effect just bails before doing any
+  // work and leaves any stale results/error untouched — they're never
+  // shown, and the next search overwrites them.
   useEffect(() => {
-    if (q.trim().length < 2) { setResults([]); setError(null); return; }
+    if (q.trim().length < 2) return;
     const handle = setTimeout(async () => {
       setLoading(true);
       setError(null);
