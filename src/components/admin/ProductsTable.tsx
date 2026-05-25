@@ -13,6 +13,8 @@ import {
   Modal, ModalActions, ModalPrimaryButton, ModalSecondaryButton,
   modalLabel, modalInput, modalHint, modalError,
 } from '@/components/admin/Modal';
+import { InlineEditCell } from '@/components/admin/InlineEditCell';
+import { inlineUpdateProductPrice, inlineUpdateProductStock } from '@/app/admin/products/inline-actions';
 import type { Product } from '@/types';
 
 const fmt = (n: number) => `£${n.toLocaleString()}`;
@@ -163,7 +165,12 @@ export function ProductsTable({ products }: { products: Product[] }) {
                         {p.variant && <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 1 }}>{p.variant}</div>}
                       </td>
                       <td style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
-                        {fmt(p.price)}
+                        <InlineEditCell
+                          value={p.price}
+                          kind="price"
+                          label={`Price for ${p.name}`}
+                          commit={next => inlineUpdateProductPrice(p.id, next)}
+                        />
                         {p.original_price && (
                           <div style={{ color: '#9ca3af', fontWeight: 400, textDecoration: 'line-through', fontSize: '0.75rem' }}>
                             {fmt(p.original_price)}
@@ -171,7 +178,29 @@ export function ProductsTable({ products }: { products: Product[] }) {
                         )}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <StockBadge product={p} />
+                        {p.track_inventory === false ? (
+                          <StockBadge product={p} />
+                        ) : (
+                          // Inline-editable stock count with a thin badge dot
+                          // next to it so the colour cue (red/amber/green)
+                          // is still visible without obscuring the click
+                          // affordance.
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span aria-hidden="true" style={{
+                              width: 8, height: 8, borderRadius: '50%',
+                              background:
+                                p.stock === 0 ? '#dc2626' :
+                                p.stock <= 10 ? '#d97706' : '#16a34a',
+                              flexShrink: 0,
+                            }} />
+                            <InlineEditCell
+                              value={p.stock}
+                              kind="integer"
+                              label={`Stock for ${p.name}`}
+                              commit={next => inlineUpdateProductStock(p.id, next)}
+                            />
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <StatusBadge status={p.status} />
