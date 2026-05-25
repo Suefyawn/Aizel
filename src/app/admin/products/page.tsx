@@ -8,6 +8,7 @@ import { ProductsFilter } from '@/components/admin/ProductsFilter';
 import { ProductsFlash } from '@/components/admin/ProductsFlash';
 import { AdminFab } from '@/components/admin/AdminFab';
 import { Pagination } from '@/components/admin/Pagination';
+import { ExportCSVButton } from '@/components/admin/ExportCSVButton';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import type { Product } from '@/types';
@@ -67,7 +68,8 @@ export default async function ProductsPage({
     <div className="adm-page" style={{ padding: '32px 36px' }}>
       <div className="adm-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Products</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <ExportCSVButton kind="products" category={category} tag={tag} q={q} />
           <Link href="/admin/products/import" style={{
             padding: '10px 16px', background: 'white', color: '#111827',
             border: '1px solid #d1d5db', borderRadius: 8, textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600,

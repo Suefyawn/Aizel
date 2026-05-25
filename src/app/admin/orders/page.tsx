@@ -71,7 +71,7 @@ async function OrdersPageInner({
             display: 'inline-flex', alignItems: 'center', gap: 6,
             whiteSpace: 'nowrap',
           }}>+ New order</Link>
-          <ExportCSVButton status={status} q={q} />
+          <ExportCSVButton kind="orders" status={status} q={q} />
         </div>
       </div>
 

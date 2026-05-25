@@ -1,85 +1,98 @@
 'use client';
 
-import { useState } from 'react';
-import { getBrowserClient } from '@/lib/supabase-browser';
-import type { Order, OrderStatus } from '@/types';
+import { useState, useTransition } from 'react';
+import { useToast } from '@/components/admin/Toast';
+import {
+  exportOrdersCsv, exportProductsCsv, exportCustomersCsv,
+} from '@/app/admin/export-actions';
 
-function toCSV(orders: Order[]): string {
-  // UK-friendly column names — was ZIP/Province (US/Canada vocabulary). The
-  // VAT column reads from `tax_amount` so accountants can reconcile the
-  // export against HMRC submissions without dropping into the DB.
-  const headers = ['Order #', 'Date', 'Name', 'Email', 'Phone', 'City / Town', 'Country / Region', 'Postcode', 'Address', 'Payment', 'Status', 'Subtotal', 'Discount', 'Shipping', 'VAT', 'Total', 'Tracking #', 'Coupon'];
-  const rows = orders.map(o => [
-    o.order_number,
-    o.created_at ? new Date(o.created_at).toISOString().split('T')[0] : '',
-    `${o.first_name} ${o.last_name}`,
-    o.email ?? '',
-    o.phone,
-    o.city,
-    o.province ?? '',
-    o.zip ?? '',
-    o.address.replace(/,/g, ';'),
-    o.pay_method.toUpperCase(),
-    o.status ?? 'pending',
-    o.subtotal,
-    o.discount_amount ?? 0,
-    o.shipping,
-    // `tax_amount` may be missing on orders predating the VAT column; fall
-    // back to 0 so the export stays a clean rectangular CSV.
-    (o as Order & { tax_amount?: number }).tax_amount ?? 0,
-    o.total,
-    o.tracking_number ?? '',
-    o.coupon_code ?? '',
-  ]);
-  return [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-}
+// Generic "Export CSV" button used at the top of /admin/orders,
+// /admin/products, /admin/users. The actual query lives in a server
+// action — the button just dispatches to the right one and turns the
+// returned payload into a download.
+//
+// We do NOT route through the browser supabase client any more — orders
+// and the customer RPC are both service-role-only, so the previous
+// implementation silently exported 0 rows.
 
-interface Props {
-  status?: string;
-  q?: string;
-}
+type Kind = 'orders' | 'products' | 'customers';
 
-export function ExportCSVButton({ status, q }: Props) {
-  const [loading, setLoading] = useState(false);
+interface BaseProps { kind: Kind }
+interface OrdersProps   extends BaseProps { kind: 'orders';    status?: string; q?: string }
+interface ProductsProps extends BaseProps { kind: 'products';  category?: string; tag?: string; q?: string }
+interface CustomerProps extends BaseProps { kind: 'customers'; q?: string }
 
-  const handleExport = async () => {
-    setLoading(true);
-    const sb = getBrowserClient();
-    let query = sb.from('orders').select('*').order('created_at', { ascending: false });
-    if (status && status !== 'all') query = query.eq('status', status as OrderStatus);
-    if (q) {
-      const filter = `order_number.ilike.%${q}%,first_name.ilike.%${q}%,last_name.ilike.%${q}%`;
-      query = query.or(filter);
-    }
-    const { data } = await query;
-    setLoading(false);
-    if (!data || data.length === 0) return;
-    const csv = toCSV(data as Order[]);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+type Props = OrdersProps | ProductsProps | CustomerProps;
+
+export function ExportCSVButton(props: Props) {
+  const [pending, startTransition] = useTransition();
+  const [done, setDone] = useState(false);
+  const toast = useToast();
+
+  const handle = () => {
+    startTransition(async () => {
+      try {
+        const payload =
+          props.kind === 'orders'    ? await exportOrdersCsv({ status: props.status, q: props.q }) :
+          props.kind === 'products'  ? await exportProductsCsv({ category: props.category, tag: props.tag, q: props.q }) :
+          /* customers */              await exportCustomersCsv({ q: props.q });
+
+        if (!payload.csv || payload.csv.split('\r\n').length <= 1) {
+          toast('Nothing to export — no rows match the current filters', 'error');
+          return;
+        }
+        // Prepend UTF-8 BOM so Excel opens £ + accented characters cleanly
+        // without re-encoding. Google Sheets / Numbers ignore the BOM.
+        const blob = new Blob(['﻿', payload.csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = payload.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setDone(true);
+        setTimeout(() => setDone(false), 1500);
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Export failed', 'error');
+      }
+    });
   };
 
   return (
     <button
-      onClick={handleExport}
-      disabled={loading}
+      onClick={handle}
+      disabled={pending}
       style={{
-        padding: '8px 16px', background: loading ? '#f3f4f6' : 'white',
+        padding: '8px 16px',
+        background: pending ? '#f3f4f6' : 'white',
         border: '1px solid #d1d5db', borderRadius: 7,
-        fontSize: '0.8125rem', fontWeight: 600, color: loading ? '#9ca3af' : '#374151',
-        cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-        whiteSpace: 'nowrap',
+        fontSize: '0.8125rem', fontWeight: 600,
+        color: pending ? '#9ca3af' : '#374151',
+        cursor: pending ? 'not-allowed' : 'pointer',
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        whiteSpace: 'nowrap', minHeight: 36,
       }}
     >
-      {loading ? '…' : (
+      {pending ? (
         <>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+          <style>{`@keyframes aizel-export-spin { to { transform: rotate(360deg); } }`}</style>
+          <span aria-hidden="true" style={{
+            width: 12, height: 12, borderRadius: '50%',
+            border: '2px solid #d1d5db', borderTopColor: '#4A1A6B',
+            animation: 'aizel-export-spin 0.7s linear infinite',
+          }} />
+          Exporting…
+        </>
+      ) : done ? (
+        <>✓ Downloaded</>
+      ) : (
+        <>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
           Export CSV
         </>

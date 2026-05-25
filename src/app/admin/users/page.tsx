@@ -6,6 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { Pagination } from '@/components/admin/Pagination';
 import { UsersFilter } from '@/components/admin/UsersFilter';
 import { PageTabs } from '@/components/admin/PageTabs';
+import { ExportCSVButton } from '@/components/admin/ExportCSVButton';
 import { getStaffSession } from '@/lib/staff-auth';
 import { NoAccess } from '@/components/admin/NoAccess';
 import type { AdminUser } from '@/types';
@@ -99,9 +100,12 @@ export default async function UsersPage({
 
   return (
     <div className="adm-page" style={{ padding: '32px 36px' }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Customers</h1>
-        <p style={{ margin: 0, color: '#6b7280', fontSize: '0.875rem' }}>{total} registered account{total !== 1 ? 's' : ''}</p>
+      <div className="adm-page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div>
+          <h1 style={{ margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>Customers</h1>
+          <p style={{ margin: 0, color: '#6b7280', fontSize: '0.875rem' }}>{total} registered account{total !== 1 ? 's' : ''}</p>
+        </div>
+        <ExportCSVButton kind="customers" q={q} />
       </div>
 
       {/* Customers + Segments share this surface — Segments used to be its
