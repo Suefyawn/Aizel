@@ -296,18 +296,38 @@ function buildView(
     categories: catRows.filter(c => c.taxon_key === t.key).map(c => c.label),
   }));
 
-  // Nav sections — same shape the constant used to have, except built
-  // from DB rows so a new taxon shows up automatically. The "Styling +
-  // Grooming combined" merge is no longer special-cased; every taxon
-  // gets its own mega-menu. Operators who want to consolidate can drop
-  // the extra taxon and move its categories under another taxon.
-  const navSections: NavSection[] = taxons.map(t => ({
-    key:             t.key,
-    label:           t.label,
-    href:            `/shop?taxon=${t.key}`,
-    activeTaxonKeys: [t.key],
-    columns: [{ heading: t.label, href: `/shop?taxon=${t.key}`, categories: t.categories }],
-  }));
+  // Nav sections — same curated shape the build-time constant has: every
+  // taxon gets its own mega-menu EXCEPT grooming, which folds into the
+  // styling mega-menu as a second column so the top bar stays uncluttered
+  // (matches Cult Beauty / LookFantastic). The top-level label for that
+  // section is the short "Styling" rather than the full "Styling & Tools"
+  // taxon label. Any taxon the DB carries beyond the well-known five
+  // (hair/skincare/body/styling/grooming) still gets its own mega-menu —
+  // operators get the dynamic-taxon win without losing the curated merge.
+  const grooming = taxons.find(t => t.key === 'grooming');
+  const navSections: NavSection[] = taxons
+    .filter(t => t.key !== 'grooming')
+    .map(t => {
+      if (t.key === 'styling' && grooming) {
+        return {
+          key:             t.key,
+          label:           'Styling',
+          href:            `/shop?taxon=${t.key}`,
+          activeTaxonKeys: [t.key, grooming.key],
+          columns: [
+            { heading: t.label,        href: `/shop?taxon=${t.key}`,        categories: t.categories },
+            { heading: grooming.label, href: `/shop?taxon=${grooming.key}`, categories: grooming.categories },
+          ],
+        };
+      }
+      return {
+        key:             t.key,
+        label:           t.label,
+        href:            `/shop?taxon=${t.key}`,
+        activeTaxonKeys: [t.key],
+        columns: [{ heading: t.label, href: `/shop?taxon=${t.key}`, categories: t.categories }],
+      };
+    });
 
   const categoryDescriptions: Record<string, string> = {
     All: CATEGORY_DESCRIPTIONS.All,
