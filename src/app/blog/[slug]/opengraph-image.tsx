@@ -48,7 +48,6 @@ export default async function PostOgImage({ params }: { params: { slug: string }
             width: 540, height: '100%', display: 'flex',
             background: '#FAFAFA',
           }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.image_url}
               alt=""

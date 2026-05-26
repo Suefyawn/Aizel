@@ -386,7 +386,7 @@ function AddStaffModal({ roles, onClose }: { roles: Role[]; onClose: () => void 
                   // Clipboard refused (insecure context, etc.) — fall back
                   // to a select-all on the code so they can Cmd-C.
                   const code = document.querySelector('code[data-temp-pw]') as HTMLElement | null;
-                  code && window.getSelection()?.selectAllChildren(code);
+                  if (code) window.getSelection()?.selectAllChildren(code);
                 }
               }}
               style={{

@@ -21,11 +21,13 @@ import { SITE_URL } from './seo';
 import { getRecipientsForEvent } from './notification-recipients';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-// OWNER_EMAIL stays as the fallback recipient and as a reply-to address on
-// outgoing customer mail. Active fan-out for new-order + low-stock alerts
-// now goes through notification_recipients; this env var only kicks in when
-// nobody is configured (or the lookup fails).
-const OWNER_EMAIL = process.env.OWNER_EMAIL ?? 'sooviaan@gmail.com';
+// OWNER_EMAIL is the reply-to address on outgoing customer mail. Active
+// fan-out for new-order + low-stock alerts now goes through
+// notification_recipients; the env var is also the fallback recipient when
+// nobody is configured (resolved inside notification-recipients.ts). If the
+// var is unset, replyTo is simply omitted — never use a baked-in developer
+// address as a fallback.
+const OWNER_EMAIL: string | undefined = process.env.OWNER_EMAIL?.trim() || undefined;
 const FROM = process.env.EMAIL_FROM ?? 'Aizel Orders <orders@aizel.co.uk>';
 // SITE_URL is shared with the SEO helpers (lib/seo) so the logo image and
 // every link in an email resolve to the same live origin. A broken logo in
@@ -189,6 +191,14 @@ async function send(opts: {
   if (!resend) {
     log.warn('email.skip', { reason: 'RESEND_API_KEY not set', to: opts.to, subject: opts.subject });
     await recordEmailLog(opts, 'skipped', { error: 'RESEND_API_KEY not set' });
+    return false;
+  }
+  // No recipients = no send. Happens for internal alerts when OWNER_EMAIL is
+  // unset and no recipient row is configured; the caller relies on us to
+  // swallow it quietly rather than fail the surrounding commit.
+  if (Array.isArray(opts.to) ? opts.to.length === 0 : !opts.to) {
+    log.warn('email.skip', { reason: 'no recipients', subject: opts.subject });
+    await recordEmailLog(opts, 'skipped', { error: 'No recipients configured' });
     return false;
   }
   // Free-tier guard: claim a slot in today's send budget. Fails open — a

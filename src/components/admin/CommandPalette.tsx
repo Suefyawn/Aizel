@@ -110,6 +110,7 @@ export function CommandPalette({ session }: { session: StaffSession }) {
   // Reset state on close so reopening starts fresh.
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing UI state to an external trigger (the open flag) is the intended pattern
       setQ('');
       setActive(0);
       setSearchResults([]);
@@ -124,6 +125,7 @@ export function CommandPalette({ session }: { session: StaffSession }) {
   // ── Live search via server action, debounced 200ms ────────────────
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing results on a query-too-short transition is the intended sync pattern
     if (q.trim().length < 2) { setSearchResults([]); return; }
     const handle = setTimeout(() => {
       startSearch(async () => {
@@ -178,6 +180,7 @@ export function CommandPalette({ session }: { session: StaffSession }) {
 
   // Clamp active index when rows shrink.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clamp is a one-shot sync to a derived bound, not a feedback loop
     if (active >= rows.length) setActive(Math.max(0, rows.length - 1));
   }, [rows.length, active]);
 

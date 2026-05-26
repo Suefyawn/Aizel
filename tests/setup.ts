@@ -10,3 +10,8 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon';
 // email.ts constructs — otherwise `send()` short-circuits on the no-key
 // warning path and the mocked emails.send never gets called.
 process.env.RESEND_API_KEY ??= 'test-resend-key';
+// Internal-alert recipient. notification-recipients falls back to OWNER_EMAIL
+// when no row is configured (or the lookup throws — true in tests because
+// supabaseAdmin() has no DB); without it the recipient list is empty and
+// send() short-circuits before reaching the mocked Resend call.
+process.env.OWNER_EMAIL ??= 'test-owner@example.com';

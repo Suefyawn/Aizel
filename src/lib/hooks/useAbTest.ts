@@ -160,6 +160,7 @@ export function useAbTest(experimentKey: string, controlFallback = 'control'): s
       try { window.localStorage.setItem(storageKey, assigned); } catch { /* noop */ }
       reportAssignment(experimentKey, assigned);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating client state from localStorage after mount; first paint uses the control fallback
     if (assigned !== variant) setVariant(assigned);
     // We intentionally exclude `variant` from the dep array — the assignment
     // is a one-shot per experiment, not a state we want to re-react to.
