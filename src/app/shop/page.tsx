@@ -148,8 +148,13 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   // Resolve ?taxon=makeup into the macro-bucket category set so the
   // CollectionPage can multi-filter. We resolve here so the server-rendered
   // header reflects the right active category from the first paint.
+  // ALSO fall back to ?category= — operators and external links often pass
+  // a taxon label as ?category=Hair%20Care (matches the homepage tile
+  // labels and the footer "Shop" links), and without this expansion that
+  // URL would do a literal `category === 'Hair Care'` filter and return 0
+  // products (no leaf row has that value).
   const { findTaxon } = await import('@/lib/category-taxonomy');
-  const taxonObj = findTaxon(taxon);
+  const taxonObj = findTaxon(taxon) ?? findTaxon(initialCategory);
 
   // Server-side narrow: pass CollectionPage only the products that match
   // the URL's primary scope (taxon → category set, single category, or
