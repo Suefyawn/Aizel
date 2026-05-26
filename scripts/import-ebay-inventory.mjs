@@ -172,16 +172,28 @@ function guessCategory(rawCategory, title) {
 // matter — `detectBrand` picks the longest matching prefix so "Mane 'n Tail"
 // beats "Mane".
 const KNOWN_BRANDS = [
+  // Heritage Afro/Black hair brands
   'Cantu', 'ORS', "Palmer's", 'Palmers', 'Kuza', 'ApHogee', 'Aphogee',
   "Mane 'n Tail", 'Mane n Tail', 'Ebin', 'As I Am', 'Blue Magic',
   'KeraCare', 'Kera Care', 'Salon Pro', 'Dabur', 'Magic Shaving',
   "Ghana's Best", 'Ghanas Best', "Let's Jam", 'Lets Jam', 'Got2b',
   'got2b', 'Vaseline', 'Jergens', 'Bump Stopper', 'SoftSheen-Carson',
   'SoftSheen', 'Eco Style', 'Eco Styler', 'Ampro', 'Optimum',
-  'Just for Me', 'Murray', 'Doo Gro', 'Lustrasilk', 'Tropic Isle',
-  'TCB', 'Pink', 'Africa', "Africa's Best", 'Shine n Jam',
-  "Shine 'n Jam", 'Clippercide', 'Fair And White', 'Neutrogena',
-  'LA Girl', 'Gabri', 'Sulfur8', 'Sulfur 8',
+  'Just for Me', 'Murray', "Murray's", 'Doo Gro', 'Lustrasilk', 'Tropic Isle',
+  'Tropic Isle Living', 'TCB', 'Pink', 'Africa', "Africa's Best",
+  'Shine n Jam', "Shine 'n Jam", 'Clippercide', 'Fair And White',
+  'Neutrogena', 'LA Girl', 'Gabri', 'Sulfur8', 'Sulfur 8',
+  // Added 2026-05-26 after the 593-product import audit surfaced 361 NULL
+  // brands — these are the ones the heuristic was missing, sorted roughly
+  // by frequency in the catalogue.
+  'Shea Moisture', 'Aunt Jackie', "Aunt Jackie's", 'Aunt Jackies',
+  'The Doux', 'Camille Rose', 'Creme of Nature', 'Design Essentials',
+  'Bigen', 'Crazy Color', 'Crazy Colour', 'Bold Hold', 'African Pride',
+  'Dark and Lovely', 'Dark & Lovely', 'Aloe Pura', 'Astral', 'Aztec Secret',
+  'Brut', 'Gillette', 'Andis', 'Allored', 'Beauty Ambition', 'Benjamins',
+  'Dressmaker', 'Honey Baby Naturals', 'Maui Moisture', 'Carol\'s Daughter',
+  "Miss Jessie's", 'Miss Jessie', 'Pantene', 'Head & Shoulders', 'TRESemmé',
+  "L'Oréal", 'Loreal', 'Garnier', 'Herbal Essences', 'Lottabody', 'Dax',
 ];
 const ACCESSIBILITY_SUFFIX = /\s*Opens?\s+in\s+a\s+new\s+window\s+or\s+tab\s*$/i;
 

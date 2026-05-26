@@ -12,7 +12,7 @@
 // to its category set via `categoriesForTaxon`).
 // ============================================================================
 
-export type TaxonKey = 'hair' | 'body' | 'styling' | 'grooming';
+export type TaxonKey = 'hair' | 'skincare' | 'body' | 'styling' | 'grooming';
 
 export interface Taxon {
   key: TaxonKey;
@@ -37,6 +37,15 @@ export const TAXONS: readonly Taxon[] = [
       'Hair Treatments & Masks',
       'Mousse & Hairspray',
       'Relaxers & Kits',
+      'Hair Colour',
+    ],
+  },
+  {
+    key: 'skincare',
+    label: 'Skincare',
+    tagline: 'Cleanse, moisturise, treat',
+    categories: [
+      'Skincare',
     ],
   },
   {
@@ -65,11 +74,12 @@ export const TAXONS: readonly Taxon[] = [
   {
     key: 'grooming',
     label: 'Grooming',
-    tagline: 'Shaving & beard care',
+    tagline: 'Shaving, beard, fragrance',
     categories: [
       'Shaving',
       'Beard Care',
       'Bump Treatments',
+      'Fragrance',
     ],
   },
 ];
@@ -113,9 +123,10 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
 
   // ── Taxons ──
   'Hair Care': 'Shampoo, conditioner, oils, curl creams, edge control and treatments from the brands UK natural-hair fans actually buy.',
+  'Skincare': 'Face wash, moisturisers, serums and masks for melanin-rich skin — from Neutrogena, Aloe Pura and more.',
   'Body Care': 'Cocoa and shea butter, body oils, lotions and petroleum jelly — deeply moisturising body essentials.',
   'Styling & Tools': 'Wig and lace adhesives, bonding glues, durags and the accessories that finish the look.',
-  'Grooming': 'Shaving sets, beard oils and bump treatments built for sensitive skin.',
+  'Grooming': 'Shaving sets, beard oils, fragrance and bump treatments built for sensitive skin.',
 
   // ── Hair Care leaves ──
   'Shampoo & Conditioner': 'Sulphate-free and moisturising shampoos and conditioners for every curl pattern — from Cantu, ApHogee, Kera Care and more.',
@@ -125,6 +136,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Hair Treatments & Masks': 'Protein treatments, deep conditioners and bond-repair masks for hair that\'s been through it.',
   'Mousse & Hairspray': 'Setting mousses, hairsprays and finishing products to lock the look in.',
   'Relaxers & Kits': 'Relaxer and texturiser kits — at-home application made simple.',
+  'Hair Colour': 'Permanent and semi-permanent hair colour from Bigen, Crazy Color, Creme of Nature and more — full coverage and fade-resistant tones.',
 
   // ── Body Care leaves ──
   'Cocoa & Shea Butter': 'Pure cocoa and shea butter from Palmer\'s, Ghana\'s Best and more — deeply nourishing for dry skin.',
@@ -143,6 +155,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Shaving': 'Magic Shaving Powder, razors and shave creams for a smooth, irritation-free shave.',
   'Beard Care': 'Beard oils, balms and conditioners — soft, sharp and well-kept.',
   'Bump Treatments': 'After-shave bump and razor-bump treatments for sensitive skin.',
+  'Fragrance': 'Cologne, aftershave and traditional fragrances — Brut, Florida Water and more.',
 };
 
 /** Every fine-grained leaf category, flattened across all taxons. */
@@ -185,15 +198,21 @@ export interface NavSection {
  * dumping every taxon flat across the bar.
  */
 export const NAV_SECTIONS: readonly NavSection[] = (() => {
-  const hair    = TAXONS.find(t => t.key === 'hair')!;
-  const body    = TAXONS.find(t => t.key === 'body')!;
-  const styling = TAXONS.find(t => t.key === 'styling')!;
-  const groom   = TAXONS.find(t => t.key === 'grooming')!;
+  const hair     = TAXONS.find(t => t.key === 'hair')!;
+  const skincare = TAXONS.find(t => t.key === 'skincare')!;
+  const body     = TAXONS.find(t => t.key === 'body')!;
+  const styling  = TAXONS.find(t => t.key === 'styling')!;
+  const groom    = TAXONS.find(t => t.key === 'grooming')!;
   return [
     {
       key: 'hair', label: hair.label, href: `/shop?taxon=${hair.key}`,
       activeTaxonKeys: [hair.key],
       columns: [{ heading: hair.label, href: `/shop?taxon=${hair.key}`, categories: hair.categories }],
+    },
+    {
+      key: 'skincare', label: skincare.label, href: `/shop?taxon=${skincare.key}`,
+      activeTaxonKeys: [skincare.key],
+      columns: [{ heading: skincare.label, href: `/shop?taxon=${skincare.key}`, categories: skincare.categories }],
     },
     {
       key: 'body', label: body.label, href: `/shop?taxon=${body.key}`,

@@ -50,7 +50,23 @@ const GradientFallback = () => (
 );
 
 export function HeroSection({ settings }: { settings?: Partial<HeroSettings> }) {
-  const s: HeroSettings = { ...DEFAULTS, ...settings };
+  // Merge with per-field fall-through to DEFAULTS. Previously used a
+  // `{ ...DEFAULTS, ...settings }` spread, but the callers (src/app/page.tsx)
+  // pass empty strings for unset site_settings keys, which would overwrite
+  // every default and render the hero blank. `||` here treats '' as missing
+  // and falls back; `??` is used for cta2Text/Url where the operator may
+  // intentionally blank them to hide the secondary CTA.
+  const s: HeroSettings = {
+    overline:  settings?.overline  || DEFAULTS.overline,
+    headline:  settings?.headline  || DEFAULTS.headline,
+    subline:   settings?.subline   || DEFAULTS.subline,
+    cta1Text:  settings?.cta1Text  || DEFAULTS.cta1Text,
+    cta1Url:   settings?.cta1Url   || DEFAULTS.cta1Url,
+    cta2Text:  settings?.cta2Text  ?? DEFAULTS.cta2Text,
+    cta2Url:   settings?.cta2Url   ?? DEFAULTS.cta2Url,
+    imageUrl:  settings?.imageUrl  || DEFAULTS.imageUrl,
+    brands:    settings?.brands?.length ? settings.brands : DEFAULTS.brands,
+  };
   const [imgFailed, setImgFailed] = useState(false);
 
   // Convert newlines to <br/> for headline
