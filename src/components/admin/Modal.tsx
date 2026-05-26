@@ -46,15 +46,43 @@ export function Modal({
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Escape closes; Tab is left to native focus handling within the dialog.
+  // Escape closes; Tab/Shift+Tab are explicitly trapped inside the dialog
+  // so a screen-reader user can't accidentally focus the page behind the
+  // modal — the previous "left to native focus handling" comment was a
+  // known WCAG 2.4.3 violation per the fresh-eyes review.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const node = dialogRef.current;
+      if (!node) return;
+      const focusables = Array.from(
+        node.querySelectorAll<HTMLElement>(
+          'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter(el => el.offsetParent !== null);
+      if (focusables.length === 0) { e.preventDefault(); return; }
+      const first = focusables[0];
+      const last  = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !node.contains(active)) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (active === last || !node.contains(active)) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Move focus into the dialog so a screen-reader announces the title
-  // and Tab cycles through its controls — not the page behind it.
+  // Move focus into the dialog on mount so the screen-reader announces the
+  // title and the trap above has somewhere to start from.
   useEffect(() => {
     const node = dialogRef.current;
     if (!node) return;

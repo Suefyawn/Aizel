@@ -63,7 +63,9 @@ export default async function DashboardPage() {
     { count: newCustomerCount },
     { data: recentOrdersForChart },
   ] = await Promise.all([
-    admin.from('orders').select('*').order('created_at', { ascending: false }).limit(5),
+    // Recent-orders widget renders only these columns; was select('*') and
+    // shipped the items JSONB for 5 rows on every dashboard load.
+    admin.from('orders').select('id, order_number, first_name, last_name, total, status, pay_method, created_at').order('created_at', { ascending: false }).limit(5),
     // P1 audit fix: aggregated KPIs (revenue, order count, status histogram,
     // top products) in one SQL pass via dashboard_kpis() RPC. Previously
     // pulled every orders row + its JSONB items into Node and aggregated in
@@ -72,8 +74,10 @@ export default async function DashboardPage() {
     // Cap the low-stock list to 50 so a long-tail catalog with many
     // out-of-stock rows doesn't blow up the dashboard; the card next to it
     // shows the exact count.
-    supabase.from('products').select('*').eq('track_inventory', true).lte('stock', 5).order('stock', { ascending: true }).limit(50),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('track_inventory', true).lte('stock', 5),
+    // Low-stock list renders product name + stock + a link; narrow the select.
+    supabase.from('products').select('id, name, brand, slug, stock, reorder_point').eq('track_inventory', true).lte('stock', 5).order('stock', { ascending: true }).limit(50),
+    // count-only query — head:true means no row data returned regardless of select.
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('track_inventory', true).lte('stock', 5),
     admin.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
     // Revenue series reads `v_orders_revenue` — the same view the Analytics
     // page uses — so the two pages report an identical "Revenue · last 30

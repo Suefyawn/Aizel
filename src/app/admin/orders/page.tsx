@@ -40,8 +40,15 @@ async function OrdersPageInner({
   // doesn't go through Supabase Auth, so admin reads MUST use the
   // service-role client. The anon path returned 0 rows silently.
   const admin = supabaseAdmin();
-  let countQuery = admin.from('orders').select('*', { count: 'exact', head: true });
-  let dataQuery = admin.from('orders').select('*').order('created_at', { ascending: false }).range(from, to);
+  // Narrow projection — the table only renders order_number, customer name,
+  // total, status, pay_method, created_at, tracking_number. Was select('*')
+  // which shipped the full `items` JSONB (potentially many KB per row) plus
+  // shipping address columns no cell renders. 25 rows × cart-JSON = noticeable
+  // RSC payload bloat on every Orders page hit.
+  const ORDER_LIST_COLUMNS =
+    'id, order_number, first_name, last_name, email, total, status, pay_method, created_at, tracking_number, courier';
+  let countQuery = admin.from('orders').select(ORDER_LIST_COLUMNS, { count: 'exact', head: true });
+  let dataQuery = admin.from('orders').select(ORDER_LIST_COLUMNS).order('created_at', { ascending: false }).range(from, to);
 
   if (status && status !== 'all') {
     countQuery = countQuery.eq('status', status as OrderStatus);

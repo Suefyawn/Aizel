@@ -442,7 +442,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               ) : product.track_inventory !== false && displayStock <= 5 ? (
                 <span style={{ display: 'inline-block', padding: '3px 10px', background: '#fffbeb', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, color: '#d97706' }}>Only {displayStock} left</span>
               ) : (
-                <span style={{ display: 'inline-block', padding: '3px 10px', background: '#f0fdf4', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' }}>In Stock</span>
+                <span style={{ display: 'inline-block', padding: '3px 10px', background: '#f0fdf4', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, color: '#15803d' }}>In Stock</span>
               )}
             </div>
             <hr className="hairline" style={{ marginBottom: 24 }} />
