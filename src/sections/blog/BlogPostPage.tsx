@@ -3,6 +3,7 @@ import { Overline } from '@/components/ui/Overline';
 import { ProductTile } from '@/components/ui/ProductTile';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { markdownToHtml, isMarkdown } from '@/lib/markdown';
 import { linkProductMentions } from '@/lib/link-product-mentions';
 import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
 import { BlogShareStrip } from './BlogShareStrip';
@@ -58,8 +59,15 @@ function extractHeadings(html: string): { html: string; headings: TocHeading[] }
 }
 
 export function BlogPostPage({ post, relatedPosts, relatedProducts }: BlogPostPageProps) {
-  const { html: withIds, headings } = post.body
-    ? extractHeadings(sanitizeHtml(post.body))
+  // Operator-authored bodies arrive either as raw HTML (historic posts) or
+  // Markdown (current editor). isMarkdown() detects the latter so the
+  // post-detail page renders both shapes correctly — without forcing a
+  // one-off SQL migration on existing rows.
+  const rawHtml = post.body
+    ? (isMarkdown(post.body) ? markdownToHtml(post.body) : post.body)
+    : '';
+  const { html: withIds, headings } = rawHtml
+    ? extractHeadings(sanitizeHtml(rawHtml))
     : { html: '', headings: [] as TocHeading[] };
   const bodyHtml = post.body ? linkProductMentions(withIds, relatedProducts) : '';
   const showToc = headings.length >= 2;
