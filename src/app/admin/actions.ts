@@ -278,7 +278,7 @@ export async function deleteBlogPost(formData: FormData) {
 // ─── Orders ──────────────────────────────────────────────────────────────────
 
 export async function bulkUpdateOrderStatus(ids: string[], status: OrderStatus): Promise<{ error?: string; count?: number }> {
-  await assertPermission('orders.edit');
+  const session = await assertPermission('orders.edit');
   // orders RLS bars anon writes; service role is required for admin
   // mutations.
   const { error, count } = await supabaseAdmin()
@@ -286,6 +286,16 @@ export async function bulkUpdateOrderStatus(ids: string[], status: OrderStatus):
     .update({ status }, { count: 'exact' })
     .in('id', ids);
   if (error) return { error: error.message };
+  // Audit row covers the entire batch — the most impactful admin write in
+  // the panel had no trail before this. Diff is the bulk shape (ids + new
+  // status + count) rather than per-row before/after so one operator click
+  // produces one audit row, not 200.
+  await logAudit(session, {
+    action: 'order.bulk_status_change',
+    entity: 'orders',
+    entity_id: null,
+    diff: { ids, status, count: count ?? ids.length },
+  });
   revalidatePath('/admin/orders');
   return { count: count ?? ids.length };
 }

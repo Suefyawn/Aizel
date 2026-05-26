@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { cache } from 'react';
 import type { Product, BlogPost } from '@/types';
 import { DEMO_PRODUCTS, DEMO_BLOG_POSTS, DEMO_SITE_SETTINGS } from './demo-data';
 import { isDemo } from './is-demo';
@@ -113,7 +114,10 @@ async function safe<T>(
 // shipping ~277KB of inline JSON, the bulk of it long-form fields no
 // tile reads. Switching from select('*') saves ~400KB on /shop and
 // /shop?taxon=*.
-const PRODUCT_TILE_COLUMNS =
+// Exported so the PDP cross-sells / FBT / recently-viewed helpers can
+// reuse the same narrow projection — they were calling select('*') and
+// shipping description/ingredients/faq for every related tile.
+export const PRODUCT_TILE_COLUMNS =
   'id, brand, name, variant, price, original_price, category, subcategory, tag, slug, stock, track_inventory, image_url, is_bestseller, is_featured, free_from, status, created_at, rating, review_count';
 
 export async function getProducts(): Promise<Product[]> {
@@ -401,10 +405,15 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   }, DEMO_BLOG_POSTS.find(p => p.slug === slug) ?? null);
 }
 
-export async function getSiteSettings(): Promise<Record<string, string>> {
+// React.cache() deduplicates calls within a single server render — layout +
+// page + child server components share one DB hit per request instead of N.
+// site_settings is read on every storefront page render via the layout AND
+// on most pages directly; without cache that's 2-4 redundant queries per
+// render. Same change applied to getStaffSession in lib/staff-auth.ts.
+export const getSiteSettings = cache(async (): Promise<Record<string, string>> => {
   if (isDemo) return DEMO_SITE_SETTINGS;
   return safe('getSiteSettings', async () => {
     const { data } = await supabase.from('site_settings').select('key, value');
     return Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
   }, DEMO_SITE_SETTINGS);
-}
+});

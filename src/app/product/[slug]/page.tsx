@@ -12,7 +12,7 @@ export const revalidate = 300;
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProductBySlug, supabase, isDemo, getProductsByBrand, getProductsByTaxon, getProducts } from '@/lib/supabase';
+import { getProductBySlug, supabase, isDemo, getProductsByBrand, getProductsByTaxon, getProducts, PRODUCT_TILE_COLUMNS } from '@/lib/supabase';
 import { PDPPage } from '@/sections/pdp/PDPPage';
 import { ReviewsSection } from '@/components/pdp/ReviewsSection';
 import { RecentlyViewed } from '@/components/pdp/RecentlyViewed';
@@ -150,8 +150,8 @@ async function loadFrequentlyBoughtTogether(productId: string): Promise<Product[
   const rows = (data ?? []) as Array<{ product_id: string; co_count: number }>;
   if (rows.length === 0) return [];
   const ids = rows.map(r => r.product_id);
-  const { data: products } = await supabase.from('products').select('*').in('id', ids);
-  const map = new Map(((products ?? []) as Product[]).map(p => [p.id, p]));
+  const { data: products } = await supabase.from('products').select(PRODUCT_TILE_COLUMNS).in('id', ids);
+  const map = new Map(((products ?? []) as unknown as Product[]).map(p => [p.id, p]));
   // Preserve RPC order.
   return ids.map(id => map.get(id)).filter((p): p is Product => Boolean(p));
 }
@@ -174,19 +174,27 @@ async function loadCrossSells(productId: string, fallbackCategory: string): Prom
   const relatedIds = Array.from(new Set((rels ?? []).map(r => r.related_product_id as string)));
 
   if (relatedIds.length > 0) {
-    const { data } = await supabase.from('products').select('*').in('id', relatedIds);
-    const map = new Map(((data ?? []) as Product[]).map(p => [p.id, p]));
+    const { data } = await supabase.from('products').select(PRODUCT_TILE_COLUMNS).in('id', relatedIds);
+    const map = new Map(((data ?? []) as unknown as Product[]).map(p => [p.id, p]));
     return relatedIds.map(id => map.get(id)).filter((p): p is Product => Boolean(p)).slice(0, 4);
   }
 
-  // Fallback: same category.
+  // Fallback: same category. ORDER BY id keeps the response deterministic so
+  // ISR (revalidate=300 in this route) can cache the rendered page — the
+  // previous Math.random() shuffle busted the CDN cache on every request.
+  // Anchor on `productId` so two different PDPs in the same category still
+  // surface slightly different cross-sells (rotation without per-request churn).
   const { data } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_TILE_COLUMNS)
     .eq('category', fallbackCategory)
     .neq('id', productId)
+    .order('id')
     .limit(8);
-  return ((data ?? []) as Product[]).sort(() => Math.random() - 0.5).slice(0, 4);
+  const candidates = ((data ?? []) as unknown as Product[]);
+  // Deterministic per-product offset — same product → same 4 picks → cacheable.
+  const offset = productId.split('').reduce((s, c) => s + c.charCodeAt(0), 0) % Math.max(1, candidates.length);
+  return [...candidates.slice(offset), ...candidates.slice(0, offset)].slice(0, 4);
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {

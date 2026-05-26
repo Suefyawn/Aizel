@@ -1,4 +1,5 @@
 import { randomBytes, createHmac, scryptSync, timingSafeEqual, createHash } from 'crypto';
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from './supabase';
 import { expandLegacyPermissions, type StaffSession } from './permissions';
@@ -128,8 +129,12 @@ export async function clearStaffCookie(): Promise<void> {
 }
 
 // ─── Session ─────────────────────────────────────────────────────────────────
+// Wrapped in React.cache so that an admin render — layout + page + child
+// server components + every server-action permission check — dedupes onto a
+// single cookie verify + staff_members lookup per request. A typical admin
+// page hit fans this out 4-6× without the cache.
 
-export async function getStaffSession(): Promise<StaffSession | null> {
+export const getStaffSession = cache(async (): Promise<StaffSession | null> => {
   const store = await cookies();
 
   // Owner session (legacy single-password auth — kept until full migration to
@@ -179,7 +184,7 @@ export async function getStaffSession(): Promise<StaffSession | null> {
     roleId: (data.role_id as string | null) ?? null,
     roleName: role?.name ?? null,
   };
-}
+});
 
 // ─── Helpers used by login flow to upgrade SHA-256 → scrypt on first login ──
 export async function upgradeStaffHash(staffId: string, newHash: string): Promise<void> {

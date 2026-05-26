@@ -94,7 +94,11 @@ export function NewsletterSignup({
         <button
           type="submit"
           disabled={pending}
-          aria-label="Subscribe to newsletter"
+          // WCAG label-content-name-mismatch: the visible text must appear
+          // at the start of the accessible name. Visible text is `ctaLabel`
+          // (defaults to "Join"); the aria-label leads with the same word
+          // so screen-reader announcement and visual button agree.
+          aria-label={`${ctaLabel} the Aizel newsletter`}
           style={{
             padding: '10px 16px', background: 'var(--brand-pink-cta)', border: 'none',
             borderRadius: '0 3px 3px 0', color: '#fff', fontSize: '0.75rem', fontWeight: 600,
