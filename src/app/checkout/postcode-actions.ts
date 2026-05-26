@@ -56,6 +56,11 @@ export async function lookupPostcode(rawPostcode: string): Promise<LookupResult>
   if (!parsed.success) {
     return { ok: false, configured: true, error: parsed.error.issues[0]?.message ?? 'Invalid postcode' };
   }
+  // Normalised form for the provider call below. Kept as a real binding
+  // (not just inlined) so the example snippets in the comment block stay
+  // copy-pasteable when wiring a real Loqate / Ideal Postcodes account.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- referenced by the template comments below; used as soon as a provider is wired
+  const postcode = parsed.data.toUpperCase();
 
   // ── Provider adapter ────────────────────────────────────────────────
   // Today: returns an empty list with `ok: true` so the UI shows

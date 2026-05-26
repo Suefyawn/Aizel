@@ -181,7 +181,9 @@ export default async function SettingsNotificationsPage({ searchParams }: { sear
           background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
           padding: '40px 24px', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem',
         }}>
-          No recipients yet — alerts go to the fallback address above.
+          {fallback
+            ? 'No recipients yet — alerts go to the fallback address above.'
+            : 'No recipients yet. With no fallback configured, internal alerts are being dropped — add at least one recipient.'}
         </div>
       ) : (
         recipients.map(r => <RecipientRow key={r.id} r={r} />)
