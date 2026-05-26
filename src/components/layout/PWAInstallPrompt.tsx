@@ -3,8 +3,15 @@
 import { useEffect, useState } from 'react';
 
 // Listens for the browser's `beforeinstallprompt` event and surfaces a
-// dismissable banner. Once dismissed it stays dismissed for 30 days
-// (localStorage); once the user accepts or installs, it never shows again.
+// dismissable banner. Snooze rules, in order of strength:
+//   • Once accepted / installed → never shows again (1 year + appinstalled).
+//   • Once explicitly dismissed → 30 days.
+//   • Once the prompt has merely BEEN SHOWN (regardless of outcome) → 7
+//     days. Without this the prompt fired on every page load if the user
+//     closed the tab without clicking either button — the original
+//     complaint from the user audit.
+//   • Per-tab session guard → never shows twice in the same browser tab,
+//     even if the user navigates between several pages.
 //
 // Only fires on browsers that support installable PWAs (Chrome / Edge /
 // some Android browsers). Safari users get nothing here — we'd need to
@@ -15,7 +22,13 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const STORAGE_KEY = 'yp_pwa_install_dismissed_until';
+const STORAGE_KEY = 'aizel_pwa_install_dismissed_until';
+const SESSION_KEY = 'aizel_pwa_install_shown_this_session';
+// Seven days as the "merely shown" snooze — long enough that the prompt
+// doesn't feel naggy, short enough that a forgetful user gets reminded.
+const SHOWN_SNOOZE_MS  = 7 * 24 * 60 * 60 * 1000;
+const DISMISS_SNOOZE_MS = 30 * 24 * 60 * 60 * 1000;
+const INSTALLED_SNOOZE_MS = 365 * 24 * 60 * 60 * 1000;
 
 export function PWAInstallPrompt() {
   const [event, setEvent] = useState<BeforeInstallPromptEvent | null>(null);
@@ -24,7 +37,13 @@ export function PWAInstallPrompt() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // If they dismissed recently or already installed, do nothing.
+    // Already shown in THIS tab — don't surface again until the user
+    // closes and reopens the tab. Stops the prompt re-appearing as the
+    // user navigates between pages.
+    if (sessionStorage.getItem(SESSION_KEY)) return;
+
+    // If they dismissed recently, were already shown the prompt within
+    // the snooze window, or already installed, do nothing.
     const dismissedUntil = Number(localStorage.getItem(STORAGE_KEY) ?? '0');
     if (Date.now() < dismissedUntil) return;
 
@@ -33,13 +52,26 @@ export function PWAInstallPrompt() {
       const bip = e as BeforeInstallPromptEvent;
       setEvent(bip);
       // Give the user a moment to engage with the page first.
-      setTimeout(() => setVisible(true), 4_000);
+      setTimeout(() => {
+        setVisible(true);
+        // Mark "shown this session" the moment the banner appears, so
+        // navigation away + back doesn't replay it.
+        sessionStorage.setItem(SESSION_KEY, '1');
+        // Auto-snooze: even if the user ignores the banner and closes
+        // the tab, we won't re-prompt for 7 days. The user complained
+        // the prompt was nagging on every page load — this is the fix.
+        const shownSnooze = Date.now() + SHOWN_SNOOZE_MS;
+        const current = Number(localStorage.getItem(STORAGE_KEY) ?? '0');
+        if (current < shownSnooze) {
+          localStorage.setItem(STORAGE_KEY, String(shownSnooze));
+        }
+      }, 4_000);
     };
     window.addEventListener('beforeinstallprompt', handler as EventListener);
 
     // Once installed, never show again.
     const onInstalled = () => {
-      localStorage.setItem(STORAGE_KEY, String(Date.now() + 365 * 24 * 60 * 60 * 1000));
+      localStorage.setItem(STORAGE_KEY, String(Date.now() + INSTALLED_SNOOZE_MS));
       setVisible(false);
     };
     window.addEventListener('appinstalled', onInstalled);
@@ -53,8 +85,9 @@ export function PWAInstallPrompt() {
   if (!visible || !event) return null;
 
   const dismiss = () => {
-    // Snooze for 30 days.
-    localStorage.setItem(STORAGE_KEY, String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+    // Promote the 7-day "shown" snooze to a full 30 days when the user
+    // explicitly says no.
+    localStorage.setItem(STORAGE_KEY, String(Date.now() + DISMISS_SNOOZE_MS));
     setVisible(false);
   };
 
@@ -87,10 +120,11 @@ export function PWAInstallPrompt() {
     >
       <div style={{
         flexShrink: 0, width: 36, height: 36, borderRadius: 8,
-        background: 'linear-gradient(135deg, var(--brand-yellow), var(--brand-pink))',
+        // On-brand purple block instead of the old yellow-pink gradient.
+        background: 'var(--brand-pink, #6B2C91)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontWeight: 700, color: 'var(--ink-900)',
-      }}>YP</div>
+        fontWeight: 700, color: 'white', fontSize: '1rem',
+      }}>A</div>
       <div style={{ flex: 1, fontSize: '0.8125rem', lineHeight: 1.4 }}>
         <strong style={{ display: 'block', marginBottom: 2 }}>Install Aizel</strong>
         <span style={{ color: 'rgba(255, 255, 255,0.7)' }}>Skip the browser. Tap to add to your home screen.</span>
