@@ -196,6 +196,7 @@ export async function createBlogPost(
   _prev: { error?: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
+  const session = await assertPermission('blog');
   // checkbox quirk: when unchecked, `featured` is absent from FormData.
   const normalized = new FormData();
   for (const [k, v] of formData.entries()) normalized.append(k, v);
@@ -204,8 +205,14 @@ export async function createBlogPost(
 
   const parsed = parseForm(blogPostInputSchema, normalized);
   if (!parsed.success) return { error: firstError(parsed.error) };
-  const { error } = await supabaseAdmin().from('blog_posts').insert(parsed.data);
+  const { data, error } = await supabaseAdmin()
+    .from('blog_posts').insert(parsed.data).select('id').single();
   if (error) return { error: error.message };
+  await logAudit(session, {
+    action: 'blog.create', entity: 'blog_post',
+    entity_id: (data as { id?: string } | null)?.id,
+    diff: parsed.data,
+  });
   revalidatePath('/admin/blog');
   redirect('/admin/blog');
 }
@@ -215,6 +222,7 @@ export async function updateBlogPost(
   _prev: { error?: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
+  const session = await assertPermission('blog');
   const normalized = new FormData();
   for (const [k, v] of formData.entries()) normalized.append(k, v);
   if (!normalized.has('featured')) normalized.append('featured', 'false');
@@ -222,18 +230,35 @@ export async function updateBlogPost(
 
   const parsed = parseForm(blogPostInputSchema, normalized);
   if (!parsed.success) return { error: firstError(parsed.error) };
-  const { error } = await supabaseAdmin().from('blog_posts').update(parsed.data).eq('id', id);
+  const admin = supabaseAdmin();
+  const { data: before } = await admin
+    .from('blog_posts').select('*').eq('id', id).maybeSingle();
+  const { error } = await admin.from('blog_posts').update(parsed.data).eq('id', id);
   if (error) return { error: error.message };
+  await logAudit(session, {
+    action: 'blog.update', entity: 'blog_post', entity_id: id,
+    diff: { before, after: parsed.data },
+  });
   revalidatePath('/admin/blog');
   redirect('/admin/blog');
 }
 
 export async function deleteBlogPost(formData: FormData) {
+  const session = await assertPermission('blog');
   const id = formData.get('id') as string;
-  const { error } = await supabaseAdmin().from('blog_posts').delete().eq('id', id);
+  const admin = supabaseAdmin();
+  // Capture the title before delete so the audit row carries useful context
+  // (audit_log keeps the row indefinitely; the blog_posts row will be gone).
+  const { data: before } = await admin
+    .from('blog_posts').select('title, slug').eq('id', id).maybeSingle();
+  const { error } = await admin.from('blog_posts').delete().eq('id', id);
   if (error) {
     redirect(`/admin/blog?error=${encodeURIComponent(error.message)}`);
   }
+  await logAudit(session, {
+    action: 'blog.delete', entity: 'blog_post', entity_id: id,
+    diff: before ?? undefined,
+  });
   revalidatePath('/admin/blog');
   redirect('/admin/blog?deleted=1');
 }

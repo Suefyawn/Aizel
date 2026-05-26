@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Product, BlogPost } from '@/types';
 import { DEMO_PRODUCTS, DEMO_BLOG_POSTS, DEMO_SITE_SETTINGS } from './demo-data';
 import { isDemo } from './is-demo';
+import { log } from './logger';
 
 /** True when no Supabase env vars are configured. Storefront helpers fall
  *  back to stub data so the site renders for design / a11y review on a
@@ -99,7 +100,7 @@ async function safe<T>(
     // Don't spam the demo client with errors — demo mode is opt-in for offline
     // rendering and the placeholder URL deliberately can't be reached.
     if (!isDemo) {
-      console.warn(`[supabase] ${label} failed; falling back. ${(err as Error).message}`);
+      log.warn('supabase.fallback', { label, err: (err as Error).message });
     }
     return fallback;
   }
