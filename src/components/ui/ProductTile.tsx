@@ -59,9 +59,13 @@ export function ProductTile({ product }: ProductTileProps) {
   //  • Variable products  → "Choose options" routes to PDP (variant pick needed).
   //  • Out of stock       → "Sold out" disabled badge, no action.
   //  • Simple + in stock  → "Add to bag" calls addToCart(product, qty: 1).
+  // `track_inventory = false` means the product is treated as always available
+  // (manual SKUs, made-to-order, drop-ship); we must NOT mark those sold-out
+  // just because the stored stock happens to be 0. PDPPage.tsx applies the
+  // same guard at line 359; keeping tile + PDP in sync.
   const isVariable = kind === 'variable';
-  const soldOut = typeof stock === 'number' && stock <= 0;
   const tracksStock = track_inventory !== false;
+  const soldOut = tracksStock && typeof stock === 'number' && stock <= 0;
   const isOnSale = (original_price ?? 0) > price;
   const discountPercent = isOnSale
     ? Math.round(((original_price! - price) / original_price!) * 100)
