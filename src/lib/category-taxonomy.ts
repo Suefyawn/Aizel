@@ -259,3 +259,135 @@ export function canonicalCategory(value: string | null | undefined): string | nu
   if (taxon) return taxon.label;
   return CATEGORY_BY_KEY[v.toLowerCase()] ?? null;
 }
+
+// ── Dynamic loader ────────────────────────────────────────────────────────
+// The `TAXONS` / `CATEGORY_DESCRIPTIONS` / `NAV_SECTIONS` constants above are
+// the BUILD-TIME SEED — they're what the storefront ships if the DB is
+// unreachable, what the dev env serves before its first DB query, and what
+// the migration `20260526_143_categories_cms.sql` mirrors into the DB on
+// initial install. Once an operator edits anything in the admin Categories
+// CMS the DB becomes the source of truth, and consumers call
+// `loadTaxonomy()` to get the live shape.
+//
+// The loader is `unstable_cache`'d with the `taxonomy` tag, so admin
+// mutations call `revalidateTag('taxonomy')` to invalidate cached HTML
+// across the whole app in one shot — no per-page revalidatePath storm.
+
+export interface TaxonomyView {
+  taxons: Taxon[];
+  navSections: NavSection[];
+  /** Lookup table mirroring CATEGORY_DESCRIPTIONS but built from DB rows. */
+  categoryDescriptions: Record<string, string>;
+  /** Every leaf category label, flattened. */
+  allCategories: string[];
+  /** Slug → canonical label lookup. */
+  categoryByKey: Record<string, string>;
+}
+
+/** Build the same view we used to ship from constants, but from DB rows. */
+function buildView(
+  taxonRows: Array<{ key: string; label: string; tagline: string | null; description: string | null; sort_order: number }>,
+  catRows:   Array<{ slug: string; label: string; description: string | null; taxon_key: string; sort_order: number }>,
+): TaxonomyView {
+  const taxons: Taxon[] = taxonRows.map(t => ({
+    key:     t.key as TaxonKey,
+    label:   t.label,
+    tagline: t.tagline ?? '',
+    categories: catRows.filter(c => c.taxon_key === t.key).map(c => c.label),
+  }));
+
+  // Nav sections — same shape the constant used to have, except built
+  // from DB rows so a new taxon shows up automatically. The "Styling +
+  // Grooming combined" merge is no longer special-cased; every taxon
+  // gets its own mega-menu. Operators who want to consolidate can drop
+  // the extra taxon and move its categories under another taxon.
+  const navSections: NavSection[] = taxons.map(t => ({
+    key:             t.key,
+    label:           t.label,
+    href:            `/shop?taxon=${t.key}`,
+    activeTaxonKeys: [t.key],
+    columns: [{ heading: t.label, href: `/shop?taxon=${t.key}`, categories: t.categories }],
+  }));
+
+  const categoryDescriptions: Record<string, string> = {
+    All: CATEGORY_DESCRIPTIONS.All,
+  };
+  for (const t of taxonRows) {
+    if (t.description) categoryDescriptions[t.label] = t.description;
+  }
+  for (const c of catRows) {
+    if (c.description) categoryDescriptions[c.label] = c.description;
+  }
+
+  const allCategories = catRows.map(c => c.label);
+  const categoryByKey: Record<string, string> = {};
+  for (const c of catRows) {
+    categoryByKey[c.slug] = c.label;
+    categoryByKey[c.label.toLowerCase()] = c.label;
+  }
+  return { taxons, navSections, categoryDescriptions, allCategories, categoryByKey };
+}
+
+/** Read taxons + categories from Supabase and assemble a TaxonomyView. */
+async function fetchTaxonomyFromDb(): Promise<TaxonomyView> {
+  // Lazy-import so this file stays importable from the client build path
+  // (the constants above don't depend on supabase-js).
+  const { supabase } = await import('./supabase');
+  const [taxResult, catResult] = await Promise.all([
+    supabase.from('taxons').select('key, label, tagline, description, sort_order').order('sort_order'),
+    supabase.from('categories').select('slug, label, description, sort_order, taxons(key)').order('sort_order'),
+  ]);
+  type CatRow = { slug: string; label: string; description: string | null; sort_order: number; taxons: { key: string } | { key: string }[] | null };
+  const cats = ((catResult.data ?? []) as CatRow[]).map(c => {
+    const t = Array.isArray(c.taxons) ? c.taxons[0] : c.taxons;
+    return { slug: c.slug, label: c.label, description: c.description, sort_order: c.sort_order, taxon_key: t?.key ?? '' };
+  }).filter(c => c.taxon_key);
+  const taxs = (taxResult.data ?? []) as Array<{ key: string; label: string; tagline: string | null; description: string | null; sort_order: number }>;
+  if (taxs.length === 0) {
+    // DB empty or unreachable — return the build-time seed so the store
+    // doesn't render an empty nav.
+    return buildFromConstants();
+  }
+  return buildView(taxs, cats);
+}
+
+/** Build the same view from the build-time constants — used as the
+ *  ultimate fallback when the DB is unreachable. */
+function buildFromConstants(): TaxonomyView {
+  const taxonRows = TAXONS.map((t, i) => ({
+    key: t.key, label: t.label, tagline: t.tagline, description: CATEGORY_DESCRIPTIONS[t.label] ?? null, sort_order: i,
+  }));
+  const catRows = TAXONS.flatMap((t, ti) =>
+    t.categories.map((c, ci) => ({
+      slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+      label: c, description: CATEGORY_DESCRIPTIONS[c] ?? null,
+      taxon_key: t.key, sort_order: ti * 100 + ci,
+    })),
+  );
+  return buildView(taxonRows, catRows);
+}
+
+let _cachedLoader: (() => Promise<TaxonomyView>) | null = null;
+
+/** Load the live taxonomy from DB (cached). Used by every server entry
+ *  point that needs taxon/category data — homepage, shop, layout, sitemap.
+ *  Admin mutations call `revalidateTag('taxonomy')` to invalidate. */
+export async function loadTaxonomy(): Promise<TaxonomyView> {
+  if (_cachedLoader === null) {
+    // `unstable_cache` is the Next.js primitive for memoising async work
+    // across requests with a tag that admin actions can invalidate. We
+    // resolve the import lazily so this file remains safe to import from
+    // bundler contexts that don't have next/cache (tests, etc.).
+    const { unstable_cache } = await import('next/cache');
+    _cachedLoader = unstable_cache(
+      fetchTaxonomyFromDb,
+      ['taxonomy-v1'],
+      { tags: ['taxonomy'], revalidate: 300 },
+    );
+  }
+  try {
+    return await _cachedLoader();
+  } catch {
+    return buildFromConstants();
+  }
+}

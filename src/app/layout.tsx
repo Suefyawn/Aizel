@@ -89,7 +89,8 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, promos, searchTrending, searchCategories] = await Promise.all([
+  const { loadTaxonomy } = await import('@/lib/category-taxonomy');
+  const [settings, promos, searchTrending, searchCategories, taxonomy] = await Promise.all([
     getSiteSettings(),
     // TODO: read auth session + lifetime-order count to refine the audience.
     // For now everyone is treated as 'guest' so any null-audience or
@@ -99,6 +100,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     getActivePromos(audienceFor(false, false)),
     loadTrendingBrands(),
     loadPopularCategories(),
+    // Live taxonomy (taxons + categories) for the header mega-menu. DB-
+    // backed so admin edits propagate without a redeploy; cached with the
+    // `taxonomy` tag so admin mutations only invalidate this slice.
+    loadTaxonomy(),
   ]);
   // Social profiles + store contact are owner-managed (admin Settings); the
   // JSON-LD reads from the same source as the footer.
@@ -146,6 +151,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             promos={promos}
             searchTrending={searchTrending}
             searchCategories={searchCategories}
+            navSections={taxonomy.navSections}
           >
             {/* tabindex=-1 so the skip-link can focus #main programmatically
                 without making it a sequential Tab stop. */}
