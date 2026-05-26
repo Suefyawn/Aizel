@@ -201,6 +201,26 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
     return { ok: false, error: orderErr?.message ?? 'Failed to create POS order' };
   }
 
+  // ── Stock decrement per line ───────────────────────────────────────────
+  // POS bypasses the place_order RPC (the till has its own multi-tender
+  // flow), so it must decrement stock itself. Without this, the same
+  // catalogue gets sold over and over without the inventory ever
+  // reflecting it, and the cancellation restock path then over-credits
+  // stock that was never debited.
+  for (const it of data.items) {
+    if (!it.product_id) continue;
+    await admin.rpc('record_stock_change', {
+      p_product_id:  it.product_id,
+      p_variant_id:  null,
+      p_qty_delta:   -it.qty,
+      p_reason:      'order',
+      p_order_id:    orderRow.id,
+      p_actor_kind:  session.isOwner ? 'owner' : 'staff',
+      p_actor_email: session.email ?? null,
+      p_note:        `POS sale ${orderNumber}`,
+    });
+  }
+
   // ── Payments rows — one per tender ─────────────────────────────────────
   for (const t of data.tenders) {
     const gateway = t.method === 'stripe_terminal' ? 'stripe_terminal' : t.method; // cash | card | stripe_terminal
@@ -223,6 +243,7 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
         amount:     t.amount,
         kind:       'sale',
         order_id:   orderRow.id,
+        actor_id:   session.id,
       });
       // If change is given back, journal it as a negative cash_out event
       // so the till's net position is correct.
@@ -233,6 +254,7 @@ export async function completePosSale(input: unknown): Promise<CompleteResult> {
           kind:       'cash_out',
           order_id:   orderRow.id,
           note:       'Change given',
+          actor_id:   session.id,
         });
       }
     }

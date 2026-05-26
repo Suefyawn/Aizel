@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { getStaffSession } from '@/lib/staff-auth';
 import { logAudit } from '@/lib/audit';
 import { productInputSchema } from '@/lib/validators';
@@ -102,7 +102,10 @@ export async function importProductsFromCsv(csvText: string): Promise<ImportResu
   let imported = 0;
   for (let i = 0; i < valid.length; i += 50) {
     const batch = valid.slice(i, i + 50);
-    const { error } = await supabase.from('products').upsert(batch, { onConflict: 'slug' });
+    // supabaseAdmin() — products write RLS blocks anon, and CSV import is
+    // a staff-gated server action (assertPermission is enforced above), so
+    // the service-role client is correct here.
+    const { error } = await supabaseAdmin().from('products').upsert(batch, { onConflict: 'slug' });
     if (error) {
       errors.push(`batch ${Math.floor(i / 50)}: ${error.message}`);
     } else {

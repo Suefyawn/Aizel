@@ -87,9 +87,13 @@ export async function getRecentActivity(limit = 20): Promise<ActivityItem[]> {
     orderIds.size > 0
       ? admin.from('orders').select('id, order_number, total, first_name, last_name').in('id', Array.from(orderIds))
       : Promise.resolve({ data: [] as Array<{ id: string; order_number: string; total: number; first_name: string | null; last_name: string | null }> }),
+    // profiles has no email column — email is owned by auth.users. The
+    // activity feed only needs name to label the row; if name is null we
+    // fall back to the generic 'a customer' rather than chasing auth for
+    // an email lookup per customer (would be N round-trips for one row).
     userIds.size > 0
-      ? admin.from('profiles').select('id, first_name, last_name, email').in('id', Array.from(userIds))
-      : Promise.resolve({ data: [] as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null }> }),
+      ? admin.from('profiles').select('id, first_name, last_name').in('id', Array.from(userIds))
+      : Promise.resolve({ data: [] as Array<{ id: string; first_name: string | null; last_name: string | null }> }),
     productIds.size > 0
       ? admin.from('products').select('id, name, brand').in('id', Array.from(productIds))
       : Promise.resolve({ data: [] as Array<{ id: string; name: string; brand: string | null }> }),
@@ -108,7 +112,7 @@ export async function getRecentActivity(limit = 20): Promise<ActivityItem[]> {
     } else if (ek === 'customer' && r.entity_id) {
       const p = profileById.get(r.entity_id);
       const name = p ? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() : '';
-      entity_label = name || p?.email || 'a customer';
+      entity_label = name || 'a customer';
     } else if (ek === 'product' && r.entity_id) {
       const p = productById.get(r.entity_id);
       entity_label = p ? `${p.brand ? `${p.brand} ` : ''}${p.name}` : 'a product';

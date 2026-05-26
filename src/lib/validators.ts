@@ -143,10 +143,26 @@ export const variantInputSchema = z.object({
   product_id: z.string().uuid(),
   sku:        z.string().trim().max(80).optional().or(z.literal('')).nullable(),
   price:      positiveNumber,
-  compare_at_price: positiveNumber.optional().nullable(),
+  // Blank `compare_at_price` from the form arrives as ''. `positiveNumber`
+  // would coerce that to 0 (not null) — which then looks like an active
+  // strike-through price of £0. Normalise '' / null / undefined → null
+  // BEFORE the number coercion, mirroring the `vendor_cost` pattern below.
+  compare_at_price: z.preprocess(
+                      v => (v === '' || v == null ? null : v),
+                      positiveNumber.nullable(),
+                    ).optional(),
   stock:      positiveInt,
   image_url:  httpsUrlSchema.optional().or(z.literal('')).nullable(),
-  enabled:    z.coerce.boolean().default(true),
+  // An unchecked HTML checkbox submits NO key in FormData. `z.coerce.boolean()`
+  // then sees `undefined` and applies `.default(true)`, so a previously-
+  // disabled variant gets re-enabled on every save. Treat any of
+  // 'true'/'on'/true as enabled, EVERYTHING ELSE — including undefined —
+  // as disabled. The form pairs the visible checkbox with a hidden
+  // `enabled=false` field so the false case still arrives explicitly.
+  enabled:    z.preprocess(
+                v => (v === 'true' || v === 'on' || v === true),
+                z.boolean(),
+              ),
   sort_order: positiveInt.default(0),
 });
 export type VariantInput = z.infer<typeof variantInputSchema>;

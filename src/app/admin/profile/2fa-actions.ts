@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createHash, randomBytes } from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getStaffSession } from '@/lib/staff-auth';
+import { getStaffSession, verifyPassword } from '@/lib/staff-auth';
 import { generateSecret, otpauthUrl, verifyTotp } from '@/lib/totp';
 import { logAudit } from '@/lib/audit';
 
@@ -23,8 +23,22 @@ function hashBackupCode(plain: string): string {
 export async function begin2faEnrollment(): Promise<{
   secret: string;
   url: string;
+  error?: string;
 }> {
   const session = await assertSelfStaff();
+  // Audit fix: refuse to start a fresh enrollment for a user who already
+  // has 2FA active — otherwise a stolen session can click "begin
+  // enrollment" and silently set totp_enabled=false, knocking 2FA off
+  // until the legitimate user confirms a code. Force them to disable
+  // first (which requires the password).
+  const { data: existing } = await supabaseAdmin()
+    .from('staff_members')
+    .select('totp_enabled')
+    .eq('id', session.id)
+    .maybeSingle<{ totp_enabled: boolean | null }>();
+  if (existing?.totp_enabled) {
+    return { secret: '', url: '', error: '2FA is already enabled. Disable it first to re-enroll.' };
+  }
   const secret = generateSecret();
   // Store as a *staged* secret — only commit it once the user verifies a code.
   await supabaseAdmin()
@@ -60,9 +74,22 @@ export async function confirm2faEnrollment(code: string): Promise<{ error?: stri
 
 export async function disable2fa(currentPassword: string): Promise<{ error?: string; success?: boolean }> {
   const session = await assertSelfStaff();
-  // We don't re-verify the password here for brevity — the session itself is the
-  // proof of authentication. In production you'd want a recent-auth check.
-  void currentPassword;
+  // Audit fix: require the password to disable 2FA. The cookie alone is
+  // not enough — an XSS-leaked or shared-workstation session would
+  // otherwise be able to strip 2FA in one call. Re-verify against the
+  // hash in staff_members.
+  if (!currentPassword || typeof currentPassword !== 'string') {
+    return { error: 'Enter your current password to confirm.' };
+  }
+  const { data } = await supabaseAdmin()
+    .from('staff_members')
+    .select('password_hash, password_salt')
+    .eq('id', session.id)
+    .maybeSingle<{ password_hash: string; password_salt: string | null }>();
+  if (!data) return { error: 'Account not found.' };
+  const verified = verifyPassword(currentPassword, data.password_hash, data.password_salt);
+  if (!verified.ok) return { error: 'Incorrect password.' };
+
   await supabaseAdmin()
     .from('staff_members')
     .update({ totp_enabled: false, totp_secret: null, backup_codes: [] })
