@@ -78,17 +78,22 @@ export async function searchCommandPalette(q: string): Promise<CommandSearchResu
 
   if (canCustomers) {
     queries.push((async () => {
+      // profiles has no email column — email is owned by auth.users. We
+      // search by name + phone (the two PII fields the profile actually
+      // owns); email-based search lives on the admin users page itself,
+      // which can call a service-role join against auth.users. The
+      // command palette stays narrow and fast.
       const { data } = await admin
         .from('profiles')
-        .select('id, first_name, last_name, email, phone')
-        .or(`first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`)
+        .select('id, first_name, last_name, phone')
+        .or(`first_name.ilike.${like},last_name.ilike.${like},phone.ilike.${like}`)
         .limit(5);
-      return ((data ?? []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string; phone: string | null }>)
+      return ((data ?? []) as Array<{ id: string; first_name: string | null; last_name: string | null; phone: string | null }>)
         .map(c => ({
           kind: 'customer' as const,
           id: c.id,
-          title: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email,
-          subtitle: c.email,
+          title: [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Customer',
+          subtitle: c.phone ?? '',
           href: `/admin/users/${c.id}`,
         }));
     })());

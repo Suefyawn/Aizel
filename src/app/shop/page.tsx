@@ -134,12 +134,12 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   });
 }
 
-export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string; subcategory?: string; cat?: string; taxon?: string; on_sale?: string }> }) {
+export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string; subcategory?: string; cat?: string; taxon?: string; on_sale?: string; q?: string; brand?: string }> }) {
   const [allProducts, facetData] = await Promise.all([
     getProducts(),
     loadFacetData(),
   ]);
-  const { category, subcategory, cat, taxon, on_sale } = await searchParams;
+  const { category, subcategory, cat, taxon, on_sale, q, brand } = await searchParams;
 
   // ?category= is canonical; ?cat= is a legacy WP param the proxy already
   // 301s across. CollectionPage resolves the value (taxon or leaf) itself.
@@ -162,11 +162,31 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   // turned every /shop?taxon=... visit into a ~300 KB inline RSC payload.
   // Client-side facet filters (brand, price, in-stock) still operate over
   // this narrowed set without further roundtrips — they only narrow further.
-  const products = taxonObj
+  let products = taxonObj
     ? allProducts.filter(p => taxonObj.categories.includes(p.category))
     : initialCategory !== 'All'
       ? allProducts.filter(p => p.category === initialCategory)
       : allProducts;
+
+  // Server-narrow by ?q= (free-text search) and ?brand= (comma-separated
+  // list) so the first paint and the JSON-LD ItemList are correctly
+  // filtered. Without this, `/shop?q=cantu` previously rendered every
+  // product on the server and only filtered after JS hydrate — bad for
+  // SEO (Google sees the unfiltered list under the q= URL) and produces
+  // a brief flash of wrong content for the user. The client-side facet
+  // sidebar keeps working over the narrowed set; it just shows counts
+  // within the search/brand scope, which is correct.
+  if (q?.trim()) {
+    const needle = q.trim().toLowerCase();
+    products = products.filter(p =>
+      p.name.toLowerCase().includes(needle) ||
+      (p.brand?.toLowerCase().includes(needle) ?? false),
+    );
+  }
+  if (brand?.trim()) {
+    const wantedBrands = new Set(brand.split(',').map(b => b.trim().toLowerCase()).filter(Boolean));
+    products = products.filter(p => p.brand && wantedBrands.has(p.brand.toLowerCase()));
+  }
 
   // Scope the JSON-LD ItemList to whatever the URL implies. Cap at 24 to
   // keep the schema lean (Google ignores anything past that anyway).

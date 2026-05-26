@@ -354,7 +354,11 @@ export function CollectionPage({
   const qLower = q.trim().toLowerCase();
   const activeTaxon = findTaxon(activeCategory);
 
-  let filtered = products.filter(p => {
+  // Pass 1: every filter EXCEPT free_from. Used both to compute which
+  // free_from chips have any matches in the current view (so the rail
+  // self-prunes when an existing catalogue has no claims tagged) AND as
+  // the basis for the final filtered list.
+  const passesNonFreeFrom = (p: typeof products[number]): boolean => {
     if (qLower) {
       const hay = `${p.brand} ${p.name} ${p.category ?? ''} ${p.variant ?? ''}`.toLowerCase();
       if (!hay.includes(qLower)) return false;
@@ -372,15 +376,6 @@ export function CollectionPage({
     if (priceMax !== '' && p.price > priceMax) return false;
     if (inStockOnly && p.track_inventory !== false && p.stock <= 0) return false;
     if (onSaleOnly && !(p.original_price && p.original_price > p.price)) return false;
-    if (selectedFreeFrom.size > 0) {
-      // AND match — every selected claim must appear on the product. A
-      // shopper who ticks BOTH "sulphate-free" AND "silicone-free" wants
-      // products that are both, not products that are either.
-      const claims = p.free_from ?? [];
-      for (const token of selectedFreeFrom) {
-        if (!claims.includes(token)) return false;
-      }
-    }
     if (selectedValueIds.size > 0) {
       const productValues = productValueMap[p.id] ?? [];
       // Require the product to cover at least one selected value *per attribute* the user picked.
@@ -402,7 +397,37 @@ export function CollectionPage({
       }
     }
     return true;
-  });
+  };
+
+  const preFreeFromProducts = products.filter(passesNonFreeFrom);
+
+  // Tokens that have ≥1 matching product in the current pre-free-from
+  // view — the filter rail uses this to hide chips that would otherwise
+  // filter to zero results (e.g. a catalogue where no product has been
+  // tagged sulphate-free yet). Tokens the shopper has already selected
+  // stay visible regardless, so the chip remains untoggle-able.
+  const freeFromAvailable = new Set<FreeFromToken>();
+  for (const p of preFreeFromProducts) {
+    for (const t of (p.free_from ?? [])) {
+      if ((FREE_FROM_TOKENS as readonly string[]).includes(t)) {
+        freeFromAvailable.add(t as FreeFromToken);
+      }
+    }
+  }
+
+  // Pass 2: apply the free_from filter on top of the pre-narrowed set.
+  // AND match — every selected claim must appear on the product. A
+  // shopper who ticks BOTH "sulphate-free" AND "silicone-free" wants
+  // products that are both, not products that are either.
+  let filtered = selectedFreeFrom.size === 0
+    ? preFreeFromProducts
+    : preFreeFromProducts.filter(p => {
+        const claims = p.free_from ?? [];
+        for (const token of selectedFreeFrom) {
+          if (!claims.includes(token)) return false;
+        }
+        return true;
+      });
 
   if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price);
   else if (sortBy === 'price-high') filtered = [...filtered].sort((a, b) => b.price - a.price);
@@ -720,43 +745,52 @@ export function CollectionPage({
                 );
               })()}
 
-              {/* Free-from claims — small closed vocabulary, rendered as
-                  toggle chips because the labels are short and the binary
-                  yes/no UX maps better to chips than checkboxes. We always
-                  render the fieldset (even when 0 products carry a claim
-                  in the current view) so the shopper learns the feature
-                  exists — clicking a chip with no matches simply empties
-                  the grid + surfaces the empty state. */}
-              <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px' }}>
-                <legend style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-                  Free from
-                </legend>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {FREE_FROM_TOKENS.map(token => {
-                    const active = selectedFreeFrom.has(token);
-                    return (
-                      <button
-                        key={token}
-                        type="button"
-                        onClick={() => toggleFreeFrom(token)}
-                        aria-pressed={active}
-                        style={{
-                          padding: '4px 10px',
-                          border: '1px solid ' + (active ? 'var(--ink-900)' : 'var(--line)'),
-                          background: active ? 'var(--ink-900)' : 'var(--paper)',
-                          color: active ? 'var(--paper)' : 'var(--ink-900)',
-                          borderRadius: 100,
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          fontFamily: 'var(--font-ui)',
-                        }}
-                      >
-                        {FREE_FROM_LABELS[token]}
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
+              {/* Free-from claims — small closed vocabulary rendered as
+                  toggle chips. We hide individual chips that match zero
+                  products in the current view so the rail never offers a
+                  filter that would filter to nothing — a chip the shopper
+                  has already selected stays rendered regardless so they
+                  can untoggle it. The whole fieldset hides when no chip
+                  is available AND none is selected (e.g. unbackfilled
+                  catalogue). */}
+              {(() => {
+                const visible = FREE_FROM_TOKENS.filter(
+                  t => freeFromAvailable.has(t) || selectedFreeFrom.has(t),
+                );
+                if (visible.length === 0) return null;
+                return (
+                  <fieldset style={{ border: 'none', padding: 0, margin: '0 0 20px' }}>
+                    <legend style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                      Free from
+                    </legend>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {visible.map(token => {
+                        const active = selectedFreeFrom.has(token);
+                        return (
+                          <button
+                            key={token}
+                            type="button"
+                            onClick={() => toggleFreeFrom(token)}
+                            aria-pressed={active}
+                            style={{
+                              padding: '4px 10px',
+                              border: '1px solid ' + (active ? 'var(--ink-900)' : 'var(--line)'),
+                              background: active ? 'var(--ink-900)' : 'var(--paper)',
+                              color: active ? 'var(--paper)' : 'var(--ink-900)',
+                              borderRadius: 100,
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-ui)',
+                            }}
+                          >
+                            {FREE_FROM_LABELS[token]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                );
+              })()}
 
               {/* Variant attribute facets (Shade, Size, etc.) */}
               {attributes.map(attr => {

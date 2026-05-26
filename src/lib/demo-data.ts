@@ -585,19 +585,57 @@ export const DEMO_BLOG_POSTS: BlogPost[] = [
     id: 'demo-blog-1', slug: 'demo-wash-day-routine', title: 'A no-stress wash day routine for natural curls',
     excerpt: 'Cantu, ApHogee and a slow Sunday afternoon — the five-step routine that actually works.',
     category: 'Hair Care',
-    date: '2026-05-10', read_time: '5 min read', featured: true, body: undefined, image_url: undefined, created_at: TS,
+    date: '2026-05-10', read_time: '5 min read', featured: true,
+    image_url: 'https://i.ebayimg.com/images/g/sRYAAeSwg8FpA2o-/s-l500.webp',
+    body: '<p>Wash day used to mean a whole afternoon lost to a sticky bathroom floor and three half-empty bottles. Here is the five-step rhythm we land on for most type 3 and type 4 curls — slow enough to be kind, short enough to actually finish before dinner.</p>'
+      + '<h2>1. Pre-poo with a heavy oil</h2>'
+      + '<p>Apply castor or coconut oil from mid-length to ends, finger-detangle gently, and let it sit for 20–30 minutes under a shower cap. This is the difference between snapping curls in the shampoo lather and lifting them out intact.</p>'
+      + '<h2>2. Cleanse — but only where it matters</h2>'
+      + '<p>Use a sulphate-free cleanser on the scalp only and let the suds rinse down through the lengths. Two passes is plenty; a third strips the cuticle and undoes the pre-poo you just did.</p>'
+      + '<h2>3. Protein, then moisture — never the other way around</h2>'
+      + '<p>Once a month, work an ApHogee Two-Step or a similar reconstructor through soaked hair. Follow with a moisturising mask the same session so the cuticle resets soft instead of stiff. The order matters.</p>'
+      + '<h2>4. Style on soaking-wet hair</h2>'
+      + '<p>Cream, then gel, then plop in a cotton T-shirt. Working on wet hair locks the cream in before evaporation pulls moisture back out — this single change is the biggest reason curls clump on day one and stay clumped on day three.</p>'
+      + '<h2>5. Dry low, sleep on satin</h2>'
+      + '<p>Diffuse on low heat or air-dry; a bonnet or satin pillowcase keeps the curl pattern intact through the night. Skip this step and day-two hair is frizzy regardless of how good steps 1–4 were.</p>'
+      + '<p>One routine, three or four products, one Sunday afternoon — and the curls look the same on Wednesday as they did on Monday.</p>',
+    created_at: TS,
   },
   {
     id: 'demo-blog-2', slug: 'demo-jbco-explained', title: 'Jamaican Black Castor Oil, explained',
     excerpt: 'Original vs Extra Dark — which one your hair actually needs and how to use them.',
     category: 'Hair Care',
-    date: '2026-05-04', read_time: '6 min read', featured: false, body: undefined, image_url: undefined, created_at: TS,
+    date: '2026-05-04', read_time: '6 min read', featured: false,
+    image_url: 'https://i.ebayimg.com/images/g/EeUAAeSwXBNp~Ize/s-l500.webp',
+    body: '<p>If you have ever walked the hair-care aisle and squinted at two near-identical bottles of Jamaican Black Castor Oil — one labelled <em>Original</em>, the other <em>Extra Dark</em> — you are not alone. The bottles cost the same and look the same. The oil inside does not.</p>'
+      + '<h2>What makes it &ldquo;black&rdquo; in the first place</h2>'
+      + '<p>JBCO starts as castor beans roasted over wood-fire, ground to a paste, then boiled to separate the oil. The roast is what turns clear castor oil into the dark, ash-scented amber you find in the bottle — and it is also what people swear by for scalp circulation.</p>'
+      + '<h2>Original — for moisture and shine</h2>'
+      + '<p>The standard roast is the all-rounder. Sealed-in moisture, glossy ends, less daytime frizz. Warm a teaspoon between your palms and run it through damp lengths after styling; do not load it onto the scalp unless you are doing a full pre-poo.</p>'
+      + '<h2>Extra Dark — for growth and edges</h2>'
+      + '<p>The deeper roast concentrates the ricinoleic acid that gives JBCO its scalp-stimulating reputation. Apply directly to the edges, hairline and any thinning patches three nights a week. Give it eight weeks before you decide if it is working — castor oil is a slow, cumulative product, not an overnight fix.</p>'
+      + '<h2>How to actually use it without weighing curls down</h2>'
+      + '<p>JBCO is heavy. A pea-sized amount is plenty for the lengths, and a single drop at each temple is enough for the edges. Too much and you will spend the next two wash days clarifying it back out. Less is genuinely more here.</p>'
+      + '<h2>One bottle, both bases covered</h2>'
+      + '<p>If you can only buy one, start with Original — its moisture pay-off is universal. Add Extra Dark only when you have a specific edge or growth goal in mind. Either way, store the bottle out of direct sunlight; oxidised castor smells exactly as bad as it sounds.</p>',
+    created_at: TS,
   },
   {
     id: 'demo-blog-3', slug: 'demo-cocoa-shea-difference', title: 'Cocoa vs shea butter — which one is right for you',
     excerpt: 'Both are body care heroes. Here\'s when to reach for each one (and when to layer both).',
     category: 'Body Care',
-    date: '2026-04-28', read_time: '4 min read', featured: false, body: undefined, image_url: undefined, created_at: TS,
+    date: '2026-04-28', read_time: '4 min read', featured: false,
+    image_url: 'https://i.ebayimg.com/images/g/XXMAAeSw1L5pJxqN/s-l500.webp',
+    body: '<p>Cocoa butter and shea butter both turn up in nearly every Black body-care brand on the shelf, often in the same product. They are not interchangeable, and picking the right one for the right job changes how your skin actually feels by the end of the week.</p>'
+      + '<h2>Cocoa butter — for elasticity and that signature scent</h2>'
+      + '<p>Cocoa butter is solid at room temperature and melts on contact with skin. It is rich in antioxidants and the kind of fatty acids that support elasticity, which is why it is the hero ingredient in nearly every stretch-mark cream you have ever heard of. It is also the one with the chocolate-y, warm scent that does not need a fragrance house to make it lovable.</p>'
+      + '<h2>Shea butter — for dry, reactive skin</h2>'
+      + '<p>Raw shea is softer at room temperature and absorbs faster than cocoa. It carries vitamin A and E, sits well on eczema-prone or irritated skin, and rarely triggers the breakouts that occlusive products sometimes do on the chest and back. The trade-off: a nuttier, more savoury scent that some people love and some people mask with body oil on top.</p>'
+      + '<h2>When to reach for which</h2>'
+      + '<p>Post-shower on dewy skin, when you want hydration to lock in and a light fragrance to last: cocoa. After a hot bath when your skin feels tight, or on a child with dry winter patches: shea. Stretch marks on a growing bump: cocoa, daily, twice a day. A scalp moisturiser for braids that lasts a week: shea, every two or three days.</p>'
+      + '<h2>Layering both — yes, it works</h2>'
+      + '<p>For very dry winter skin the order is shea first, cocoa on top. Shea penetrates faster, cocoa seals it in. Pick raw, unrefined versions of both — the cheaper refined ones lose the fatty-acid profile that made you want them in the first place.</p>',
+    created_at: TS,
   },
 ];
 

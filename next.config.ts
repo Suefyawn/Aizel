@@ -87,12 +87,39 @@ const nextConfig: NextConfig = {
   // ─ Crawler endpoints (sitemap, robots, llms.txt) get longer s-maxage.
   // ─ Everything else falls through with the framework default.
   async headers() {
+    // Content-Security-Policy in report-only mode: violations log to the
+    // browser console without breaking anything, letting us collect what
+    // legitimate sources need allowing before flipping to enforcement.
+    // Allowlist covers the third parties this app already loads —
+    // Stripe (checkout + Terminal), PostHog (analytics), Sentry (error
+    // monitoring), Supabase Storage (product images), Unsplash (homepage
+    // editorial banners), and inline scripts (Next.js inlines a small
+    // hydration bootstrap + JSON-LD).
+    const CSP_REPORT_ONLY = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://i.ebayimg.com https://*.stripe.com",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://api.stripe.com",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://checkout.stripe.com",
+      "frame-ancestors 'self'",
+      "upgrade-insecure-requests",
+    ].join('; ');
+
     const SECURITY: Array<{ key: string; value: string }> = [
       { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
       { key: 'X-Content-Type-Options',    value: 'nosniff' },
       { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
       { key: 'X-Frame-Options',           value: 'SAMEORIGIN' },
       { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+      // Report-only initially. After 1-2 weeks of clean browser-console
+      // reports (or zero reports if you'd wired a report-uri), switch the
+      // header key to `Content-Security-Policy` to enforce.
+      { key: 'Content-Security-Policy-Report-Only', value: CSP_REPORT_ONLY },
     ];
 
     // 5-minute edge freshness, 24-hour SWR — enough to absorb traffic bursts

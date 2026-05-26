@@ -120,7 +120,10 @@ export async function bulkPriceAdjustProducts(ids: string[], percent: number): P
 
   const { data } = await supabaseAdmin().from('products').select('id, price, original_price').in('id', ids);
   for (const row of (data ?? []) as Array<{ id: string; price: number; original_price: number | null }>) {
-    const newPrice = Math.round(row.price * (1 + percent / 100));
+    // Round to 2 decimal places, not to whole pounds — the previous
+    // Math.round() collapsed £19.99 with -10% to £18 instead of £17.99,
+    // destroying penny precision across every selected product.
+    const newPrice = Math.round(row.price * (1 + percent / 100) * 100) / 100;
     if (newPrice < 0) continue;
     await supabaseAdmin().from('products').update({ price: newPrice }).eq('id', row.id);
   }

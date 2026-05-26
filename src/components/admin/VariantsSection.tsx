@@ -110,6 +110,12 @@ function VariantForm({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', paddingTop: 18 }}>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8125rem', cursor: 'pointer' }}>
+            {/* Hidden 'false' sentinel: an unchecked checkbox submits no
+                key at all in FormData. Pairing it with a hidden 'false'
+                ensures the server always sees an explicit value, so the
+                schema can treat absent as "checkbox didn't render" not as
+                "user unchecked it". */}
+            <input type="hidden" name="enabled" value="false" />
             <input name="enabled" type="checkbox" defaultChecked={variant?.enabled ?? true} value="true" />
             Enabled
           </label>

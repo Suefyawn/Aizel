@@ -10,6 +10,7 @@ import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { ScrollToTop } from './ScrollToTop';
 import type { Promo } from '@/lib/promos';
+import type { NavSection } from '@/lib/category-taxonomy';
 import { socialLinks } from '@/lib/socials';
 
 interface SiteChromeProps {
@@ -25,9 +26,13 @@ interface SiteChromeProps {
    *  inside a client tree without a Suspense boundary. */
   searchTrending: string[];
   searchCategories: string[];
+  /** Live taxonomy from the Categories CMS (DB-backed). The Header
+   *  mega-menu reads this rather than a hardcoded constant, so admin
+   *  edits propagate without a redeploy. */
+  navSections: readonly NavSection[];
 }
 
-export function SiteChrome({ children, settings, promos, searchTrending, searchCategories }: SiteChromeProps) {
+export function SiteChrome({ children, settings, promos, searchTrending, searchCategories, navSections }: SiteChromeProps) {
   const pathname = usePathname();
   if (pathname.startsWith('/admin')) return <>{children}</>;
 
@@ -86,7 +91,7 @@ export function SiteChrome({ children, settings, promos, searchTrending, searchC
           like /forgot-password / /reset-password / /track / /login
           prerender cleanly while Header still hydrates on the client. */}
       <Suspense fallback={null}>
-        <Header />
+        <Header navSections={navSections} />
       </Suspense>
       {children}
       <Footer socials={socialLinks(settings)} />

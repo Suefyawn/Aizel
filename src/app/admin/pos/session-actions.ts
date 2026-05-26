@@ -130,6 +130,7 @@ export async function openShift(input: unknown): Promise<{ ok: boolean; error?: 
     amount:     parsed.data.opening_float,
     kind:       'opening_float',
     note:       `Float declared by ${session.name}`,
+    actor_id:   session.id,
   });
 
   await logAudit(session, {
@@ -160,6 +161,7 @@ export async function adjustCash(input: unknown): Promise<{ ok: boolean; error?:
     amount:     signedAmount,
     kind:       parsed.data.kind,
     note:       parsed.data.note,
+    actor_id:   session.id,
   });
 
   await logAudit(session, {

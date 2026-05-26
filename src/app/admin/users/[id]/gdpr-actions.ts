@@ -11,31 +11,23 @@ import { assembleCustomerExport } from '@/lib/customer-data-export';
 //
 // Article 15 (Right of access)  → exportCustomerData()
 //   Returns a JSON payload of everything the store holds about the
-//   customer. The operator can save it and email it to the data subject
-//   (Aizel doesn't have a self-serve "Download my data" route yet — that's
-//   a Tier-3 follow-up). Tables read:
-//     • profiles       — name / phone / preferences
-//     • addresses      — saved shipping addresses
-//     • orders         — full order history (incl. items, totals, address-on-order)
-//     • order_events   — status history per order
-//     • product_reviews — reviews they've left
-//     • newsletter_subscribers — opt-in state + dates
-//     • loyalty_accounts + loyalty_transactions — balance + ledger
-//     • subscriptions  — Subscribe & Save records
-//     • wishlists      — saved items
+//   customer. The operator can save it and email it to the data subject.
+//   The assembler (`assembleCustomerExport`) is the source of truth for
+//   which tables are read.
 //
 // Article 17 (Right to erasure) → anonymiseCustomer()
 //   We can't hard-delete orders — HMRC requires 6 years of transaction
 //   records for VAT. So we anonymise:
-//     • profiles   → email/phone/name scrubbed, anonymised_at set
+//     • profiles   → first/last/phone scrubbed (email lives on auth.users,
+//                    not profiles, so it is killed via admin.deleteUser())
 //     • addresses  → deleted
 //     • orders     → first/last_name/email/phone/address/city/zip
 //                    overwritten with the standard "ANONYMISED" marker;
 //                    items + totals kept for accounting
-//     • reviews    → display_name → "Former customer", body kept (it's
-//                    an opinion attached to a product, not PII once the
-//                    name is gone)
-//     • newsletter_subscribers, wishlists, subscriptions → deleted
+//     • reviews    → author_name → "Former customer", body kept (an
+//                    opinion attached to a product, not PII once the name
+//                    is gone). reviewer_email is also nulled.
+//     • newsletter_subscribers → deleted by email (no user_id column)
 //     • auth.users  → admin.deleteUser() so they can't sign back in
 //   The audit log row pre-dates the anonymisation so we can prove the
 //   request was actioned + when.
@@ -90,8 +82,6 @@ interface AnonymiseResult {
     addresses_deleted: number;
     reviews_anonymised: number;
     newsletter_deleted: number;
-    wishlists_deleted: number;
-    subscriptions_deleted: number;
     auth_user_deleted: boolean;
   };
 }
@@ -100,14 +90,27 @@ export async function anonymiseCustomer(userId: string): Promise<AnonymiseResult
   const session = await assertCustomersWrite();
   const admin = supabaseAdmin();
 
-  // Log BEFORE we anonymise — once the profile email/name are gone we
-  // can't prove who we actioned the request for. The audit row holds the
-  // pre-anonymisation summary.
+  // Log BEFORE we anonymise — once the name is gone we can't prove who we
+  // actioned the request for. The pre-anonymisation snapshot is held in
+  // the audit row's diff.
   const { data: snapshot } = await admin
     .from('profiles')
-    .select('email, first_name, last_name, phone')
+    .select('first_name, last_name, phone')
     .eq('id', userId)
-    .maybeSingle<{ email: string | null; first_name: string | null; last_name: string | null; phone: string | null }>();
+    .maybeSingle<{ first_name: string | null; last_name: string | null; phone: string | null }>();
+
+  // Pull the auth-side email up front — that's where the email of record
+  // lives (profiles has no `email` column). We need it for two things:
+  //   1. The audit row, so the operator can prove WHO they erased.
+  //   2. The newsletter_subscribers delete — its only customer key is
+  //      `email`, not `user_id`.
+  let preEmail: string | null = null;
+  try {
+    const { data: authData } = await admin.auth.admin.getUserById(userId);
+    preEmail = authData?.user?.email ?? null;
+  } catch {
+    // Local/anon environments don't expose admin.getUserById; tolerated.
+  }
 
   await logAudit(session, {
     action: 'customer.anonymise',
@@ -115,7 +118,7 @@ export async function anonymiseCustomer(userId: string): Promise<AnonymiseResult
     entity_id: userId,
     diff: {
       basis: 'UK GDPR Article 17 — right to erasure',
-      pre_email: snapshot?.email ?? null,
+      pre_email: preEmail,
       pre_name: [snapshot?.first_name, snapshot?.last_name].filter(Boolean).join(' ') || null,
     },
   });
@@ -140,32 +143,34 @@ export async function anonymiseCustomer(userId: string): Promise<AnonymiseResult
     .select('id');
   const ordersAnonymised = (orderRows ?? []).length;
 
-  // ── Reviews: blank the display name but keep the body — the review
-  //    is opinion about a product, not PII once the name is gone. ─────
+  // ── Reviews: blank the visible name + reviewer email but keep the body
+  //    — the review is opinion about a product, not PII once the name is
+  //    gone. Column is `author_name` (not `display_name`). ──────────────
   const { data: reviewRows } = await admin
     .from('product_reviews')
-    .update({ display_name: 'Former customer' })
+    .update({ author_name: 'Former customer', reviewer_email: null })
     .eq('user_id', userId)
     .select('id');
   const reviewsAnonymised = (reviewRows ?? []).length;
 
-  // ── Delete the bits that have no record-keeping value. ─────────────
-  const [{ data: addrDel }, { data: nlDel }, { data: wlDel }, { data: subDel }] = await Promise.all([
+  // ── Delete the bits that have no record-keeping value. Newsletter
+  //    subscribers are keyed on `email`, not `user_id`, so the lookup
+  //    is two-step. ───────────────────────────────────────────────────
+  const [{ data: addrDel }, nlResult] = await Promise.all([
     admin.from('addresses').delete().eq('user_id', userId).select('id'),
-    admin.from('newsletter_subscribers').delete().eq('user_id', userId).select('id'),
-    admin.from('wishlists').delete().eq('user_id', userId).select('id'),
-    admin.from('subscriptions').delete().eq('user_id', userId).select('id'),
+    preEmail
+      ? admin.from('newsletter_subscribers').delete().eq('email', preEmail).select('id')
+      : Promise.resolve({ data: [] as { id: string }[] }),
   ]);
 
-  // ── Profile: scrub names / phone / email; mark as anonymised so the
-  //    customers list can still surface the row (links from orders) but
-  //    shows the marker rather than the original PII. ──────────────────
+  // ── Profile: scrub names + phone. The `profiles` table does NOT carry
+  //    email; auth.users.email is the system of record and is killed by
+  //    the deleteUser() call below. ───────────────────────────────────
   await admin
     .from('profiles')
     .update({
       first_name: ANONYMISED_MARKER,
       last_name: ANONYMISED_MARKER,
-      email: placeholderEmail,
       phone: null,
     })
     .eq('id', userId);
@@ -191,9 +196,7 @@ export async function anonymiseCustomer(userId: string): Promise<AnonymiseResult
       orders: ordersAnonymised,
       addresses_deleted: (addrDel ?? []).length,
       reviews_anonymised: reviewsAnonymised,
-      newsletter_deleted: (nlDel ?? []).length,
-      wishlists_deleted: (wlDel ?? []).length,
-      subscriptions_deleted: (subDel ?? []).length,
+      newsletter_deleted: (nlResult.data ?? []).length,
       auth_user_deleted: authDeleted,
     },
   };

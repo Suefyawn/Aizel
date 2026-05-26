@@ -27,13 +27,17 @@ test.describe('Storefront — golden path', () => {
   test('header nav uses the new hair-and-body taxonomy', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('nav[aria-label="Primary"]');
-    // Three curated mega-menus: Hair Care, Body Care, Styling. Styling
-    // consolidates the old "Styling & Tools" + "Grooming" taxons into one
-    // mega-menu with two columns so the top bar stays uncluttered — those
-    // taxon labels move down a level into the mega's sub-headings.
+    // Four curated mega-menus: Hair Care, Skincare, Body Care, Styling.
+    // Styling consolidates the "Styling & Tools" + "Grooming" taxons into
+    // one mega-menu with two columns so the top bar stays uncluttered —
+    // those taxon labels move down a level into the mega's sub-headings.
     await expect(nav.getByRole('link', { name: /^Hair Care$/i })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /^Skincare$/i })).toBeVisible();
     await expect(nav.getByRole('link', { name: /^Body Care$/i })).toBeVisible();
     await expect(nav.getByRole('link', { name: /^Styling$/i })).toBeVisible();
+    // Grooming should NOT be a primary nav item — it lives inside the
+    // Styling mega as a second column heading.
+    await expect(nav.getByRole('link', { name: /^Grooming$/i })).toHaveCount(0);
     // Belt-and-braces against a Wellness / Makeup regression.
     await expect(nav.getByText(/Wellness/i)).toHaveCount(0);
     await expect(nav.getByText(/Makeup/i)).toHaveCount(0);

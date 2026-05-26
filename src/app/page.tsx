@@ -13,26 +13,15 @@ import {
   getCategoryHeroImages,
   getCategoryProductCounts,
 } from '@/lib/supabase';
-import { CATEGORY_DESCRIPTIONS } from '@/lib/category-taxonomy';
+import { loadTaxonomy } from '@/lib/category-taxonomy';
+import { loadHomepageContent } from '@/lib/homepage-content';
 
-// Homepage "Shop by category" tiles — eight category landings split
-// across two named groups so the section reads as curated rails rather
-// than a flat grid.
-const HAIR_TILE_CATS = ['Shampoo & Conditioner', 'Hair Oils & Serums', 'Curl & Styling Creams', 'Edge Control & Gels'];
-const BODY_TILE_CATS = ['Cocoa & Shea Butter', 'Body Oils', 'Petroleum Jelly', 'Wig & Lace Adhesives'];
-
-// Editorial banner taxons → category to pull a hero product image from.
-// Used for the two-up "EditorialDuo" section below the hero.
-const EDITORIAL_HAIR_CAT = 'Shampoo & Conditioner';
-const EDITORIAL_BODY_CAT = 'Cocoa & Shea Butter';
-
-// Until brand-curated category photography exists in the `images` Storage
-// bucket, the homepage uses a real product photo per category — pulled at
-// render time via getCategoryHeroImages() — so the tiles look populated
-// instead of the gradient-placeholder shipping state. An operator can
-// upload a curated tile photo later and override per-category via
-// site_settings.cat_tile_<slug> (read below) to take over from the
-// auto-picked product image.
+// The "Shop by category" tile groups and the EditorialDuo banner cards
+// are operator-managed via the admin Homepage page — they live as rows
+// in `homepage_content` (migration 144) and are loaded here via
+// `loadHomepageContent()`. The taxonomy is also DB-backed (migration
+// 143, see `loadTaxonomy()`); the homepage uses it to resolve category
+// slugs → display labels + landing-page descriptions.
 import { HeroSection } from '@/sections/home/HeroSection';
 import { TrustBar } from '@/sections/home/TrustBar';
 import { FeaturedProducts } from '@/sections/home/FeaturedProducts';
@@ -46,46 +35,71 @@ import { JournalSection } from '@/sections/home/JournalSection';
 import { PressStrip } from '@/sections/home/PressStrip';
 
 export default async function HomePage() {
-  // Pull each rail in parallel. The new helpers all fall back to a stock-
-  // /recency-ordered slice of the live catalog if their flag-based query
-  // returns fewer rows than requested, so empty sections shouldn't happen
-  // once the catalog has any products. Migration 076 backfilled
-  // is_featured + is_bestseller; the queries respect those first.
-  const allTileCats = [...HAIR_TILE_CATS, ...BODY_TILE_CATS, EDITORIAL_HAIR_CAT, EDITORIAL_BODY_CAT];
-  const [featured, bestsellers, saleProducts, settings, blogPosts, brands, categoryImages, categoryCounts] = await Promise.all([
+  // Pull the static rails + the dynamic homepage-content rows in parallel.
+  const [featured, bestsellers, saleProducts, settings, blogPosts, brands, homepage, taxonomy] = await Promise.all([
     getFeatured(6),
     getBestsellers(8),
     getOnSale(8),
     getSiteSettings(),
     getBlogPosts(),
     getAllBrands(),
-    getCategoryHeroImages(allTileCats),
-    getCategoryProductCounts(allTileCats),
+    loadHomepageContent(),
+    loadTaxonomy(),
   ]);
 
   // The featured sale collection is shown only while a sale is switched on
   // in Admin → Settings → Sale (the central on/off switch).
   const saleActive = settings.sale_active === 'true';
 
-  // Per-category tile image: site_settings override wins (operator uploads a
-  // curated tile via /admin/settings/homepage), then the auto-picked product
-  // image, then undefined (lets CategoryTiles fall back to its gradient).
-  const tile = (label: string) => {
-    const settingsKey = 'cat_tile_' + label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    return {
-      label,
-      href: `/shop?category=${encodeURIComponent(label)}`,
-      image: settings[settingsKey] || categoryImages[label] || undefined,
-      // Tagline + count come from the same source the category landing page
-      // uses, so the homepage tile and the landing page agree on the copy.
-      tagline: CATEGORY_DESCRIPTIONS[label],
-      productCount: categoryCounts[label],
-    };
+  // Resolve every slug referenced by a homepage block (banner or tile) into
+  // its canonical label, then fetch the per-label hero-image + product
+  // count in one round-trip each. Lets us pass real category imagery into
+  // the tile cards even when the operator hasn't uploaded a curated photo.
+  const slugToLabel: Record<string, string> = {};
+  for (const t of taxonomy.taxons) {
+    for (const cat of t.categories) {
+      const slug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      slugToLabel[slug] = cat;
+    }
+  }
+  const allReferencedLabels = Array.from(new Set(
+    homepage.raw.flatMap(b => b.category_slugs.map(s => slugToLabel[s]).filter((l): l is string => Boolean(l))),
+  ));
+  const [categoryImages, categoryCounts] = await Promise.all([
+    getCategoryHeroImages(allReferencedLabels),
+    getCategoryProductCounts(allReferencedLabels),
+  ]);
+
+  // Tile rows: build each row from the homepage_content `category_row`
+  // blocks. Image: operator's image_url override > settings cat_tile_<slug> > auto-picked product photo > gradient.
+  const categoryGroups = homepage.tileGroups.map(group => ({
+    title: group.title,
+    tiles: group.category_slugs.map(slug => {
+      const label = slugToLabel[slug] ?? slug;
+      const settingsKey = 'cat_tile_' + slug.replace(/-/g, '_');
+      return {
+        label,
+        href: `/shop?category=${encodeURIComponent(label)}`,
+        image: settings[settingsKey] || categoryImages[label] || undefined,
+        tagline: taxonomy.categoryDescriptions[label],
+        productCount: categoryCounts[label],
+      };
+    }),
+  }));
+
+  // Editorial banner cards: first two `banner_card` blocks. Image
+  // resolution: operator's image_url > auto-picked from category_slug[0]
+  // > empty (EditorialDuo renders gradient). The component still expects
+  // a (hairImage, bodyImage) tuple for backward compat, so we feed it
+  // the first two banners in order.
+  const bannerImageFor = (block: typeof homepage.banners[number]): string => {
+    if (block.image_url) return block.image_url;
+    const slug = block.category_slugs[0];
+    if (!slug) return '';
+    const label = slugToLabel[slug];
+    return label ? (categoryImages[label] ?? '') : '';
   };
-  const categoryGroups = [
-    { title: 'Hair Care',     tiles: HAIR_TILE_CATS.map(tile) },
-    { title: 'Body & More',   tiles: BODY_TILE_CATS.map(tile) },
-  ];
+  const [banner1, banner2] = homepage.banners;
 
   // Seasonal hero override — while the seasonal makeover is on, the homepage
   // hero uses the season_hero_* settings; any field left blank falls back to
@@ -111,21 +125,20 @@ export default async function HomePage() {
     brands: settings.hero_brands ? settings.hero_brands.split(',').map(b => b.trim()) : [],
   };
 
-  // Editorial banner imagery — site_settings override wins (operator
-  // uploads a curated banner in /admin/settings/homepage), then the
-  // auto-picked product image from the relevant category, then '' so
-  // EditorialDuo falls back to the gradient.
-  const editorialImages = {
-    hair: settings.homepage_banner_hair_image || categoryImages[EDITORIAL_HAIR_CAT] || '',
-    body: settings.homepage_banner_body_image || categoryImages[EDITORIAL_BODY_CAT] || '',
-  };
-
   return (
     <main className="fade-in">
       <HeroSection settings={heroSettings} />
       <TrustBar />
       <FeaturedProducts products={featured.length ? featured.slice(0, 4) : bestsellers.slice(0, 4)} />
-      <EditorialDuo hairImage={editorialImages.hair} bodyImage={editorialImages.body} />
+      <EditorialDuo
+        banners={[banner1, banner2].filter((b): b is typeof banner1 => Boolean(b)).map(b => ({
+          title:    b.title,
+          subtitle: b.subtitle ?? '',
+          cta:      b.cta_text ?? 'Shop now',
+          href:     b.cta_href ?? '/shop',
+          img:      bannerImageFor(b),
+        }))}
+      />
       {saleActive && (
         <SaleCollection
           products={saleProducts}

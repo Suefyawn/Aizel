@@ -66,7 +66,7 @@ async function recipientsFor(segment: SegmentKey, cap = 5000): Promise<Recipient
       const { data } = await admin
         .from('newsletter_subscribers')
         .select('email, first_name')
-        .eq('status', 'subscribed')
+        .is('unsubscribed_at', null)
         .limit(cap);
       return (data ?? []) as Recipient[];
     }
@@ -153,16 +153,22 @@ async function dedupeAndOptInCheck(
   return optInOnly(Array.from(byEmail.values()).slice(0, cap));
 }
 
-/** Remove any recipient who has explicitly unsubscribed. */
+/** Remove any recipient who has explicitly unsubscribed.
+ *
+ * The `newsletter_subscribers` table tracks opt-out via the `unsubscribed_at`
+ * timestamp column — there is no `status` enum. The original implementation
+ * filtered on a non-existent `status === 'unsubscribed'` and so was a no-op,
+ * sending blasts to previously-unsubscribed customers. PECR/UK-GDPR fix:
+ * pull `unsubscribed_at` and exclude any row where it is non-null. */
 async function optInOnly(recipients: Recipient[]): Promise<Recipient[]> {
   if (recipients.length === 0) return [];
   const { data } = await supabaseAdmin()
     .from('newsletter_subscribers')
-    .select('email, status')
+    .select('email, unsubscribed_at')
     .in('email', recipients.map(r => r.email));
   const optedOut = new Set(
-    ((data ?? []) as Array<{ email: string; status: string }>)
-      .filter(r => r.status === 'unsubscribed')
+    ((data ?? []) as Array<{ email: string; unsubscribed_at: string | null }>)
+      .filter(r => r.unsubscribed_at !== null)
       .map(r => r.email),
   );
   return recipients.filter(r => !optedOut.has(r.email));

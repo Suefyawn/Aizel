@@ -131,6 +131,25 @@ export async function createManualOrder(_prev: OrderResult | null, formData: For
     return { ok: false, error: error?.message ?? 'Failed to create order' };
   }
 
+  // Decrement stock for each line that maps to a real catalogue product.
+  // place_order does this automatically for web orders via the RPC; manual
+  // orders take the direct insert path above and so must do it themselves.
+  // Without this, sold inventory drifts upward forever and the cancellation
+  // restock path then over-credits stock that was never debited.
+  for (const it of items) {
+    if (!it.product_id) continue;
+    await admin.rpc('record_stock_change', {
+      p_product_id:  it.product_id,
+      p_variant_id:  null,
+      p_qty_delta:   -it.qty,
+      p_reason:      'order',
+      p_order_id:    inserted.id,
+      p_actor_kind:  session.isOwner ? 'owner' : 'staff',
+      p_actor_email: session.email ?? null,
+      p_note:        `Manual order ${orderNumber}`,
+    });
+  }
+
   await admin.from('order_events').insert({
     order_id: inserted.id,
     from_status: null,

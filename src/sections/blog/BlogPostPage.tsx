@@ -136,7 +136,7 @@ export function BlogPostPage({ post, relatedPosts, relatedProducts }: BlogPostPa
           <p className="body-text" style={{ color: 'var(--ink-700)', fontSize: '1.0625rem', lineHeight: 1.6, marginBottom: 24, maxWidth: 720 }}>{post.excerpt}</p>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', paddingBottom: 16 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--paper2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>YP</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>AZ</span>
             </div>
             <div>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Aizel Editorial</div>

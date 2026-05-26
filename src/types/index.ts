@@ -13,7 +13,7 @@ export type OrderStatus =
   | 'returned'
   | 'refunded';
 
-export type PayMethod = 'cod' | 'card' | 'bank' | 'gift_card';
+export type PayMethod = 'cod' | 'card' | 'bank' | 'gift_card' | 'manual' | 'cash' | 'split';
 
 // Customer-facing labels for each status. Used on /track, account/orders, admin order detail.
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {

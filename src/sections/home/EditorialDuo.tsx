@@ -6,38 +6,26 @@ import { useState } from 'react';
 import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Overline } from '@/components/ui/Overline';
 
-// Editorial cards anchored beneath the hero. Each card now takes an `img`
-// from the page (homepage picks a lead product image per category via
-// getCategoryHeroImages). When no image resolves the gradient fallback
-// ships a clean on-brand placeholder — never a broken-image icon.
-const BASE_CARDS = [
-  {
-    title: 'Wash Day Essentials',
-    subtitle: 'Hair Care Edit',
-    cta: 'Shop Hair Care',
-    href: '/shop?taxon=hair',
-    // Pale purple — was #EFE3F3 (paler) / #F5E6CF (cream); the cream
-    // tile read as a previous-brand hangover. Both fallbacks are now purple
-    // tints at different lightnesses so the two cards stay distinct.
-    fallbackColor: '#EFE3F3',
-    alt: 'Curated shampoo, conditioner and treatment essentials',
-  },
-  {
-    title: 'Butters & Oils',
-    subtitle: 'Body Care Edit',
-    cta: 'Shop Body Care',
-    href: '/shop?taxon=body',
-    fallbackColor: '#E2D2EB',
-    alt: 'Cocoa butter, shea butter and body oils',
-  },
-];
+// Editorial cards anchored beneath the hero. Title / subtitle / CTA /
+// image are operator-managed via the admin Homepage page (table:
+// homepage_content, kind='banner_card'). The homepage server component
+// passes a `banners` array of 2 cards; if the operator has fewer than 2
+// active rows, the section renders empty.
+//
+// The fallback colours below are used when an image either fails to load
+// or isn't set yet. Two purple tints so the two cards stay visually
+// distinct even in the gradient state.
+const FALLBACK_COLORS = ['#EFE3F3', '#E2D2EB'];
 
-interface DuoCardProps {
-  title: string;
+interface BannerInput {
+  title:    string;
   subtitle: string;
-  cta: string;
-  href: string;
-  img: string;
+  cta:      string;
+  href:     string;
+  img:      string;
+}
+
+interface DuoCardProps extends BannerInput {
   alt: string;
   fallbackColor: string;
 }
@@ -88,19 +76,21 @@ function DuoCard({ title, subtitle, cta, href, img, alt, fallbackColor }: DuoCar
   );
 }
 
-export function EditorialDuo({ hairImage = '', bodyImage = '' }: { hairImage?: string; bodyImage?: string }) {
-  // Hydrate the static card metadata with the per-render images passed
-  // from the homepage. Empty string is the documented "no image" signal
-  // that DuoCard's gradient fallback handles.
-  const cards = [
-    { ...BASE_CARDS[0], img: hairImage },
-    { ...BASE_CARDS[1], img: bodyImage },
-  ];
+export function EditorialDuo({ banners = [] }: { banners?: BannerInput[] }) {
+  // Render up to 2 banners. If the operator only configured one, the
+  // section degrades gracefully to a single full-width card rather than
+  // shipping an empty slot.
+  const cards = banners.slice(0, 2).map((b, i) => ({
+    ...b,
+    fallbackColor: FALLBACK_COLORS[i] ?? FALLBACK_COLORS[0],
+    alt: b.title,
+  }));
+  if (cards.length === 0) return null;
   return (
     <section style={{ paddingBottom: 'var(--section-gap)' }}>
       <div className="container">
         <SectionDivider />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--gutter)', marginTop: 'var(--section-gap)' }} className="duo-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: cards.length === 2 ? '1fr 1fr' : '1fr', gap: 'var(--gutter)', marginTop: 'var(--section-gap)' }} className="duo-grid">
           {cards.map(c => <DuoCard key={c.title} {...c} />)}
         </div>
       </div>

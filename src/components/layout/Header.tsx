@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBodyScrollLock, useEscapeKey, useFocusTrap } from '@/lib/hooks/useBodyScrollLock';
-import { NAV_SECTIONS } from '@/lib/category-taxonomy';
+import { NAV_SECTIONS as NAV_SECTIONS_FALLBACK, type NavSection } from '@/lib/category-taxonomy';
 import { whatsappUrl, WA_TEMPLATES } from '@/lib/whatsapp';
 
 // Desktop nav: three curated mega-menus (Hair Care, Body Care, Styling) +
@@ -43,7 +43,11 @@ function navLinkStyle(active: boolean): React.CSSProperties {
   };
 }
 
-export function Header() {
+export function Header({ navSections }: { navSections?: readonly NavSection[] } = {}) {
+  // Prefer DB-loaded navSections (passed from the server layout) so admin
+  // edits to the Categories CMS surface without a redeploy. Fall back to
+  // the constant for any non-storefront caller / older render path.
+  const NAV_SECTIONS = navSections ?? NAV_SECTIONS_FALLBACK;
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   // Hydration gate for the cart-count badge. The cart loads from

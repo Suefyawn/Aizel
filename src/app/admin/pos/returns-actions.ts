@@ -245,9 +245,19 @@ export async function processPosReturn(input: unknown): Promise<ProcessResult> {
     });
   }
 
-  // If the original order was fully refunded, flip its status so it
-  // disappears from "to fulfil" dashboards.
-  const newRefundedTotal = refundTotal; // best-effort — close enough for status flip
+  // If the original order is now fully refunded, flip its status so it
+  // disappears from "to fulfil" dashboards. Sum prior negative-amount
+  // refunds on the order (POS + Stripe panel both write into payments)
+  // and add THIS refund before comparing — otherwise two consecutive
+  // partial returns of half each never trip the threshold.
+  const { data: priorRefunds } = await admin
+    .from('payments')
+    .select('amount')
+    .eq('order_id', order.id)
+    .eq('status', 'refunded');
+  const priorSum = ((priorRefunds ?? []) as Array<{ amount: number }>)
+    .reduce((acc, r) => acc + Math.abs(Number(r.amount)), 0);
+  const newRefundedTotal = priorSum;
   if (newRefundedTotal >= Number(order.total ?? 0) - 0.005) {
     await admin.from('orders').update({ status: 'returned' }).eq('id', order.id);
   }

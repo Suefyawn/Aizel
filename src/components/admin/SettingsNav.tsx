@@ -12,7 +12,9 @@ type Item = { href: string; label: string; desc?: string };
 const ITEMS: Item[] = [
   { href: '/admin/settings/profile',       label: 'Store profile',   desc: 'Name, contact, social' },
   { href: '/admin/settings/branding',      label: 'Branding & theme', desc: 'Colours, seasonal' },
-  { href: '/admin/settings/homepage',      label: 'Homepage',         desc: 'Hero, sale, banner' },
+  { href: '/admin/settings/homepage',      label: 'Hero & sale',      desc: 'Top of homepage + sale switch' },
+  { href: '/admin/settings/featured',      label: 'Featured content', desc: 'Banner cards + category rows' },
+  { href: '/admin/settings/categories',    label: 'Categories',       desc: 'Sections + filter taxonomy' },
   { href: '/admin/settings/shipping',      label: 'Shipping & tax',   desc: 'Rates, thresholds' },
   { href: '/admin/settings/payments',      label: 'Payments',         desc: 'Methods, bank accounts' },
   { href: '/admin/settings/receipts',      label: 'Receipts',         desc: 'Till + invoice copy' },

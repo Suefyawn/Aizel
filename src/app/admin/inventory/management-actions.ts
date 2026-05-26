@@ -287,6 +287,29 @@ export async function markPoReceived(formData: FormData): Promise<void> {
   if (!poId) return;
 
   const admin = supabaseAdmin();
+
+  // Idempotency claim: flip the PO status from 'draft' to 'received'
+  // BEFORE touching stock. The `eq('status', 'draft')` clause means a
+  // second concurrent call (or a double-click) will update 0 rows; we
+  // bail without re-ledgering. This is the cheapest atomic guard for a
+  // server-action that doesn't have a wrapping transaction. The `select`
+  // gives us the row count so we know whether to proceed.
+  const { data: claimed } = await admin
+    .from('purchase_orders')
+    .update({
+      status: 'received',
+      received_at: new Date().toISOString(),
+      received_by: session.name,
+    })
+    .eq('id', poId)
+    .eq('status', 'draft')
+    .select('id');
+  if (!claimed || claimed.length === 0) {
+    // Either the PO doesn't exist, is already received, or is cancelled.
+    // Redirect back so the operator sees the current state.
+    redirect(`/admin/inventory/purchase-orders/${poId}?error=Already%20processed`);
+  }
+
   const { data: lines } = await admin
     .from('purchase_order_lines')
     .select('product_id, qty, unit_cost')
@@ -314,12 +337,6 @@ export async function markPoReceived(formData: FormData): Promise<void> {
     });
   }
 
-  await admin.from('purchase_orders').update({
-    status: 'received',
-    received_at: new Date().toISOString(),
-    received_by: session.name,
-  }).eq('id', poId);
-
   void logAudit(session, {
     action: 'po.receive',
     entity: 'purchase_orders',
@@ -335,7 +352,20 @@ export async function cancelPo(formData: FormData): Promise<void> {
   const session = await assertEdit();
   const poId = formData.get('po_id') as string;
   if (!poId) return;
-  await supabaseAdmin().from('purchase_orders').update({ status: 'cancelled' }).eq('id', poId);
+  // Refuse to cancel a PO that has already been received. If we let it
+  // through, the ledger keeps the receive rows but the PO is marked
+  // cancelled — inventory drifts permanently with no compensating
+  // movement. The `eq('status', 'draft')` clause means 0 rows update on
+  // a received/cancelled PO.
+  const { data: cancelled } = await supabaseAdmin()
+    .from('purchase_orders')
+    .update({ status: 'cancelled' })
+    .eq('id', poId)
+    .eq('status', 'draft')
+    .select('id');
+  if (!cancelled || cancelled.length === 0) {
+    redirect(`/admin/inventory/purchase-orders/${poId}?error=Only%20draft%20POs%20can%20be%20cancelled`);
+  }
   void logAudit(session, {
     action: 'po.cancel',
     entity: 'purchase_orders',
