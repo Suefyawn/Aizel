@@ -135,7 +135,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string; subcategory?: string; cat?: string; taxon?: string; on_sale?: string }> }) {
-  const [products, facetData] = await Promise.all([
+  const [allProducts, facetData] = await Promise.all([
     getProducts(),
     loadFacetData(),
   ]);
@@ -151,14 +151,21 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   const { findTaxon } = await import('@/lib/category-taxonomy');
   const taxonObj = findTaxon(taxon);
 
-  // Scope the JSON-LD ItemList to whatever the URL implies — taxon →
-  // products in those categories, single category → that category, else
-  // top of the catalog. We cap at 24 to keep the schema lean.
-  const scopedProducts = taxonObj
-    ? products.filter(p => taxonObj.categories.includes(p.category)).slice(0, 24)
+  // Server-side narrow: pass CollectionPage only the products that match
+  // the URL's primary scope (taxon → category set, single category, or
+  // all). Was shipping the full 589-product catalogue regardless, which
+  // turned every /shop?taxon=... visit into a ~300 KB inline RSC payload.
+  // Client-side facet filters (brand, price, in-stock) still operate over
+  // this narrowed set without further roundtrips — they only narrow further.
+  const products = taxonObj
+    ? allProducts.filter(p => taxonObj.categories.includes(p.category))
     : initialCategory !== 'All'
-      ? products.filter(p => p.category === initialCategory).slice(0, 24)
-      : products.slice(0, 24);
+      ? allProducts.filter(p => p.category === initialCategory)
+      : allProducts;
+
+  // Scope the JSON-LD ItemList to whatever the URL implies. Cap at 24 to
+  // keep the schema lean (Google ignores anything past that anyway).
+  const scopedProducts = products.slice(0, 24);
 
   const breadcrumb = [
     { name: 'Home', path: '/' },

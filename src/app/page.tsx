@@ -11,7 +11,9 @@ import {
   getBlogPosts,
   getAllBrands,
   getCategoryHeroImages,
+  getCategoryProductCounts,
 } from '@/lib/supabase';
+import { CATEGORY_DESCRIPTIONS } from '@/lib/category-taxonomy';
 
 // Homepage "Shop by category" tiles — eight category landings split
 // across two named groups so the section reads as curated rails rather
@@ -50,7 +52,7 @@ export default async function HomePage() {
   // once the catalog has any products. Migration 076 backfilled
   // is_featured + is_bestseller; the queries respect those first.
   const allTileCats = [...HAIR_TILE_CATS, ...BODY_TILE_CATS, EDITORIAL_HAIR_CAT, EDITORIAL_BODY_CAT];
-  const [featured, bestsellers, saleProducts, settings, blogPosts, brands, categoryImages] = await Promise.all([
+  const [featured, bestsellers, saleProducts, settings, blogPosts, brands, categoryImages, categoryCounts] = await Promise.all([
     getFeatured(6),
     getBestsellers(8),
     getOnSale(8),
@@ -58,6 +60,7 @@ export default async function HomePage() {
     getBlogPosts(),
     getAllBrands(),
     getCategoryHeroImages(allTileCats),
+    getCategoryProductCounts(allTileCats),
   ]);
 
   // The featured sale collection is shown only while a sale is switched on
@@ -73,6 +76,10 @@ export default async function HomePage() {
       label,
       href: `/shop?category=${encodeURIComponent(label)}`,
       image: settings[settingsKey] || categoryImages[label] || undefined,
+      // Tagline + count come from the same source the category landing page
+      // uses, so the homepage tile and the landing page agree on the copy.
+      tagline: CATEGORY_DESCRIPTIONS[label],
+      productCount: categoryCounts[label],
     };
   };
   const categoryGroups = [

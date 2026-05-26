@@ -14,6 +14,10 @@ export interface CategoryTile {
   label: string;
   href: string;
   image?: string;
+  /** Optional short tagline shown above the category name on hover. */
+  tagline?: string;
+  /** Optional product count rendered as a small badge top-right. */
+  productCount?: number;
 }
 
 export interface CategoryTileGroup {
@@ -21,7 +25,7 @@ export interface CategoryTileGroup {
   tiles: CategoryTile[];
 }
 
-function CatTile({ label, href, image }: CategoryTile) {
+function CatTile({ label, href, image, tagline, productCount }: CategoryTile) {
   const [hovered, setHovered] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   return (
@@ -54,15 +58,41 @@ function CatTile({ label, href, image }: CategoryTile) {
             <Overline style={{ color: 'var(--ink-500)', fontSize: '0.75rem', textAlign: 'center' }}>{label}</Overline>
           </div>
         )}
+        {/* Product-count badge — top-right pill. Stays static across hover
+            so the visual rhythm of the grid doesn't shift. Hidden when
+            the catalog has 0 of this category (don't tell shoppers an
+            empty rail is empty). */}
+        {productCount != null && productCount > 0 && (
+          <span style={{
+            position: 'absolute', top: 12, right: 12,
+            background: 'rgba(255,255,255,0.92)',
+            color: 'var(--ink-900)',
+            padding: '3px 9px', borderRadius: 999,
+            fontSize: '0.6875rem', fontWeight: 600,
+            letterSpacing: '0.04em',
+            backdropFilter: 'blur(4px)',
+          }}>{productCount}</span>
+        )}
         <div style={{
           position: 'absolute', inset: 0,
           background: hovered
-            ? 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 100%)'
+            ? 'linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.18) 100%)'
             : 'linear-gradient(to top, rgba(0,0,0,0.62) 0%, transparent 55%)',
           transition: 'background 300ms ease-out',
-          display: 'flex', alignItems: 'flex-end', padding: 14,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          padding: 16,
         }}>
-          <Overline style={{ color: '#fff', fontSize: '0.8125rem', letterSpacing: '0.12em' }}>{label}</Overline>
+          <Overline style={{ color: '#fff', fontSize: '0.8125rem', letterSpacing: '0.12em', marginBottom: tagline ? 4 : 0 }}>{label}</Overline>
+          {tagline && (
+            <span style={{
+              color: 'rgba(255,255,255,0.88)',
+              fontSize: '0.75rem', lineHeight: 1.35,
+              maxHeight: hovered ? 80 : 0,
+              opacity: hovered ? 1 : 0,
+              transition: 'all 260ms ease-out',
+              overflow: 'hidden',
+            }}>{tagline}</span>
+          )}
         </div>
       </div>
     </Link>

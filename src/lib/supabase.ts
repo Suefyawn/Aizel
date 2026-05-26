@@ -418,6 +418,25 @@ export const getSiteSettings = cache(async (): Promise<Record<string, string>> =
   }, DEMO_SITE_SETTINGS);
 });
 
+/** Count published products per category — surfaced as a badge on the
+ *  homepage category tiles so shoppers can tell at a glance how deep
+ *  each rail goes. One round-trip; cached per-request. */
+export const getCategoryProductCounts = cache(async (categories: readonly string[]): Promise<Record<string, number>> => {
+  if (isDemo || categories.length === 0) return {};
+  return safe('getCategoryProductCounts', async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('category')
+      .in('category', categories as string[])
+      .eq('status', 'published');
+    const out: Record<string, number> = {};
+    for (const row of (data ?? []) as Array<{ category: string }>) {
+      out[row.category] = (out[row.category] ?? 0) + 1;
+    }
+    return out;
+  }, {});
+});
+
 /** Pick one representative product image per category — used by the
  *  homepage to populate category tiles and editorial banners with real
  *  catalogue photography instead of the gradient placeholder. Ranks
