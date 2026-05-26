@@ -79,7 +79,7 @@ const ACCENT_STYLES: Record<Review['accent'], {
   // by the quote-mark, dot strip and avatar colours (which use the Aizel
   // purple/gold/ink palette).
   // Variant key kept for state stability — the actual look is now a pale
-  // purple variant. The cream "yellow" surface read as a YellowPink
+  // purple variant. The cream "yellow" surface read as a previous-brand
   // hangover; tone + identity move to the Aizel purple.
   yellow: {
     cardBg:      'linear-gradient(160deg, #FAF7FC 0%, #FFFFFF 60%, #FAF7FC 100%)',
@@ -207,7 +207,7 @@ export function RealResults() {
             {/* Decorative diagonal accent — picks up the brand tone without
                 competing with the numerals. */}
             {/* Two purple blobs at different opacities — was gold + purple
-                but the gold blob skewed the strip toward YellowPink. */}
+                but the gold blob skewed the strip toward previous-brand. */}
             <div
               aria-hidden="true"
               style={{

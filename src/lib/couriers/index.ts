@@ -6,10 +6,9 @@
 //       used by the /track page so customers can deep-link to the courier's
 //       site.
 //   (b) Optionally, an API-backed CourierAdapter (see types.ts) that can
-//       book + cancel + track via HTTP. The previous codebase shipped a TCS
-//       (Pakistan) adapter; no UK adapter is wired yet, so the booking
-//       flow falls back to manual tracking-number entry for every courier
-//       below until a Royal Mail / DPD / Evri integration is added.
+//       book + cancel + track via HTTP. No UK adapter is wired yet, so the
+//       booking flow falls back to manual tracking-number entry for every
+//       courier below until a Royal Mail / DPD / Evri integration is added.
 //
 // To add a UK adapter (e.g. Royal Mail Shipping API or DPD WebShipper):
 //   1. Create src/lib/couriers/<name>.ts implementing CourierAdapter.
@@ -81,11 +80,11 @@ export const COURIERS: Record<string, CourierProfile> = {
 export const COURIER_LIST = Object.values(COURIERS);
 
 // ─── API adapter map ───────────────────────────────────────────────────────
-// Empty until a UK courier adapter is wired. The legacy TCS adapter is no
-// longer registered here — it stays in src/lib/couriers/tcs.ts for the
-// edge-function shipping webhook to import directly during the transition,
-// but storefront / admin code paths route through getAdapter() and so will
-// fall back to manual tracking until a Royal Mail / DPD adapter ships.
+// Empty until a UK courier adapter is wired. Until then, storefront / admin
+// code paths route through getAdapter() and fall back to manual tracking
+// for every courier above — operator enters the tracking number in the
+// admin order detail and the customer-facing /track page deep-links to the
+// carrier's own status page via the URL builders above.
 const ADAPTERS: Record<string, CourierAdapter> = {};
 
 /**

@@ -1,6 +1,6 @@
 // Aizel monogram — a stroke-only "A" letterform sitting inside a purple
 // roundel. The earlier mark stacked a filled gold serif "A" on a purple
-// disc; that read as the old YellowPink + serif-y aesthetic. This version
+// disc; that read as the old previous-brand + serif-y aesthetic. This version
 // is single-stroke geometric and reads modern at any size (16px favicon
 // through 64px hero usage), with no second colour to compete with the
 // rebrand palette.

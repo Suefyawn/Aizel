@@ -69,7 +69,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: i < 2 ? 16 : 0 }}>
                 {/* Brand-pink (purple) step badges with white digits — were
-                    gold and read as a YellowPink hangover at this size. */}
+                    gold and read as a previous-brand hangover at this size. */}
                 <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--brand-pink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{s.step}</div>
                 <div>
                   <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: 2 }}>{s.label}</div>

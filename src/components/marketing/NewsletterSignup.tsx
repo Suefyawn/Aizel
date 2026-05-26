@@ -52,7 +52,7 @@ export function NewsletterSignup({
       >
         Thanks — you&apos;re on the list. Use code{' '}
         <strong style={{ letterSpacing: '0.04em' }}>WELCOME10</strong> for 10% off
-        your first order over £15.
+        your first order over £30.
       </div>
     );
   }

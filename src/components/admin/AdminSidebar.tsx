@@ -165,7 +165,7 @@ export function AdminSidebar({ session, onClose, pendingOrderCount = 0 }: { sess
                   minHeight: 44,
                   color: active ? '#f9fafb' : '#9ca3af',
                   // Active row tint + border use Aizel purple (was pink-300/400
-                  // — Tailwind YellowPink-era leftovers).
+                  // — Tailwind previous-brand-era leftovers).
                   background: active ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
                   textDecoration: 'none', fontSize: '0.875rem',
                   fontWeight: active ? 600 : 400,

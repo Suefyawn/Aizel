@@ -104,10 +104,13 @@ export default async function HomePage() {
     brands: settings.hero_brands ? settings.hero_brands.split(',').map(b => b.trim()) : [],
   };
 
-  // Editorial banner imagery — one Hair Care and one Body Care lead product.
+  // Editorial banner imagery — site_settings override wins (operator
+  // uploads a curated banner in /admin/settings/homepage), then the
+  // auto-picked product image from the relevant category, then '' so
+  // EditorialDuo falls back to the gradient.
   const editorialImages = {
-    hair: categoryImages[EDITORIAL_HAIR_CAT] ?? '',
-    body: categoryImages[EDITORIAL_BODY_CAT] ?? '',
+    hair: settings.homepage_banner_hair_image || categoryImages[EDITORIAL_HAIR_CAT] || '',
+    body: settings.homepage_banner_body_image || categoryImages[EDITORIAL_BODY_CAT] || '',
   };
 
   return (

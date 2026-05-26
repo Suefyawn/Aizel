@@ -120,7 +120,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   } else if (resolvedCategory && CATEGORY_DESCRIPTIONS[resolvedCategory]) {
     description = CATEGORY_DESCRIPTIONS[resolvedCategory];
   } else if (trimmedBrand) {
-    description = `Shop the ${trimmedBrand} range at Aizel — 100% authentic ${trimmedBrand}, free UK delivery over £15.`;
+    description = `Shop the ${trimmedBrand} range at Aizel — 100% authentic ${trimmedBrand}, free UK delivery over £30.`;
   } else {
     description = 'Authentic Afro/Black hair care, body care and grooming brands. Delivered across the UK with card or PayPal.';
   }

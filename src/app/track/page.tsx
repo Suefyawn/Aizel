@@ -155,7 +155,7 @@ export default function TrackPage() {
         {order && (
           <div style={{ background: 'white', borderRadius: 16, border: '1px solid var(--line)', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
             <div style={{
-              // `--cream` was an undefined YellowPink-era variable; this card
+              // `--cream` was an undefined previous-brand-era variable; this card
               // was rendering with no background. `--paper2` is the Aizel
               // pale-paper surface used elsewhere for inset blocks.
               padding: '24px 28px', background: 'var(--paper2)', borderBottom: '1px solid var(--line)',

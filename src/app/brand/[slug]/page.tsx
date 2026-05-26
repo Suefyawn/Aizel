@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const brand = await getBrandBySlug(slug);
   if (!brand) return {};
   const title = `${brand.brand} — Shop`;
-  const description = `Shop the ${brand.brand} range at ${SITE_NAME} — ${brand.productCount} ${brand.productCount === 1 ? 'product' : 'products'}, 100% authentic, free UK delivery over £15.`;
+  const description = `Shop the ${brand.brand} range at ${SITE_NAME} — ${brand.productCount} ${brand.productCount === 1 ? 'product' : 'products'}, 100% authentic, free UK delivery over £30.`;
   return pageMeta({
     title,
     description,
@@ -142,7 +142,7 @@ export default async function BrandPage({ params }: { params: Promise<Params> })
           }}>{brand.brand}</h1>
           <p style={{ color: 'var(--ink-500)', fontSize: '0.9375rem' }}>
             {brand.productCount} {brand.productCount === 1 ? 'product' : 'products'} ·
-            free UK delivery over £15
+            free UK delivery over £30
           </p>
         </div>
       </header>

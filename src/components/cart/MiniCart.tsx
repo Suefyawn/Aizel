@@ -124,7 +124,7 @@ export function MiniCart() {
               height: '100%', width: `${progress * 100}%`,
               // Pure Aizel purple in transit; success-green once the
               // threshold's hit. Was a gold→purple gradient — the same
-              // YellowPink hangover we're sweeping out of the rest of cart.
+              // previous-brand hangover we're sweeping out of the rest of cart.
               background: progress >= 1
                 ? 'var(--success)'
                 : 'linear-gradient(90deg, var(--brand-pink), var(--brand-pink-cta))',

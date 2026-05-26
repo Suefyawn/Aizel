@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 26 May 2026 — Notifications page now flags a missing `OWNER_EMAIL` env var explicitly (alerts no longer silently route to a hardcoded address when both the recipients table and the env var are empty); blog mutations require the `blog` permission and write audit log rows; POS Terminal payment intents validate the requested amount against the persisted order total before talking to Stripe. (Prior changes: vendors removed (all-in-house catalogue); admin sidebar reshaped with Trade as a first-class section; sidebar trimmed (Segments / Email blast moved to tabs, Activity & Email logs into Settings); CSV export on every list page; click-to-edit price + stock; staff notes & tags on customers that surface at the till; saved filter views on Orders, Products, and Customers; live activity feed widget on the dashboard (now Server-Sent Events with a polling backstop); receipt customisation (Settings → Receipts) with header tagline / footer / return policy / VAT block.)*
+> *Last updated: 26 May 2026 — Deep rebrand sweep: every Yellow-Pink-era / Pakistani-context reference (About / Contact / FAQ / Shipping / Returns CMS pages, courier integration, code comments, env defaults, internal docs) replaced with Aizel UK copy; free-shipping threshold harmonised across UI + DB at £30; TCS Pakistan courier integration removed; reviews now display on PDPs (RLS policy that had been silently dropped is restored). Notifications page now flags a missing `OWNER_EMAIL` env var explicitly (alerts no longer silently route to a hardcoded address when both the recipients table and the env var are empty); blog mutations require the `blog` permission and write audit log rows; POS Terminal payment intents validate the requested amount against the persisted order total before talking to Stripe.*
 
 ---
 
@@ -78,7 +78,7 @@ Hair Oils & Serums, Cocoa & Shea Butter, Wig & Lace Adhesives, and so on.
 
 - **Cart** — lists everything the customer has added, with quantities and a
   running total. They can change quantities, remove items, and enter a **coupon
-  code** for a discount. Standard UK delivery is **free on orders over £15**;
+  code** for a discount. Standard UK delivery is **free on orders over £30**;
   below that a flat shipping fee is calculated at checkout.
 - **Checkout** — the customer enters their delivery details (name, phone, email,
   full UK address with postcode), sees the shipping cost, and chooses how to pay.

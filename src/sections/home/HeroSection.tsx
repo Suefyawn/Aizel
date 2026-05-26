@@ -20,7 +20,7 @@ interface HeroSettings {
 const DEFAULTS: HeroSettings = {
   overline: 'Authentic Hair & Body Care · UK',
   headline: 'Hair you love.<br/><em>Brands you trust.</em>',
-  subline: 'Authentic Cantu, ORS, Palmer\'s, Kuza, ApHogee and more — delivered fast across the UK. Free delivery on orders over £15.',
+  subline: 'Authentic Cantu, ORS, Palmer\'s, Kuza, ApHogee and more — delivered fast across the UK. Free delivery on orders over £30.',
   cta1Text: 'Shop Hair Care',
   cta1Url: '/shop?taxon=hair',
   cta2Text: 'Shop Body Care',
@@ -40,7 +40,7 @@ const GradientFallback = () => (
       position: 'absolute', inset: 0,
       // Two purple radials over a white wash — was a gold + purple pair but
       // the gold radial was the loudest thing in the hero and read as a
-      // YellowPink hangover. Now reads cleanly as the Aizel purple.
+      // previous-brand hangover. Now reads cleanly as the Aizel purple.
       background: `
         radial-gradient(at 78% 22%, rgba(107, 44, 145, 0.18), transparent 55%),
         radial-gradient(at 22% 78%, rgba(107, 44, 145, 0.26), transparent 55%),
@@ -123,7 +123,7 @@ export function HeroSection({ settings }: { settings?: Partial<HeroSettings> }) 
           )}
           {/* Editorial accent — anchors the hero corner in the Aizel purple.
               Was the gold (--brand-yellow) for one rev but read as a
-              YellowPink hangover at that size; the primary brand colour
+              previous-brand hangover at that size; the primary brand colour
               owns the hero, gold is reserved for smaller accents
               (trust-strip rings, hover states, the skip-link outline). */}
           <div aria-hidden="true" style={{ position: 'absolute', bottom: 0, left: 0, width: 6, height: 80, background: 'var(--brand-pink)' }} />

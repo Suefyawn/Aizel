@@ -1,7 +1,7 @@
 // ============================================================================
-// Courier adapter contract. Every API-backed courier (TCS today, Leopards /
-// M&P / BlueEx later) implements this so the admin UI and shipment actions
-// can talk to all of them through the same surface.
+// Courier adapter contract. Every API-backed courier (Royal Mail Shipping
+// API, DPD WebShipper, Evri, etc.) implements this so the admin UI and
+// shipment actions can talk to all of them through the same surface.
 //
 // `null` returns are the "best-effort failed, keep going" signal — the
 // caller falls back to manual tracking-number entry. We never throw across
@@ -89,7 +89,7 @@ export type Result<T> = T | AdapterError;
  * by hand" has every method returning AdapterError with code='not_supported'.
  */
 export interface CourierAdapter {
-  /** Stable id matching CourierProfile.id ('TCS', 'Leopards', etc.). */
+  /** Stable id matching CourierProfile.id ('RoyalMail', 'DPD', etc.). */
   id: string;
   /** Whether this adapter has a live API (vs. manual-only). */
   capabilities: {
