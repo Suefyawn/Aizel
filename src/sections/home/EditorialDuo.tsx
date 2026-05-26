@@ -6,16 +6,16 @@ import { useState } from 'react';
 import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Overline } from '@/components/ui/Overline';
 
-// Editorial cards anchored beneath the hero. Leave `img` empty until real
-// editorial photography is uploaded — the gradient fallback ships a clean
-// on-brand placeholder rather than borrowing third-party imagery.
-const CARDS = [
+// Editorial cards anchored beneath the hero. Each card now takes an `img`
+// from the page (homepage picks a lead product image per category via
+// getCategoryHeroImages). When no image resolves the gradient fallback
+// ships a clean on-brand placeholder — never a broken-image icon.
+const BASE_CARDS = [
   {
     title: 'Wash Day Essentials',
     subtitle: 'Hair Care Edit',
     cta: 'Shop Hair Care',
     href: '/shop?taxon=hair',
-    img: '',
     // Pale purple — was #EFE3F3 (paler) / #F5E6CF (cream); the cream
     // tile read as a YellowPink hangover. Both fallbacks are now purple
     // tints at different lightnesses so the two cards stay distinct.
@@ -27,13 +27,22 @@ const CARDS = [
     subtitle: 'Body Care Edit',
     cta: 'Shop Body Care',
     href: '/shop?taxon=body',
-    img: '',
     fallbackColor: '#E2D2EB',
     alt: 'Cocoa butter, shea butter and body oils',
   },
 ];
 
-function DuoCard({ title, subtitle, cta, href, img, alt, fallbackColor }: typeof CARDS[0]) {
+interface DuoCardProps {
+  title: string;
+  subtitle: string;
+  cta: string;
+  href: string;
+  img: string;
+  alt: string;
+  fallbackColor: string;
+}
+
+function DuoCard({ title, subtitle, cta, href, img, alt, fallbackColor }: DuoCardProps) {
   const [hovered, setHovered] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   // Treat empty-string `img` as "no image" so we render the gradient fallback
@@ -79,13 +88,20 @@ function DuoCard({ title, subtitle, cta, href, img, alt, fallbackColor }: typeof
   );
 }
 
-export function EditorialDuo() {
+export function EditorialDuo({ hairImage = '', bodyImage = '' }: { hairImage?: string; bodyImage?: string }) {
+  // Hydrate the static card metadata with the per-render images passed
+  // from the homepage. Empty string is the documented "no image" signal
+  // that DuoCard's gradient fallback handles.
+  const cards = [
+    { ...BASE_CARDS[0], img: hairImage },
+    { ...BASE_CARDS[1], img: bodyImage },
+  ];
   return (
     <section style={{ paddingBottom: 'var(--section-gap)' }}>
       <div className="container">
         <SectionDivider />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--gutter)', marginTop: 'var(--section-gap)' }} className="duo-grid">
-          {CARDS.map(c => <DuoCard key={c.title} {...c} />)}
+          {cards.map(c => <DuoCard key={c.title} {...c} />)}
         </div>
       </div>
     </section>
