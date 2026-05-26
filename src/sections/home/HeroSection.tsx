@@ -18,15 +18,15 @@ interface HeroSettings {
 }
 
 const DEFAULTS: HeroSettings = {
-  overline: 'Authentic Hair & Body Care · UK',
-  headline: 'Hair you love.<br/><em>Brands you trust.</em>',
-  subline: 'Authentic Cantu, ORS, Palmer\'s, Kuza, ApHogee and more — delivered fast across the UK. Free delivery on orders over £30.',
+  overline: 'Authentic Afro/Black Hair & Body Care · UK',
+  headline: 'The brands you grew up on.<br/><em>Delivered next-day.</em>',
+  subline: '100% authentic Cantu, ORS, KeraCare, Palmer\'s, Kuza, ApHogee and 45+ more — sourced direct, packed in-house, free UK delivery over £30.',
   cta1Text: 'Shop Hair Care',
   cta1Url: '/shop?taxon=hair',
   cta2Text: 'Shop Body Care',
   cta2Url: '/shop?taxon=body',
   imageUrl: '',
-  brands: ['Cantu', 'ORS', "Palmer's", 'Kuza', 'ApHogee', 'KeraCare'],
+  brands: ['Cantu', 'ORS', "Palmer's", 'Kuza', 'ApHogee', 'KeraCare', 'As I Am', 'Shea Moisture'],
 };
 
 // Soft, on-brand gradient that stands in for the hero photo until the
