@@ -51,10 +51,10 @@ export function BlogPage({ posts }: { posts: BlogPost[] }) {
     <div>
       <section style={{ padding: '48px 0', borderBottom: '1px solid var(--line)' }}>
         <div className="container">
-          <Overline style={{ display: 'block', marginBottom: 8, color: 'var(--ink-500)' }}>Journal</Overline>
-          <h1 className="display-l" style={{ fontSize: '2.5rem', marginBottom: 12 }}>The Edit</h1>
-          <p className="body-text" style={{ color: 'var(--ink-700)', maxWidth: 480 }}>
-            Expert guides, honest reviews, and the science behind beauty and health — no fluff.
+          <Overline style={{ display: 'block', marginBottom: 8, color: 'var(--ink-500)' }}>The Aizel Journal</Overline>
+          <h1 className="display-l" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Routines, reviews & curl science.</h1>
+          <p className="body-text" style={{ color: 'var(--ink-700)', maxWidth: 540 }}>
+            Wash days, edge laying, butter layering and brand deep-dives — written by editors who actually use the products on their own hair and skin.
           </p>
         </div>
       </section>
@@ -94,7 +94,7 @@ export function BlogPage({ posts }: { posts: BlogPost[] }) {
               type="search"
               value={query}
               onChange={e => { setQuery(e.target.value); setPage(1); }}
-              placeholder="Search the journal — try “PCOS”, “retinol”…"
+              placeholder="Search the journal — try “wash day”, “Cantu”, “edge control”…"
               aria-label="Search blog posts"
               style={{
                 flex: '1 1 280px', maxWidth: 420, minWidth: 220,
