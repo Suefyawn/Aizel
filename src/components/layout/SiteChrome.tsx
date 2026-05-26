@@ -51,7 +51,7 @@ export function SiteChrome({ children, settings, promos, searchTrending, searchC
         />
       ) : topBarSettingsActive && (
         <AnnouncementBar
-          text={settings.announcement_text ?? 'Free UK delivery over £15 · Royal Mail Tracked · VAT included'}
+          text={settings.announcement_text ?? 'Free UK delivery over £30 · Royal Mail Tracked · VAT included'}
           bgColor={settings.announcement_color ?? '#111827'}
         />
       )}

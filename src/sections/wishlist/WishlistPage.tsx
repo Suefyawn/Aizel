@@ -103,7 +103,7 @@ export function WishlistPage() {
               width: 80, height: 80, margin: '0 auto 24px',
               borderRadius: '50%',
               // Two pale purple tints — was pink → cream which read as a
-              // YellowPink hangover on the empty wishlist hero.
+              // previous-brand hangover on the empty wishlist hero.
               background: 'linear-gradient(135deg, #F5EFF8 0%, #E2D2EB 100%)',
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '2.25rem', color: 'var(--brand-pink-text)',

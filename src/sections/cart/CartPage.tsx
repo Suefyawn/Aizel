@@ -147,7 +147,7 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
               <div style={{
                 height: '100%', width: `${progress * 100}%`,
                 // Pure Aizel purple — was a gold→purple gradient, the most
-                // YellowPink-feeling visual on the cart row.
+                // previous-brand-feeling visual on the cart row.
                 background: 'linear-gradient(90deg, var(--brand-pink), var(--brand-pink-cta))',
                 borderRadius: 'var(--radius-pill)', transition: 'width 400ms ease-out',
               }} />

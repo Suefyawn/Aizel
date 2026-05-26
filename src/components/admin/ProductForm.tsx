@@ -154,8 +154,7 @@ export function ProductForm({ product }: { product?: Product }) {
             <div style={{ ...row3, marginBottom: 16 }}>
               <div style={fieldWrap}>
                 <label style={lbl}>Price (GBP) *</label>
-                {/* `step="0.01"` lets the operator type £14.99 / £24.99 etc.
-                    Previous defaults (2400 / 3000) were PKR-scale. */}
+                {/* `step="0.01"` lets the operator type £14.99 / £24.99 etc. */}
                 <input name="price" type="number" step="0.01" required min={0} defaultValue={product?.price} style={inp} placeholder="14.99"
                   onChange={e => setPrice(Number(e.target.value) || 0)} />
               </div>

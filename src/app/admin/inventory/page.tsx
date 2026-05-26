@@ -387,7 +387,7 @@ const chipLink = (active: boolean): React.CSSProperties => ({
   borderRadius: 6,
   border: '1px solid ' + (active ? '#4A1A6B' : '#e5e7eb'),
   // Pale-purple wash + deep purple text — was magenta/fuchsia (Tailwind
-  // YellowPink-era leftover) on an admin chip.
+  // previous-brand-era leftover) on an admin chip.
   background: active ? '#EDE9FE' : 'white',
   color: active ? '#4A1A6B' : '#374151',
   textDecoration: 'none',

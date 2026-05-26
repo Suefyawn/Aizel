@@ -67,7 +67,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
       style={{ background: 'var(--ink-900)', color: 'var(--paper)', padding: '64px 0 32px', position: 'relative', overflow: 'hidden' }}
     >
       {/* Removed: an oversized LogoMark watermark + an italic-serif scrolling
-          marquee that both read as YellowPink-era decorative chrome. The
+          marquee that both read as previous-brand-era decorative chrome. The
           footer wordmark column below carries the brand identity; the
           payment-method strip + © line close the footer cleanly without
           either. */}
@@ -80,7 +80,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
             </p>
             <address style={{ fontStyle: 'normal' }}>
               <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.5)', fontSize: '0.75rem', lineHeight: 1.7 }}>
-                Free UK delivery on orders over £15<br />
+                Free UK delivery on orders over £30<br />
                 Royal Mail Tracked · DPD next-day available<br />
                 14-day returns · Card · PayPal · Apple Pay<br />
                 All prices include VAT

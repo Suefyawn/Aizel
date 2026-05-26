@@ -18,7 +18,7 @@ import { whatsappUrl as waUrl, WA_TEMPLATES as WA_T } from '@/lib/whatsapp';
 import { BenefitIcon } from '@/components/ui/BenefitIcon';
 import type { Product, ProductImage as ProductImageT, ProductAttribute, AttributeValue, ProductVariant } from '@/types';
 
-const SHIPPING_CONTENT = 'Free UK shipping on orders over £15. 14-day return policy on unopened items.';
+const SHIPPING_CONTENT = 'Free UK shipping on orders over £30. 14-day return policy on unopened items.';
 
 interface AttributeWithValues extends ProductAttribute {
   values: AttributeValue[];
@@ -464,7 +464,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               </div>
               <button onClick={handleAdd} disabled={ctaDisabled} className="btn-primary" style={{
                 flex: 1,
-                // Success-green flash on add (was gold — read as a YellowPink
+                // Success-green flash on add (was gold — read as a previous-brand
                 // signal on the most-clicked CTA on the site).
                 background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--success)' : 'var(--brand-pink)',
                 transition: 'background 100ms ease-out',
@@ -607,7 +607,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
       <section
         style={{
           // Paper → pale purple wash (#F5EFF8). Was paper → cream (#FFF8E1)
-          // which read as a YellowPink hangover on the PDP. The pale purple
+          // which read as a previous-brand hangover on the PDP. The pale purple
           // anchors the section in the Aizel brand without dominating.
           background: 'linear-gradient(120deg, var(--paper2) 0%, var(--paper) 60%, #F5EFF8 100%)',
           padding: '64px 0',
@@ -620,7 +620,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
         {/* Decorative brand-tint blobs — replaces the missing editorial
             photo placeholder with something that always looks intentional. */}
         {/* Two purple blobs at different opacities — was a gold/purple pair
-            but the gold tint pushed the section toward YellowPink. Pure
+            but the gold tint pushed the section toward previous-brand. Pure
             purple keeps the decorative interest in the Aizel palette. */}
         <div
           aria-hidden="true"
@@ -660,7 +660,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
             {[
               { icon: '✓', label: '100% authentic', sub: 'Direct from authorised UK distributors' },
               { icon: '◐', label: 'Built for textured hair', sub: 'Curated for type 3 & type 4 curls' },
-              { icon: '◎', label: 'Royal Mail Tracked', sub: 'Free UK delivery over £15' },
+              { icon: '◎', label: 'Royal Mail Tracked', sub: 'Free UK delivery over £30' },
               { icon: '↩', label: '14-day returns', sub: 'UK Consumer Contracts Regs · unopened items' },
             ].map(t => (
               <div
@@ -681,7 +681,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: 36, height: 36, borderRadius: 8,
                     // Purple square in the Aizel brand colour — was gold and
-                    // read as a YellowPink hangover at this size.
+                    // read as a previous-brand hangover at this size.
                     background: 'var(--brand-pink)', color: '#fff',
                     fontSize: '1.125rem', fontWeight: 700, marginBottom: 12,
                   }}

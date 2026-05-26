@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const displayName = brandPlusName(product.brand, product.name);
   const autoTitle = `${displayName}${product.variant ? ` — ${product.variant}` : ''}`;
   const autoDescription = product.short_description?.trim()
-    ?? (product.description?.trim().slice(0, 160) || `Buy ${displayName} in the UK. £${product.price.toLocaleString()}. Free UK delivery over £15.`);
+    ?? (product.description?.trim().slice(0, 160) || `Buy ${displayName} in the UK. £${product.price.toLocaleString()}. Free UK delivery over £30.`);
   // Migration 081: admin-controlled overrides win when set; otherwise fall
   // back to the auto-templated values so existing rows keep working.
   const title = product.seo_title?.trim() || autoTitle;

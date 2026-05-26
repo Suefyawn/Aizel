@@ -505,7 +505,7 @@ export async function sendNewsletterWelcomeEmail(args: { email: string; source: 
       <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:20px 24px;text-align:center">
         <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">A little welcome gift</p>
         <p style="margin:0 0 4px;color:${INK};font-size:26px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">WELCOME10</p>
-        <p style="margin:0;color:${INK_700};font-size:13px">10% off your first order over £15. Apply it at checkout.</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">10% off your first order over £30. Apply it at checkout.</p>
       </td></tr>
     </table>
     <p style="margin:0 0 24px;color:${INK_700}">
@@ -576,7 +576,7 @@ export async function sendReorderReminderEmail(args: {
       <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:18px 22px;text-align:center">
         <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Your subscriber discount</p>
         <p style="margin:0 0 4px;color:${INK};font-size:24px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">SUBSCRIBE10</p>
-        <p style="margin:0;color:${INK_700};font-size:13px">10% off this reorder over £15. Apply it at checkout.</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">10% off this reorder over £30. Apply it at checkout.</p>
       </td></tr>
     </table>
     <p style="margin:0 0 24px;text-align:center">
@@ -688,7 +688,7 @@ export async function sendWinBackEmail(args: {
       <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:18px 22px;text-align:center">
         <p style="margin:0 0 6px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Welcome-back discount</p>
         <p style="margin:0 0 4px;color:${INK};font-size:24px;font-weight:700;letter-spacing:0.06em;font-family:'Courier New',monospace">WELCOMEBACK15</p>
-        <p style="margin:0;color:${INK_700};font-size:13px">15% off any order over £15. Valid for 14 days.</p>
+        <p style="margin:0;color:${INK_700};font-size:13px">15% off any order over £30. Valid for 14 days.</p>
       </td></tr>
     </table>
     <p style="margin:0 0 24px;text-align:center">

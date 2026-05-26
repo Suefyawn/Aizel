@@ -17,7 +17,7 @@ const BASE_CARDS = [
     cta: 'Shop Hair Care',
     href: '/shop?taxon=hair',
     // Pale purple — was #EFE3F3 (paler) / #F5E6CF (cream); the cream
-    // tile read as a YellowPink hangover. Both fallbacks are now purple
+    // tile read as a previous-brand hangover. Both fallbacks are now purple
     // tints at different lightnesses so the two cards stay distinct.
     fallbackColor: '#EFE3F3',
     alt: 'Curated shampoo, conditioner and treatment essentials',

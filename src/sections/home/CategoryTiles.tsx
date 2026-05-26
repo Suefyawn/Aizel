@@ -47,7 +47,7 @@ function CatTile({ label, href, image }: CategoryTile) {
           <div style={{
             width: '100%', height: '100%',
             // Pale-purple fade — was cream (#f0e6d8) which read as a
-            // YellowPink hangover when the tile fell back without an image.
+            // previous-brand hangover when the tile fell back without an image.
             background: 'linear-gradient(135deg, var(--paper2) 0%, #EFE3F3 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>

@@ -34,7 +34,7 @@ export default async function SettingsBrandingPage({ searchParams }: { searchPar
           <Divider />
           {/* Note on field names: the DB columns are still called
               `brand_pink` and `brand_yellow` for back-compat with the
-              YellowPink-era schema. The labels here are the correct
+              previous-brand-era schema. The labels here are the correct
               Aizel terms ("Brand purple" / "Brand gold") — what the
               operator sees, not what Postgres stores. Renaming the
               columns would need a migration + a cross-deploy window

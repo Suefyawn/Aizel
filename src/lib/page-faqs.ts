@@ -25,7 +25,7 @@ const FAQS: Record<string, FaqEntry[]> = {
     {
       question: 'When does free shipping apply?',
       answer:
-        'Free standard UK delivery is automatically applied to orders over £15. Below that threshold, a flat shipping fee is calculated at checkout.',
+        'Free standard UK delivery is automatically applied to orders over £30. Below that threshold, a flat shipping fee is calculated at checkout.',
     },
     {
       question: 'Which courier services do you use?',

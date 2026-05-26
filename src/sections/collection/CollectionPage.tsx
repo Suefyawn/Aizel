@@ -451,7 +451,7 @@ export function CollectionPage({
           <h1 className="display-l" style={{ fontSize: '2.5rem', marginBottom: 12 }}>{pageTitle}</h1>
           <p className="body-text" style={{ color: 'var(--ink-700)', maxWidth: 480, marginBottom: 32 }}>
             {singleBrand
-              ? `Explore the full ${singleBrand} range at Aizel — 100% authentic, imported, with free UK delivery over £15.`
+              ? `Explore the full ${singleBrand} range at Aizel — 100% authentic, imported, with free UK delivery over £30.`
               : (activeSubcategory ? CATEGORY_DESCRIPTIONS[activeSubcategory] : undefined)
                 ?? CATEGORY_DESCRIPTIONS[activeCategory]
                 ?? CATEGORY_DESCRIPTIONS.All}
@@ -836,7 +836,7 @@ export function CollectionPage({
                   width: 60, height: 60, margin: '0 auto 18px',
                   borderRadius: '50%',
                   // Pale purple tints — was pink → cream and read as a
-                  // YellowPink hangover on the empty-results state.
+                  // previous-brand hangover on the empty-results state.
                   background: 'linear-gradient(135deg, #F5EFF8 0%, #E2D2EB 100%)',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '1.5rem', color: 'var(--brand-pink-text)',

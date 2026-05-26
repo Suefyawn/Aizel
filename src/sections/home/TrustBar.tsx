@@ -4,7 +4,7 @@
 type IconName = 'authentic' | 'delivery' | 'cod' | 'returns';
 
 const ITEMS: { icon: IconName; label: string; sub: string }[] = [
-  { icon: 'delivery',  label: 'Free UK Delivery', sub: 'Over £15 · Royal Mail Tracked' },
+  { icon: 'delivery',  label: 'Free UK Delivery', sub: 'Over £30 · Royal Mail Tracked' },
   { icon: 'authentic', label: '100% Authentic',   sub: 'Direct from authorised brands' },
   { icon: 'cod',       label: 'Secure Checkout',  sub: 'Card · PayPal · Apple Pay' },
   { icon: 'returns',   label: 'Easy Returns',     sub: '14 days · UK freepost' },

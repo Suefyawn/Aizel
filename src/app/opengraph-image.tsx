@@ -88,7 +88,7 @@ export default async function OpengraphImage() {
               maxWidth: 760,
             }}
           >
-            Authentic hair &amp; body care brands — Cantu, ORS, Palmer&apos;s, Kuza &amp; more. Free UK delivery over £15.
+            Authentic hair &amp; body care brands — Cantu, ORS, Palmer&apos;s, Kuza &amp; more. Free UK delivery over £30.
           </div>
         </div>
 

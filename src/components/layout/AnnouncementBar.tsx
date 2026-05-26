@@ -59,7 +59,7 @@ export function AnnouncementBar({ text, bgColor }: Props) {
           /^£/.test(part) ? (
             // Soft white underline on every £-amount keeps the £15 anchor
             // emphasised in the dark brand surface without injecting gold
-            // (the YellowPink-era accent).
+            // (the previous-brand-era accent).
             <span key={i} style={{ borderBottom: '2px solid rgba(255,255,255,0.55)', paddingBottom: 1 }}>{part}</span>
           ) : (
             <span key={i}>{part}</span>

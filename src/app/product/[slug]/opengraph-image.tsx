@@ -130,7 +130,7 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
               fontSize: 22, fontWeight: 600, color: '#6B7280',
               letterSpacing: '0.06em', textTransform: 'uppercase',
             }}>
-              Free UK delivery over £15
+              Free UK delivery over £30
             </div>
             <div style={{ display: 'flex', height: 10, width: 160, overflow: 'hidden', borderRadius: 2 }}>
               <div style={{ flex: 1, background: PURPLE }} />

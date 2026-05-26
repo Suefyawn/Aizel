@@ -88,7 +88,7 @@ function PromoFields({ promo }: { promo?: Promo }) {
           <input name="cta_text" placeholder="Shop now" defaultValue={promo?.cta_text ?? ''} style={inp} />
         </Field>
         <Field label="Headline" wide>
-          <input name="headline" required placeholder="Free UK delivery over £15 · Cantu, ORS, Palmer's & more" defaultValue={promo?.headline ?? ''} style={inp} />
+          <input name="headline" required placeholder="Free UK delivery over £30 · Cantu, ORS, Palmer's & more" defaultValue={promo?.headline ?? ''} style={inp} />
         </Field>
         <Field label="Subline" wide>
           <input name="subline" placeholder="(optional)" defaultValue={promo?.subline ?? ''} style={inp} />

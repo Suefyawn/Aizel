@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     default: `${SITE_NAME} — Authentic Hair & Body Care`,
     template: `%s | ${SITE_NAME}`,
   },
-  description: 'Authentic Afro/Black hair and body care brands — Cantu, ORS, Palmer\'s, Kuza and more. Free UK delivery over £15.',
+  description: 'Authentic Afro/Black hair and body care brands — Cantu, ORS, Palmer\'s, Kuza and more. Free UK delivery over £30.',
   applicationName: SITE_NAME,
   // We deleted /icon.svg when installing the flower favicon. Next.js
   // auto-generates /icon and /apple-icon link tags from

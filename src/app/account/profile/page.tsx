@@ -121,7 +121,7 @@ export default function ProfilePage() {
 
         <div style={{ background: 'white', borderRadius: 16, padding: '32px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid var(--line)' }}>
           <div style={{
-            // `--cream` was a YellowPink-era variable that no longer exists,
+            // `--cream` was a previous-brand-era variable that no longer exists,
             // so this card was rendering with no background. `--paper2` is
             // the Aizel pale-paper surface for inset info blocks.
             marginBottom: 24, padding: '12px 16px', background: 'var(--paper2)',
