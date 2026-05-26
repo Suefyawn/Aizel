@@ -73,7 +73,15 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const admin = supabaseAdmin();
   const [{ data: userData }, { data: orders }, { data: activity }, extras] = await Promise.all([
     admin.rpc('get_admin_user' as never, { p_id: id } as never),
-    admin.from('orders').select('*').eq('user_id', id).order('created_at', { ascending: false }),
+    // User-detail page renders order_number, created_at, items.length,
+    // total, status, pay_method, tracking. Narrowed + capped at 50 most-
+    // recent (returning customers can hit 100+); a "View all orders"
+    // affordance can fetch the rest if needed.
+    admin.from('orders')
+      .select('id, order_number, total, status, pay_method, created_at, tracking_number, courier, items')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false })
+      .limit(50),
     // The customer's own journey — activity_log rows where they are the actor
     // (signup, orders, reviews, subscriptions). See migration 090.
     admin.from('audit_log')

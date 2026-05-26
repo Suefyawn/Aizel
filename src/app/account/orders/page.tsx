@@ -33,10 +33,18 @@ export default function AccountOrdersPage() {
       // email so they appear in the history below. Idempotent — once the
       // orders are claimed it matches zero rows.
       await sb.rpc('claim_guest_orders' as never);
+      // Narrow projection + cap at 50 most-recent orders. The expanded-row
+      // detail (items breakdown) was the only consumer of the full row;
+      // it loads its own per-order detail on click, so the index doesn't
+      // need to ship cart JSON for every historical order. Customers with
+      // 100+ orders were downloading hundreds of KB of items on every
+      // /account/orders visit before this.
       const { data } = await sb
-        .from('orders').select('*')
+        .from('orders')
+        .select('id, order_number, status, total, pay_method, created_at, tracking_number, courier, items')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
       setOrders((data ?? []) as Order[]);
       setFetching(false);
     })();

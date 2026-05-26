@@ -49,9 +49,13 @@ export function RecentlyViewed({ currentProductId }: { currentProductId: string 
     let cancelled = false;
     (async () => {
       const sb = getBrowserClient();
-      const { data } = await sb.from('products').select('*').in('id', toFetch);
+      // Narrow projection — RecentlyViewed renders a ProductTile, which only
+      // reads tile columns. Was select('*') and pulled description / ingredients
+      // / faq / key_benefits for up to 4 products on every PDP hydration.
+      const TILE = 'id, brand, name, variant, price, original_price, category, subcategory, tag, slug, stock, track_inventory, image_url, is_bestseller, is_featured, free_from, status, created_at, rating, review_count, kind';
+      const { data } = await sb.from('products').select(TILE).in('id', toFetch);
       if (cancelled) return;
-      const map = new Map(((data ?? []) as Product[]).map(p => [p.id, p]));
+      const map = new Map(((data ?? []) as unknown as Product[]).map(p => [p.id, p]));
       // Preserve recent-first order.
       setOtherProducts(toFetch.map(id => map.get(id)).filter((p): p is Product => Boolean(p)));
     })();
