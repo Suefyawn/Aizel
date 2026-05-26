@@ -231,8 +231,18 @@ export async function updateBlogPost(
   const parsed = parseForm(blogPostInputSchema, normalized);
   if (!parsed.success) return { error: firstError(parsed.error) };
   const admin = supabaseAdmin();
+  // Narrow the before-snapshot to mutable scalar fields. select('*') would
+  // store the full body HTML (often tens of KB) on every edit; audit_log
+  // is jsonb + retained indefinitely, so multiply-edits-of-a-long-post
+  // would balloon the table for no investigative value.
   const { data: before } = await admin
-    .from('blog_posts').select('*').eq('id', id).maybeSingle();
+    .from('blog_posts')
+    .select('title, slug, category, featured, excerpt, date, read_time, image_url')
+    .eq('id', id)
+    .maybeSingle();
+  // No row by that id (stale tab, deleted in another window) — surface a
+  // real error instead of silently no-op'ing and writing a phantom audit.
+  if (!before) return { error: 'Blog post not found (it may have been deleted).' };
   const { error } = await admin.from('blog_posts').update(parsed.data).eq('id', id);
   if (error) return { error: error.message };
   await logAudit(session, {
@@ -251,13 +261,15 @@ export async function deleteBlogPost(formData: FormData) {
   // (audit_log keeps the row indefinitely; the blog_posts row will be gone).
   const { data: before } = await admin
     .from('blog_posts').select('title, slug').eq('id', id).maybeSingle();
+  if (!before) {
+    redirect('/admin/blog?error=' + encodeURIComponent('Blog post not found (it may have been deleted already).'));
+  }
   const { error } = await admin.from('blog_posts').delete().eq('id', id);
   if (error) {
     redirect(`/admin/blog?error=${encodeURIComponent(error.message)}`);
   }
   await logAudit(session, {
-    action: 'blog.delete', entity: 'blog_post', entity_id: id,
-    diff: before ?? undefined,
+    action: 'blog.delete', entity: 'blog_post', entity_id: id, diff: before,
   });
   revalidatePath('/admin/blog');
   redirect('/admin/blog?deleted=1');

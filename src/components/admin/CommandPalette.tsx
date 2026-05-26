@@ -89,6 +89,12 @@ export function CommandPalette({ session }: { session: StaffSession }) {
   const [, startSearch] = useTransition();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  // Generation counter for the debounced server action — fast typers can
+  // schedule a long-query fetch then backspace below the 2-char threshold
+  // before it resolves; without a gate the stale result would overwrite
+  // the cleared list. Each effect run bumps the counter; only the
+  // matching response is allowed to set state.
+  const searchGenRef = useRef(0);
 
   // ── Global keybind: ⌘K (Mac) / Ctrl+K (Win/Linux) ─────────────────
   useEffect(() => {
@@ -125,15 +131,19 @@ export function CommandPalette({ session }: { session: StaffSession }) {
   // ── Live search via server action, debounced 200ms ────────────────
   useEffect(() => {
     if (!open) return;
+    // Bump the generation on every effect run so any in-flight response
+    // from a previous keystroke is discarded by the gen check below.
+    searchGenRef.current += 1;
+    const myGen = searchGenRef.current;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing results on a query-too-short transition is the intended sync pattern
     if (q.trim().length < 2) { setSearchResults([]); return; }
     const handle = setTimeout(() => {
       startSearch(async () => {
         try {
           const rows = await searchCommandPalette(q);
-          setSearchResults(rows);
+          if (myGen === searchGenRef.current) setSearchResults(rows);
         } catch {
-          setSearchResults([]);
+          if (myGen === searchGenRef.current) setSearchResults([]);
         }
       });
     }, 200);

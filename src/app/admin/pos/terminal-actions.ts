@@ -103,31 +103,57 @@ export type TerminalPiResult =
   | { ok: false; configured: true;  error: string };
 
 export async function createTerminalPaymentIntent(input: unknown): Promise<TerminalPiResult> {
-  await assertPos();
+  const session = await assertPos();
   if (!envIsConfigured()) return { ok: false, configured: false };
 
   const parsed = PiInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, configured: true, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
 
-  // Server-side amount check. When the cashier supplies an orderRef we
-  // require the requested amount to match the persisted order total within
-  // 1p — closes the door on a compromised/negligent till charging £0.01
-  // for a £29.99 order by passing a tampered `amount` and shipping the
-  // basket once the reader returns succeeded.
+  // Server-side guards when the cashier ties the PI to an existing order.
+  // (No orderRef = pre-mint flow; metadata gets patched at confirm time.)
+  // Three checks, each one closing a real till-fraud / human-error vector:
+  //   1. order exists  — refuses orphan PIs that nothing reconciles to
+  //   2. amount matches order.total within 1p — refuses tampered amount
+  //   3. order is still in a pre-payment state — refuses re-charging an
+  //      already-paid / delivered / refunded order (stale POS tab, double-
+  //      scan of a confirmation email, etc.).
+  // Every rejection writes an audit row so a probing till leaves a trail.
   if (parsed.data.orderRef) {
     const { data: order } = await supabaseAdmin()
       .from('orders')
       .select('total, status')
       .eq('order_number', parsed.data.orderRef)
-      .maybeSingle<{ total: number; status: string }>();
+      .maybeSingle<{ total: string | number; status: string }>();
+
+    const reject = async (reason: string, detail: Record<string, unknown>) => {
+      await logAudit(session, {
+        action: 'pos.terminal_create_blocked',
+        entity: 'order',
+        entity_id: parsed.data.orderRef ?? null,
+        diff: { reason, amount: parsed.data.amount, ...detail },
+      });
+      return { ok: false as const, configured: true as const, error: reason };
+    };
+
     if (!order) {
-      return { ok: false, configured: true, error: `Order ${parsed.data.orderRef} not found.` };
+      return reject(`Order ${parsed.data.orderRef} not found.`, {});
     }
-    if (Math.abs(parsed.data.amount - Number(order.total ?? 0)) > 0.01) {
-      return {
-        ok: false, configured: true,
-        error: `Amount £${parsed.data.amount.toFixed(2)} does not match order total £${Number(order.total).toFixed(2)}.`,
-      };
+    const orderTotal = Number(order.total ?? 0);
+    if (Math.abs(parsed.data.amount - orderTotal) > 0.01) {
+      return reject(
+        `Amount £${parsed.data.amount.toFixed(2)} does not match order total £${orderTotal.toFixed(2)}.`,
+        { expected_total: orderTotal, order_status: order.status },
+      );
+    }
+    // Pre-payment states only. Cards online may have failed and the
+    // operator wants to retry in-store (payment_failed); fresh POS-only
+    // orders start in payment_pending. Anything else means money has
+    // already moved (or won't move at all) for this order.
+    if (order.status !== 'payment_pending' && order.status !== 'payment_failed') {
+      return reject(
+        `Order ${parsed.data.orderRef} is in state '${order.status}' — refuse to mint a second Terminal PI.`,
+        { order_status: order.status },
+      );
     }
   }
 

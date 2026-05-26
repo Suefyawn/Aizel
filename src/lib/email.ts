@@ -193,14 +193,24 @@ async function send(opts: {
     await recordEmailLog(opts, 'skipped', { error: 'RESEND_API_KEY not set' });
     return false;
   }
+  // Normalise the recipient list — trim, drop empties/whitespace. The
+  // notification_recipients table doesn't enforce email shape, so a typo'd
+  // row (a single space, an empty string from the admin UI) could otherwise
+  // ship to Resend and fail the whole batch with a 422.
+  const toList: string[] = Array.isArray(opts.to) ? opts.to : opts.to ? [opts.to] : [];
+  const cleanTo = toList.map(s => String(s ?? '').trim()).filter(Boolean);
   // No recipients = no send. Happens for internal alerts when OWNER_EMAIL is
   // unset and no recipient row is configured; the caller relies on us to
-  // swallow it quietly rather than fail the surrounding commit.
-  if (Array.isArray(opts.to) ? opts.to.length === 0 : !opts.to) {
+  // swallow it quietly rather than fail the surrounding commit. We skip the
+  // recordEmailLog write too — an addressee-less row clutters /admin/emails
+  // and the structured warn above is the actionable signal for the operator.
+  if (cleanTo.length === 0) {
     log.warn('email.skip', { reason: 'no recipients', subject: opts.subject });
-    await recordEmailLog(opts, 'skipped', { error: 'No recipients configured' });
     return false;
   }
+  // Use the cleaned list for the actual send (keep opts.to untouched
+  // upstream of this point so existing callers stay backward-compatible).
+  opts = { ...opts, to: cleanTo.length === 1 ? cleanTo[0] : cleanTo };
   // Free-tier guard: claim a slot in today's send budget. Fails open — a
   // quota-check error must never block an email from going out.
   try {

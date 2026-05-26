@@ -1,15 +1,17 @@
 // Multi-recipient internal notifications.
 //
 // Resolves the set of email addresses that should receive a given internal
-// alert. The notification_recipients table is the source of truth; if no
-// recipient subscribes to an event, falls back to OWNER_EMAIL so behaviour
-// is unchanged for stores that haven't configured the new UI yet.
+// alert. Resolution order:
+//   1. enabled rows in notification_recipients subscribed to the event
+//   2. (fallback) the OWNER_EMAIL env var, if set
+//   3. (final fallback) an empty list — caller skips the send and logs
+//      `notification.recipients.no_fallback` so the operator can wire
+//      either a recipient row or the env var.
 //
-// All callers must be best-effort — a recipient lookup failure must never
-// stall an order placement or block any other commit. On any error we fall
-// back to OWNER_EMAIL too — or to an empty list if even OWNER_EMAIL is unset,
-// in which case the caller skips the send rather than routing it to a baked-in
-// developer address.
+// All callers must be best-effort: a recipient lookup failure (or the
+// no-fallback case) must never stall an order placement or block any
+// other commit. On any error we still return the OWNER_EMAIL fallback
+// when set, or [] when not.
 
 import { supabaseAdmin } from './supabase';
 import { log } from './logger';
@@ -65,6 +67,10 @@ export async function getRecipientsForEvent(event: NotificationEvent): Promise<s
       event,
       err: err instanceof Error ? err.message : String(err),
     });
+    // Same no-fallback signal the success branch emits, so the operator
+    // sees a clear "alert was dropped" event in addition to the lookup
+    // failure that caused it.
+    if (fallback.length === 0) log.warn('notification.recipients.no_fallback', { event });
     return fallback;
   }
 }
