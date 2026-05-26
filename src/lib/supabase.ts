@@ -417,3 +417,31 @@ export const getSiteSettings = cache(async (): Promise<Record<string, string>> =
     return Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
   }, DEMO_SITE_SETTINGS);
 });
+
+/** Pick one representative product image per category — used by the
+ *  homepage to populate category tiles and editorial banners with real
+ *  catalogue photography instead of the gradient placeholder. Ranks
+ *  is_bestseller > is_featured > newest, all `published`, so the picks
+ *  reflect editorial intent when the operator has flagged them and fall
+ *  back to "freshest in catalogue" otherwise. Cached per-request. */
+export const getCategoryHeroImages = cache(async (categories: readonly string[]): Promise<Record<string, string>> => {
+  if (isDemo || categories.length === 0) return {};
+  return safe('getCategoryHeroImages', async () => {
+    // One round-trip pulling 1-3 candidates per category, then pick the
+    // best per category client-side. Cheaper than N round-trips.
+    const { data } = await supabase
+      .from('products')
+      .select('category, image_url, is_bestseller, is_featured, created_at')
+      .in('category', categories as string[])
+      .eq('status', 'published')
+      .not('image_url', 'is', null)
+      .order('is_bestseller', { ascending: false })
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false });
+    const out: Record<string, string> = {};
+    for (const row of (data ?? []) as Array<{ category: string; image_url: string | null }>) {
+      if (!out[row.category] && row.image_url) out[row.category] = row.image_url;
+    }
+    return out;
+  }, {});
+});
