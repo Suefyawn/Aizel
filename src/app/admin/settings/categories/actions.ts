@@ -208,6 +208,53 @@ export async function updateCategory(formData: FormData): Promise<void> {
   redirect(`${PATH}?ok=${encodeURIComponent(productsRenamed > 0 ? `Category updated — ${productsRenamed} products moved` : 'Category updated')}`);
 }
 
+// Swap-with-neighbour reorder for sections (taxons). Operator clicks
+// ↑/↓ buttons in the admin UI — no raw sort_order numbers to manage.
+export async function moveTaxon(formData: FormData): Promise<void> {
+  await assertSettingsWrite();
+  const id        = formData.get('id') as string;
+  const direction = formData.get('direction') as 'up' | 'down';
+  if (!id || (direction !== 'up' && direction !== 'down')) redirect(`${PATH}?error=Invalid%20move`);
+  const admin = supabaseAdmin();
+  const { data: self } = await admin.from('taxons').select('id, sort_order').eq('id', id).maybeSingle<{ id: string; sort_order: number }>();
+  if (!self) redirect(`${PATH}?error=Section%20not%20found`);
+  const q = admin.from('taxons').select('id, sort_order');
+  const { data: neighbour } = direction === 'up'
+    ? await q.lt('sort_order', self.sort_order).order('sort_order', { ascending: false }).limit(1).maybeSingle<{ id: string; sort_order: number }>()
+    : await q.gt('sort_order', self.sort_order).order('sort_order', { ascending: true }).limit(1).maybeSingle<{ id: string; sort_order: number }>();
+  if (!neighbour) redirect(PATH);
+  await Promise.all([
+    admin.from('taxons').update({ sort_order: neighbour.sort_order, updated_at: new Date().toISOString() }).eq('id', self.id),
+    admin.from('taxons').update({ sort_order: self.sort_order,     updated_at: new Date().toISOString() }).eq('id', neighbour.id),
+  ]);
+  updateTag('taxonomy');
+  revalidatePath('/');
+  redirect(PATH);
+}
+
+// Same swap-pattern for categories within a single taxon group.
+export async function moveCategory(formData: FormData): Promise<void> {
+  await assertSettingsWrite();
+  const id        = formData.get('id') as string;
+  const direction = formData.get('direction') as 'up' | 'down';
+  if (!id || (direction !== 'up' && direction !== 'down')) redirect(`${PATH}?error=Invalid%20move`);
+  const admin = supabaseAdmin();
+  const { data: self } = await admin.from('categories').select('id, taxon_id, sort_order').eq('id', id).maybeSingle<{ id: string; taxon_id: string; sort_order: number }>();
+  if (!self) redirect(`${PATH}?error=Category%20not%20found`);
+  const q = admin.from('categories').select('id, sort_order').eq('taxon_id', self.taxon_id);
+  const { data: neighbour } = direction === 'up'
+    ? await q.lt('sort_order', self.sort_order).order('sort_order', { ascending: false }).limit(1).maybeSingle<{ id: string; sort_order: number }>()
+    : await q.gt('sort_order', self.sort_order).order('sort_order', { ascending: true }).limit(1).maybeSingle<{ id: string; sort_order: number }>();
+  if (!neighbour) redirect(PATH);
+  await Promise.all([
+    admin.from('categories').update({ sort_order: neighbour.sort_order, updated_at: new Date().toISOString() }).eq('id', self.id),
+    admin.from('categories').update({ sort_order: self.sort_order,     updated_at: new Date().toISOString() }).eq('id', neighbour.id),
+  ]);
+  updateTag('taxonomy');
+  revalidatePath('/');
+  redirect(PATH);
+}
+
 export async function deleteCategory(formData: FormData): Promise<void> {
   const session = await assertSettingsWrite();
   const id = formData.get('id') as string;
