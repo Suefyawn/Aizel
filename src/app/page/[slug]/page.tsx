@@ -5,6 +5,7 @@ import { DEMO_PAGES } from '@/lib/demo-data';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { pageMeta, jsonLd, pageArticleLd, faqLd, breadcrumbLd } from '@/lib/seo';
 import { getPageFaq } from '@/lib/page-faqs';
+import { log } from '@/lib/logger';
 import type { Page } from '@/types';
 
 // Static content imported from WordPress (About, Privacy, Terms, FAQ…).
@@ -24,7 +25,7 @@ async function loadPage(slug: string): Promise<Page | null> {
   } catch (err) {
     // Same resilience pattern as the storefront getters — a missing `pages`
     // table shouldn't 404 every CMS slug.
-    console.warn(`[supabase] loadPage(${slug}) failed; falling back to null. ${(err as Error).message}`);
+    log.warn('supabase.fallback', { label: 'loadPage', slug, err: (err as Error).message });
     return null;
   }
 }

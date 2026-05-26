@@ -2,6 +2,7 @@
 
 import { getStaffSession } from '@/lib/staff-auth';
 import { logAudit } from '@/lib/audit';
+import { supabaseAdmin } from '@/lib/supabase';
 import { z } from 'zod';
 
 // ============================================================================
@@ -107,6 +108,28 @@ export async function createTerminalPaymentIntent(input: unknown): Promise<Termi
 
   const parsed = PiInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, configured: true, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+
+  // Server-side amount check. When the cashier supplies an orderRef we
+  // require the requested amount to match the persisted order total within
+  // 1p — closes the door on a compromised/negligent till charging £0.01
+  // for a £29.99 order by passing a tampered `amount` and shipping the
+  // basket once the reader returns succeeded.
+  if (parsed.data.orderRef) {
+    const { data: order } = await supabaseAdmin()
+      .from('orders')
+      .select('total, status')
+      .eq('order_number', parsed.data.orderRef)
+      .maybeSingle<{ total: number; status: string }>();
+    if (!order) {
+      return { ok: false, configured: true, error: `Order ${parsed.data.orderRef} not found.` };
+    }
+    if (Math.abs(parsed.data.amount - Number(order.total ?? 0)) > 0.01) {
+      return {
+        ok: false, configured: true,
+        error: `Amount £${parsed.data.amount.toFixed(2)} does not match order total £${Number(order.total).toFixed(2)}.`,
+      };
+    }
+  }
 
   const amountPence = Math.round(parsed.data.amount * 100);
   const result = await stripePost('payment_intents', {
