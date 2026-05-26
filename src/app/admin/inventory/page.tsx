@@ -83,7 +83,9 @@ export default async function InventoryPage({
 
   // Dead-stock window — anything older than this is a candidate; anything
   // sold inside the window is exempt from the "dead stock" tag.
-  const deadStockCutoff = new Date(Date.now() - DEAD_STOCK_MS).toISOString();
+  // eslint-disable-next-line react-hooks/purity -- async server component; one "now" per request is the intended behaviour
+  const renderNow = Date.now();
+  const deadStockCutoff = new Date(renderNow - DEAD_STOCK_MS).toISOString();
 
   // Pull every product so the manual-adjustment form has a dropdown +
   // every 'order' ledger row inside the dead-stock window so we can
@@ -124,7 +126,7 @@ export default async function InventoryPage({
   );
   const deadStockList = products
     .filter(p => p.stock > 0)
-    .filter(p => p.created_at && new Date(p.created_at).getTime() < Date.now() - DEAD_STOCK_MS)
+    .filter(p => p.created_at && new Date(p.created_at).getTime() < renderNow - DEAD_STOCK_MS)
     .filter(p => !recentlySoldIds.has(p.id))
     .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''));
 
@@ -229,7 +231,7 @@ export default async function InventoryPage({
                   // definition: dead stock means stock > 0) so it'd be
                   // dead weight. Days-on-shelf is the operator's lever.
                   const ageDays = p.created_at
-                    ? Math.floor((Date.now() - new Date(p.created_at).getTime()) / 86_400_000)
+                    ? Math.floor((renderNow - new Date(p.created_at).getTime()) / 86_400_000)
                     : null;
                   return (
                     <tr key={p.id} style={{ borderTop: '1px solid #f3f4f6' }}>

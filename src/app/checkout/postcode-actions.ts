@@ -56,7 +56,6 @@ export async function lookupPostcode(rawPostcode: string): Promise<LookupResult>
   if (!parsed.success) {
     return { ok: false, configured: true, error: parsed.error.issues[0]?.message ?? 'Invalid postcode' };
   }
-  const postcode = parsed.data.toUpperCase();
 
   // ── Provider adapter ────────────────────────────────────────────────
   // Today: returns an empty list with `ok: true` so the UI shows

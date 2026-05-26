@@ -102,6 +102,7 @@ export function useRecentlyViewed(excludeId?: string): RecentlyViewedItem[] {
   useEffect(() => {
     // Read storage on mount — no need for an event listener, the rail
     // is shown once per page load.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating client state from localStorage; SSR cannot read this
     setItems(readStored());
   }, []);
   return excludeId ? items.filter(p => p.id !== excludeId) : items;

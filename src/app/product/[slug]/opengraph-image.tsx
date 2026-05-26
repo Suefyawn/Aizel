@@ -67,7 +67,6 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
         }}>
           {product.image_url ? (
             // Embed via <img>; ImageResponse handles fetching + scaling.
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.image_url}
               alt=""

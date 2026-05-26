@@ -61,7 +61,6 @@ for (const p of PAGES) {
     );
     const lesser = results.violations.length - blocking.length;
     if (lesser > 0) {
-      // eslint-disable-next-line no-console
       console.log(`a11y — ${p.name}: ${lesser} non-blocking violation${lesser !== 1 ? 's' : ''} (moderate/minor)`);
     }
 

@@ -143,10 +143,13 @@ export function ManualOrderForm({ products }: Props) {
             placeholder="Search products by brand or name…"
             style={inputStyle}
             aria-label="Search products"
+            role="combobox"
             aria-expanded={dropdownOpen && matches.length > 0}
+            aria-controls="manual-order-product-listbox"
+            aria-autocomplete="list"
           />
           {dropdownOpen && matches.length > 0 && (
-            <ul role="listbox" style={dropdownStyle}>
+            <ul id="manual-order-product-listbox" role="listbox" style={dropdownStyle}>
               {matches.map(p => (
                 <li key={p.id}>
                   <button

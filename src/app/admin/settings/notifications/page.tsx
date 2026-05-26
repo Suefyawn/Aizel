@@ -101,16 +101,31 @@ export default async function SettingsNotificationsPage({ searchParams }: { sear
       <StatusBanner saved={sp.saved === '1'} saveError={sp.error} />
 
       {/* Fallback explainer */}
-      <div style={{
-        background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8,
-        padding: '12px 16px', marginBottom: 24, color: '#1e40af',
-        fontSize: '0.8125rem', lineHeight: 1.6,
-      }}>
-        <strong>Fallback:</strong> if nobody is configured for an event, the
-        alert goes to <code style={{ background: '#dbeafe', padding: '1px 6px', borderRadius: 4 }}>{fallback}</code> (the
-        <code style={{ background: '#dbeafe', padding: '1px 6px', borderRadius: 4 }}>OWNER_EMAIL</code> env var). Add a recipient
-        below to take over.
-      </div>
+      {fallback ? (
+        <div style={{
+          background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8,
+          padding: '12px 16px', marginBottom: 24, color: '#1e40af',
+          fontSize: '0.8125rem', lineHeight: 1.6,
+        }}>
+          <strong>Fallback:</strong> if nobody is configured for an event, the
+          alert goes to <code style={{ background: '#dbeafe', padding: '1px 6px', borderRadius: 4 }}>{fallback}</code> (the
+          <code style={{ background: '#dbeafe', padding: '1px 6px', borderRadius: 4 }}>OWNER_EMAIL</code> env var). Add a recipient
+          below to take over.
+        </div>
+      ) : (
+        <div style={{
+          background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8,
+          padding: '12px 16px', marginBottom: 24, color: '#991b1b',
+          fontSize: '0.8125rem', lineHeight: 1.6,
+        }}>
+          <strong>No fallback configured.</strong> The
+          <code style={{ background: '#fee2e2', padding: '1px 6px', borderRadius: 4, margin: '0 4px' }}>OWNER_EMAIL</code>
+          env var is unset, so internal alerts are silently dropped when no
+          recipient subscribes to an event. Add a recipient below for every
+          event you care about, or set <code style={{ background: '#fee2e2', padding: '1px 6px', borderRadius: 4 }}>OWNER_EMAIL</code> in
+          your Vercel project settings.
+        </div>
+      )}
 
       {/* Add new recipient */}
       <div style={{

@@ -7,12 +7,14 @@
 //
 // All callers must be best-effort — a recipient lookup failure must never
 // stall an order placement or block any other commit. On any error we fall
-// back to OWNER_EMAIL too.
+// back to OWNER_EMAIL too — or to an empty list if even OWNER_EMAIL is unset,
+// in which case the caller skips the send rather than routing it to a baked-in
+// developer address.
 
 import { supabaseAdmin } from './supabase';
 import { log } from './logger';
 
-const FALLBACK_EMAIL = process.env.OWNER_EMAIL ?? 'sooviaan@gmail.com';
+const FALLBACK_EMAIL: string | null = process.env.OWNER_EMAIL?.trim() || null;
 
 export type NotificationEvent = 'order.new' | 'inventory.low';
 
@@ -39,9 +41,12 @@ export interface NotificationRecipient {
 }
 
 /** Return the email addresses that should receive a given event.
- *  Always returns at least one address — falls back to OWNER_EMAIL when
- *  no recipient is configured or on any lookup error. */
+ *  Falls back to OWNER_EMAIL when no recipient is configured or on a lookup
+ *  error. Returns an empty list when OWNER_EMAIL is also unset — callers
+ *  must treat that as "skip the send" rather than routing internal alerts
+ *  anywhere unintended. */
 export async function getRecipientsForEvent(event: NotificationEvent): Promise<string[]> {
+  const fallback = FALLBACK_EMAIL ? [FALLBACK_EMAIL] : [];
   try {
     const { data, error } = await supabaseAdmin()
       .from('notification_recipients')
@@ -50,13 +55,17 @@ export async function getRecipientsForEvent(event: NotificationEvent): Promise<s
       .contains('events', [event]);
     if (error) throw error;
     const recipients = (data ?? []).map((r: { email: string }) => r.email);
-    return recipients.length > 0 ? recipients : [FALLBACK_EMAIL];
+    if (recipients.length > 0) return recipients;
+    if (fallback.length === 0) {
+      log.warn('notification.recipients.no_fallback', { event });
+    }
+    return fallback;
   } catch (err) {
     log.warn('notification.recipients.lookup_failed', {
       event,
       err: err instanceof Error ? err.message : String(err),
     });
-    return [FALLBACK_EMAIL];
+    return fallback;
   }
 }
 
@@ -70,7 +79,8 @@ export async function listAllRecipients(): Promise<NotificationRecipient[]> {
 }
 
 /** Returns the resolved fallback email so the admin UI can show the owner
- *  exactly which address acts as the default when nobody is configured. */
-export function fallbackRecipientEmail(): string {
+ *  exactly which address acts as the default when nobody is configured.
+ *  Null means OWNER_EMAIL is unset — the admin UI surfaces that as a warning. */
+export function fallbackRecipientEmail(): string | null {
   return FALLBACK_EMAIL;
 }

@@ -96,8 +96,10 @@ export default async function PosDashboardPage() {
 
   // Time-ago helper for the shift "opened" cell — turns a precise timestamp
   // into the at-a-glance number a manager actually cares about ("3h 14m ago").
+  // eslint-disable-next-line react-hooks/purity -- async server component; one "now" per request is the intended behaviour
+  const renderNow = Date.now();
   function shiftAge(openedAt: string): string {
-    const ms = Date.now() - new Date(openedAt).getTime();
+    const ms = renderNow - new Date(openedAt).getTime();
     if (ms < 60_000) return 'just now';
     const mins = Math.floor(ms / 60_000);
     if (mins < 60) return `${mins}m ago`;
