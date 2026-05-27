@@ -164,6 +164,31 @@ test.describe('Storefront — golden path', () => {
     await expect(page.getByRole('radio').first()).toBeVisible();
   });
 
+  test('homepage Shop-by-hair-type strip routes into the quiz', async ({ page }) => {
+    // The HairTypeStrip lets a shopper who already knows their hair type
+    // skip the first quiz question. Each card seeds /quiz?seed=<answer-id>
+    // and QuizClient pre-selects the curl answer + advances to question 2.
+    // Pre-set consent so the cookie banner doesn't intercept the click.
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'aizel.consent.v1',
+        JSON.stringify({ analytics: false, marketing: false, decided: true }),
+      );
+    });
+    await page.goto('/');
+    const strip = page.getByRole('heading', { name: /Know your hair\? Jump straight in\./i });
+    await expect(strip).toBeVisible();
+    // Three primary type cards + one "Not sure" → full quiz.
+    for (const badge of ['Type 2', 'Type 3', 'Type 4', 'Not sure']) {
+      await expect(page.locator(`a[data-hair-type] >> text=${badge}`)).toBeVisible();
+    }
+    // Click the Type 4 card; we should land on question 2 (curl already
+    // answered by the seed), not question 1.
+    await page.locator('a[data-hair-type="type-4"]').click();
+    await page.waitForURL(/\/quiz\?seed=type-4/);
+    await expect(page.getByText(/Question 2 of/i)).toBeVisible();
+  });
+
   test('blog index renders the Aizel journal', async ({ page }) => {
     await page.goto('/blog');
     await expect(page).toHaveTitle(/Aizel/);

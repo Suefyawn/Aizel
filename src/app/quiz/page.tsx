@@ -4,6 +4,7 @@
 export const revalidate = 3600;
 
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getProducts } from '@/lib/supabase';
 import { QuizClient } from './QuizClient';
 import { pageMeta } from '@/lib/seo';
@@ -25,7 +26,13 @@ export default async function QuizPage() {
   return (
     <main className="fade-in" style={{ padding: '48px 0 64px' }}>
       <div className="container" style={{ maxWidth: 720 }}>
-        <QuizClient products={products} />
+        {/* QuizClient uses useSearchParams (?seed=) for the homepage
+            HairTypeStrip entry. Suspense boundary lets the rest of the
+            route prerender — the quiz card itself becomes a client island
+            that reads the param on hydrate. */}
+        <Suspense fallback={null}>
+          <QuizClient products={products} />
+        </Suspense>
       </div>
     </main>
   );

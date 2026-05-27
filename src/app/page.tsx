@@ -25,6 +25,7 @@ import { loadHomepageContent } from '@/lib/homepage-content';
 import { HeroSection } from '@/sections/home/HeroSection';
 import { TrustBar } from '@/sections/home/TrustBar';
 import { QuizBanner } from '@/sections/home/QuizBanner';
+import { HairTypeStrip } from '@/sections/home/HairTypeStrip';
 import { FeaturedProducts } from '@/sections/home/FeaturedProducts';
 import { EditorialDuo } from '@/sections/home/EditorialDuo';
 import { SaleCollection } from '@/sections/home/SaleCollection';
@@ -131,6 +132,7 @@ export default async function HomePage() {
       <HeroSection settings={heroSettings} />
       <TrustBar />
       <QuizBanner />
+      <HairTypeStrip />
       <FeaturedProducts products={featured.length ? featured.slice(0, 4) : bestsellers.slice(0, 4)} />
       <EditorialDuo
         banners={[banner1, banner2].filter((b): b is typeof banner1 => Boolean(b)).map(b => ({
