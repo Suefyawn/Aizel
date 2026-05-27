@@ -70,12 +70,14 @@ export const TAXONS: readonly Taxon[] = [
   {
     key: 'styling',
     label: 'Styling & Tools',
-    tagline: 'Wig care, lace, accessories',
+    tagline: 'Wig care, lace, accessories, tools',
     categories: [
       'Wig & Lace Adhesives',
       'Bonding Glue',
       'Combs & Brushes',
       'Durags & Bonnets',
+      'Wigs & Extensions',
+      'Hair Tools',
     ],
   },
   {
@@ -160,6 +162,8 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Bonding Glue': 'Salon-grade bonding glues for hair extensions and quick-weave styles.',
   'Combs & Brushes': 'Wide-tooth combs, detangling brushes and styling tools.',
   'Durags & Bonnets': 'Silk and satin durags and bonnets — protect your style overnight.',
+  'Wigs & Extensions': 'Human and synthetic wigs, bundles, weaves and braiding hair — the protective-style essentials.',
+  'Hair Tools': 'Hair dryers, straighteners, clippers and applicators from Wahl, Remington and Babyliss — the tools that finish the routine.',
 
   // ── Grooming leaves ──
   'Shaving': 'Magic Shaving Powder, razors and shave creams for a smooth, irritation-free shave.',
