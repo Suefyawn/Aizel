@@ -21,8 +21,11 @@ import type { Product } from '@/types';
 // Fallbacks when the server didn't pass anything (demo mode, network blip,
 // or this component mounted in isolation). The wrapper at
 // SearchOverlayWrapper.tsx normally resolves these from real catalog data.
-const TRENDING_FALLBACK = ['CeraVe', 'NARS', 'Kiko Milano', 'PIXI', 'Rhode'];
-const CATEGORIES_FALLBACK = ['Hair Care', 'Body Care', 'Shampoo & Conditioner', 'Hair Oils & Serums', 'Cocoa & Shea Butter'];
+// Brands list is Aizel's top in-stock hair-care brands; categories pick the
+// five fattest Hair + Body Care leaves after the taxonomy expansion so the
+// trending row stays useful even when the server probe returns nothing.
+const TRENDING_FALLBACK = ['Cantu', 'ORS', 'Kuza', 'ApHogee', 'KeraCare'];
+const CATEGORIES_FALLBACK = ['Hair Oils & Serums', 'Hair Colour', 'Hair Treatments & Masks', 'Curl & Styling Creams', 'Cocoa & Shea Butter'];
 
 interface SearchOverlayProps {
   /** Server-fetched top brands (top 5 by in-stock product count). */

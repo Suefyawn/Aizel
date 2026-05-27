@@ -36,12 +36,16 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 
 const SHOP_LINKS = [
   // Taxon URLs match the nav: ?taxon=<key> expands to the category set
-  // defined in lib/category-taxonomy.ts.
-  { label: 'Hair Care',     href: '/shop?taxon=hair' },
-  { label: 'Body Care',     href: '/shop?taxon=body' },
-  { label: 'Shop by Brand', href: '/brand' },
-  { label: 'All Products',  href: '/shop' },
-  { label: 'Hair Quiz',     href: '/quiz' },
+  // defined in lib/category-taxonomy.ts. Keep the four primary mega-menu
+  // entries in the same order as the header so the footer reads as a
+  // consistent navigation surface.
+  { label: 'Hair Care',       href: '/shop?taxon=hair' },
+  { label: 'Skincare',        href: '/shop?taxon=skincare' },
+  { label: 'Body Care',       href: '/shop?taxon=body' },
+  { label: 'Styling & Tools', href: '/shop?taxon=styling' },
+  { label: 'Shop by Brand',   href: '/brand' },
+  { label: 'All Products',    href: '/shop' },
+  { label: 'Hair Quiz',       href: '/quiz' },
 ];
 
 const COMPANY_LINKS = [

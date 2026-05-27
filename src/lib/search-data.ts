@@ -33,7 +33,10 @@ export async function loadTrendingBrands(): Promise<string[]> {
 }
 
 export async function loadPopularCategories(): Promise<string[]> {
-  if (isDemo) return ['Shampoo & Conditioner', 'Hair Oils & Serums', 'Curl & Styling Creams', 'Cocoa & Shea Butter', 'Edge Control & Gels'];
+  // Demo-mode default mirrors the five fattest leaves after the Hair Care
+  // taxonomy expansion (migrations 146 + 147) so the search overlay shows
+  // useful trending categories without hitting the DB.
+  if (isDemo) return ['Hair Oils & Serums', 'Hair Colour', 'Hair Treatments & Masks', 'Curl & Styling Creams', 'Cocoa & Shea Butter'];
   try {
     const { data } = await supabase
       .from('products')

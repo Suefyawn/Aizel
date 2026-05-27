@@ -45,10 +45,13 @@ describe('scoreAnswers', () => {
     // route shoppers into a 0-product result page. Compare to the leaf
     // categories enumerated in src/lib/category-taxonomy.ts.
     const knownLeaves = new Set([
-      // hair
-      'Shampoo & Conditioner', 'Hair Oils & Serums', 'Curl & Styling Creams',
-      'Edge Control & Gels', 'Hair Treatments & Masks', 'Mousse & Hairspray',
-      'Relaxers & Kits',
+      // hair (post-migration 147 split: Shampoo & Conditioner is now the
+      // combo-pack leaf; single-purpose Shampoo / Conditioner / Leave-In
+      // sit alongside it).
+      'Shampoo', 'Conditioner', 'Shampoo & Conditioner', 'Leave-In Conditioner',
+      'Hair Oils & Serums', 'Curl & Styling Creams', 'Edge Control & Gels',
+      'Hair Treatments & Masks', 'Mousse & Hairspray', 'Relaxers & Kits',
+      'Hair Colour',
       // body (the moisture-seeking answers cross over)
       'Cocoa & Shea Butter', 'Body Oils', 'Body Lotions', 'Body Wash',
       'Petroleum Jelly',
