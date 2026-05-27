@@ -43,18 +43,35 @@ test.describe('Storefront — golden path', () => {
     await expect(nav.getByText(/Makeup/i)).toHaveCount(0);
   });
 
-  test('header nav surfaces All + Brands directly', async ({ page }) => {
+  test('header nav surfaces All + Brands + Quiz directly', async ({ page }) => {
     // Regression guard: from the top of every page a shopper should be one
-    // click from the full catalogue and the brand index. Hiding either
-    // inside a mega-menu (the previous shape) kills discoverability.
+    // click from the full catalogue, the brand index, AND the hair quiz.
+    // Hiding any of those inside a mega-menu (or, in the quiz's case, in
+    // the footer only) kills discoverability — the previous footer-only
+    // placement made the quiz functionally invisible.
     await page.goto('/');
     const nav = page.locator('nav[aria-label="Primary"]');
     const all = nav.getByRole('link', { name: /^All$/ });
     const brands = nav.getByRole('link', { name: /^Brands$/ });
+    const quiz = nav.getByRole('link', { name: /^Quiz$/i });
     await expect(all).toBeVisible();
     await expect(brands).toBeVisible();
+    await expect(quiz).toBeVisible();
     await expect(all).toHaveAttribute('href', '/shop');
     await expect(brands).toHaveAttribute('href', '/brand');
+    await expect(quiz).toHaveAttribute('href', '/quiz');
+  });
+
+  test('homepage features a hair-quiz CTA banner', async ({ page }) => {
+    // Regression guard: the hair quiz is the primary first-time-shopper
+    // funnel; it must surface above-the-fold (or close to it) on the
+    // homepage, not just in the footer.
+    await page.goto('/');
+    const banner = page.getByRole('heading', { name: /Build your routine/i });
+    await expect(banner).toBeVisible();
+    const cta = page.getByRole('link', { name: /Take the hair quiz/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute('href', '/quiz');
   });
 
   test('homepage features a Shop by Brand section', async ({ page }) => {

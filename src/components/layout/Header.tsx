@@ -23,6 +23,10 @@ import { whatsappUrl, WA_TEMPLATES } from '@/lib/whatsapp';
 const FLAT_ITEMS = [
   { label: 'All',    href: '/shop' },
   { label: 'Brands', href: '/brand' },
+  // Hair Quiz sits in the top bar so first-time shoppers who don't know
+  // which curl cream / leave-in / oil to pick can opt into the routine
+  // builder. Promoted with a brand-accent pill below alongside Sale.
+  { label: 'Quiz',   href: '/quiz' },
   { label: 'Sale',   href: '/shop?on_sale=1' },
 ];
 
@@ -211,9 +215,11 @@ export function Header({ navSections }: { navSections?: readonly NavSection[] } 
           })}
           {FLAT_ITEMS.map(item => {
             const active = isActiveLink(item.href);
-            // Sale gets the brand accent so it reads as a promotional pill
-            // — matches the merchandising convention on every UK beauty site.
-            const isSale = item.label === 'Sale';
+            // Sale + Quiz both get the brand accent so they read as
+            // attention-pulling utility pills — Sale for the merchandising
+            // hook, Quiz to make the first-time-shopper funnel impossible
+            // to miss (the previous footer-only placement hid it).
+            const accent = item.label === 'Sale' || item.label === 'Quiz';
             return (
               <Link
                 key={item.label}
@@ -221,7 +227,7 @@ export function Header({ navSections }: { navSections?: readonly NavSection[] } 
                 aria-current={active ? 'page' : undefined}
                 style={{
                   ...navLinkStyle(active),
-                  ...(isSale && {
+                  ...(accent && {
                     color: 'var(--brand-pink-text)',
                     fontWeight: 700,
                     textTransform: 'uppercase',
