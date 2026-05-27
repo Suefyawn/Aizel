@@ -29,8 +29,15 @@ export const TAXONS: readonly Taxon[] = [
     key: 'hair',
     label: 'Hair Care',
     tagline: 'Shampoo, oils, curl & styling',
+    // Reading-order: cleanse → condition → combo packs → leave-in →
+    // styling (oils/creams/edges/mousse) → chemistry (relaxers, colour).
+    // Mirrors the DB taxonomy after migration 147 split the old
+    // "Shampoo & Conditioner" junk-drawer leaf into single-purpose leaves.
     categories: [
+      'Shampoo',
+      'Conditioner',
       'Shampoo & Conditioner',
+      'Leave-In Conditioner',
       'Hair Oils & Serums',
       'Curl & Styling Creams',
       'Edge Control & Gels',
@@ -129,7 +136,10 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Grooming': 'Shaving sets, beard oils, fragrance and bump treatments built for sensitive skin.',
 
   // ── Hair Care leaves ──
-  'Shampoo & Conditioner': 'Sulphate-free and moisturising shampoos and conditioners for every curl pattern — from Cantu, ApHogee, Kera Care and more.',
+  'Shampoo': 'Sulphate-free cleansers, clarifying shampoos and moisturising washes for every curl pattern.',
+  'Conditioner': 'Rinse-out conditioners — daily, weekly and deep treatments to detangle, soften and seal.',
+  'Shampoo & Conditioner': 'Matched shampoo + conditioner sets and duos — the easiest way to keep a routine consistent.',
+  'Leave-In Conditioner': 'Leave-in conditioners, detangling sprays and pre-styling moisturisers — the foundation of every wash-day routine.',
   'Hair Oils & Serums': 'Castor oil, Amla, argan and Jamaican Black Castor Oil — strengthen and nourish from root to tip.',
   'Curl & Styling Creams': 'Curl-defining creams and leave-ins for soft, springy hold without crunch.',
   'Edge Control & Gels': 'Long-lasting edge control, sleeking gels and styling pomades.',
