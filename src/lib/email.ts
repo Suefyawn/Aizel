@@ -110,20 +110,33 @@ interface ShellOpts {
 }
 
 function shell(inner: string, opts: ShellOpts = {}): string {
-  return `
+  // `color-scheme: light only` + the meta tags lock the email to a light
+  // palette in Apple Mail and Gmail mobile. Without this, dark-mode auto-
+  // inversion turns the white background grey, mutes the gold stripe, and
+  // shifts the purple CTA toward a muddy lavender — all of which kills the
+  // brand. Wrapped in a full HTML document so the head metas actually apply.
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light only" />
+</head>
+<body style="margin:0;padding:0;background:${PAPER};color-scheme:light only">
 <div style="background:${PAPER};padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <div style="max-width:560px;margin:0 auto;color:${INK};background:#fff;border-radius:8px;overflow:hidden;border:1px solid ${LINE}">
     <!-- Branded header: cream band with the live-site flower mark + wordmark.
          The yellow stripe along the top is a subtle nod to the brand palette
          that survives even when an email client strips background images. -->
     <div style="height:4px;background:${BRAND_YELLOW}"></div>
-    <div style="padding:20px 28px;background:${PAPER};display:flex;align-items:center;gap:12px;border-bottom:1px solid ${LINE}">
+    <div style="padding:22px 28px;background:${PAPER};display:flex;align-items:center;gap:14px;border-bottom:1px solid ${LINE}">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="vertical-align:middle;padding-right:12px">
-          <img src="${LOGO_URL}" width="36" height="36" alt="" style="display:block;border:0" />
+        <td style="vertical-align:middle;padding-right:14px">
+          <img src="${LOGO_URL}" width="44" height="44" alt="" style="display:block;border:0" />
         </td>
         <td style="vertical-align:middle">
-          <span style="font-family:Georgia,serif;font-size:22px;font-weight:500;color:${INK};letter-spacing:-0.3px">Aizel</span>
+          <span style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:${INK};letter-spacing:-0.3px">Aizel</span>
         </td>
       </tr></table>
     </div>
@@ -135,7 +148,9 @@ function shell(inner: string, opts: ShellOpts = {}): string {
       <a href="${SITE_URL}/page/contact" style="color:${MUTED};text-decoration:underline">Contact us</a>${unsubscribeFooter(opts.marketingRecipient)}
     </div>
   </div>
-</div>`.trim();
+</div>
+</body>
+</html>`;
 }
 
 // The Resend SDK's `emails.send` returns `{ data, error }` and only throws on
@@ -345,15 +360,17 @@ export async function sendNewOrderEmail(order: OrderSummary): Promise<void> {
 // ─── 2. Customer: order confirmation ────────────────────────────────────────
 export async function sendOrderConfirmationEmail(args: OrderSummary & { email: string }): Promise<void> {
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Thanks for your order, ${escapeHtml(args.first_name)}!</h2>
-    <p style="margin:0 0 16px;color:${INK};line-height:1.5">
-      We've received your order <strong>${escapeHtml(args.order_number)}</strong> and will start preparing it shortly.
-      You'll get an email when it ships.
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">Thanks ${escapeHtml(args.first_name)} — we&rsquo;ve got it.</h2>
+    <p style="margin:0 0 18px;color:${INK_700};line-height:1.6">
+      Your order <strong style="color:${INK}">${escapeHtml(args.order_number)}</strong> just landed with us. We&rsquo;ll start picking it from the shelves today and drop you another note the moment it leaves the warehouse.
     </p>
     ${renderItemsTable(args.items)}
-    <p style="margin:8px 0 0;text-align:right;font-size:16px"><strong>Total: ${money(args.total)}</strong></p>
-    <p style="margin:20px 0 0">
-      <a href="${SITE_URL}/track" style="display:inline-block;padding:10px 18px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600">Track your order</a>
+    <p style="margin:8px 0 0;text-align:right;font-size:16px;color:${INK}"><strong>Total: ${money(args.total)}</strong></p>
+    <p style="margin:24px 0 0;text-align:center">
+      <a href="${SITE_URL}/track" style="display:inline-block;padding:12px 28px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;letter-spacing:0.02em">Track your order</a>
+    </p>
+    <p style="margin:28px 0 0;padding-top:18px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:1.6">
+      Every product on Aizel is hand-picked from the brands that actually deliver on textured hair and melanin-rich skin — sourced through the UK, no eBay middlemen.
     </p>
   `);
   await send({
@@ -366,57 +383,91 @@ export async function sendOrderConfirmationEmail(args: OrderSummary & { email: s
 // ─── 3. Customer: payment received (for card / bank transfer flows) ──────
 export async function sendPaymentReceivedEmail(args: { email: string; first_name: string; order_number: string; total: number; method: string }) {
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Payment received</h2>
-    <p>Hi ${escapeHtml(args.first_name)} — we've received your ${escapeHtml(args.method)} payment of <strong>${money(args.total)}</strong> for order <strong>${escapeHtml(args.order_number)}</strong>.</p>
-    <p>We're now preparing your order for shipment.</p>
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">Payment landed, ${escapeHtml(args.first_name)}.</h2>
+    <p style="margin:0 0 14px;color:${INK_700};line-height:1.6">
+      Your <strong style="color:${INK}">${money(args.total)}</strong> ${escapeHtml(args.method.toLowerCase())} payment for order <strong style="color:${INK}">${escapeHtml(args.order_number)}</strong> is settled — receipt&rsquo;s on its way separately from your payment provider.
+    </p>
+    <p style="margin:0;color:${INK_700};line-height:1.6">
+      Your order&rsquo;s now in our picking queue. The next email from us will have a tracking number on it.
+    </p>
   `);
-  await send({ to: args.email, subject: `Payment received — ${args.order_number}`, html });
+  await send({ to: args.email, subject: `Payment received — order ${args.order_number} — Aizel`, html });
 }
 
 // ─── 4. Customer: shipped ────────────────────────────────────────────────────
 export async function sendShippedEmail(args: { email: string; first_name: string; order_number: string; tracking_number?: string; courier?: string }) {
   const trackInfo = args.tracking_number
-    ? `<p>Your tracking number: <strong style="font-family:monospace">${escapeHtml(args.tracking_number)}</strong>${args.courier ? ` (${escapeHtml(args.courier)})` : ''}</p>`
+    ? `<table role="presentation" style="width:100%;border-collapse:collapse;margin:18px 0 0">
+        <tr><td style="background:${PAPER};border:1px dashed ${BRAND_PINK};border-radius:10px;padding:16px 20px">
+          <p style="margin:0 0 4px;color:${MUTED};font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Tracking number</p>
+          <p style="margin:0 0 4px;color:${INK};font-size:18px;font-weight:700;letter-spacing:0.04em;font-family:'Courier New',monospace">${escapeHtml(args.tracking_number)}</p>
+          ${args.courier ? `<p style="margin:0;color:${INK_700};font-size:13px">${escapeHtml(args.courier)} &middot; most UK addresses see delivery within 1&ndash;2 working days.</p>` : `<p style="margin:0;color:${INK_700};font-size:13px">Most UK addresses see delivery within 1&ndash;2 working days.</p>`}
+        </td></tr>
+      </table>`
     : '';
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Your order is on its way 🚚</h2>
-    <p>Hi ${escapeHtml(args.first_name)} — your order <strong>${escapeHtml(args.order_number)}</strong> just shipped.</p>
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">It&rsquo;s on the way, ${escapeHtml(args.first_name)}.</h2>
+    <p style="margin:0 0 6px;color:${INK_700};line-height:1.6">
+      Order <strong style="color:${INK}">${escapeHtml(args.order_number)}</strong> just left our warehouse${args.courier ? ` with <strong style="color:${INK}">${escapeHtml(args.courier)}</strong>` : ''}.
+    </p>
     ${trackInfo}
-    <p style="margin:20px 0 0">
-      <a href="${SITE_URL}/track" style="display:inline-block;padding:10px 18px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600">Track shipment</a>
+    <p style="margin:24px 0 0;text-align:center">
+      <a href="${SITE_URL}/track" style="display:inline-block;padding:12px 28px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;letter-spacing:0.02em">Track shipment</a>
     </p>
   `);
-  await send({ to: args.email, subject: `Shipped — ${args.order_number}`, html });
+  await send({ to: args.email, subject: `On its way — order ${args.order_number} — Aizel`, html });
 }
 
 // ─── 5. Customer: delivered ─────────────────────────────────────────────────
 export async function sendDeliveredEmail(args: { email: string; first_name: string; order_number: string }) {
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Delivered 🎉</h2>
-    <p>Hi ${escapeHtml(args.first_name)} — your order <strong>${escapeHtml(args.order_number)}</strong> has been delivered. We hope you love it!</p>
-    <p>Got a minute? <a href="${SITE_URL}/account/orders" style="color:${BRAND_PINK}">Leave a review</a> — it really helps other shoppers.</p>
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">It&rsquo;s landed.</h2>
+    <p style="margin:0 0 14px;color:${INK_700};line-height:1.6">
+      Hi ${escapeHtml(args.first_name)} — your order <strong style="color:${INK}">${escapeHtml(args.order_number)}</strong> shows as delivered. Hope it&rsquo;s everything you needed.
+    </p>
+    <p style="margin:0 0 22px;color:${INK_700};line-height:1.6">
+      When you&rsquo;ve had a chance to try it: a quick honest review helps the next UK shopper pick well, and it earns you a few loyalty points along the way.
+    </p>
+    <p style="margin:0;text-align:center">
+      <a href="${SITE_URL}/account/orders" style="display:inline-block;padding:12px 28px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;letter-spacing:0.02em">Leave a review</a>
+    </p>
   `);
-  await send({ to: args.email, subject: `Delivered — ${args.order_number}`, html });
+  await send({ to: args.email, subject: `Delivered — order ${args.order_number} — Aizel`, html });
 }
 
 // ─── 6. Customer: cancelled ─────────────────────────────────────────────────
 export async function sendCancelledEmail(args: { email: string; first_name: string; order_number: string; reason?: string }) {
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Order cancelled</h2>
-    <p>Hi ${escapeHtml(args.first_name)} — order <strong>${escapeHtml(args.order_number)}</strong> has been cancelled.</p>
-    ${args.reason ? `<p>Reason: ${escapeHtml(args.reason)}</p>` : ''}
-    <p>If you didn't request this, reply to this email and we'll look into it.</p>
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">Heads up, ${escapeHtml(args.first_name)}.</h2>
+    <p style="margin:0 0 14px;color:${INK_700};line-height:1.6">
+      We&rsquo;ve cancelled order <strong style="color:${INK}">${escapeHtml(args.order_number)}</strong>.
+    </p>
+    ${args.reason ? `<p style="margin:0 0 14px;padding:12px 16px;background:#f9fafb;border-left:3px solid ${BRAND_PINK};color:${INK_700};line-height:1.55"><strong style="color:${INK}">Reason:</strong> ${escapeHtml(args.reason)}</p>` : ''}
+    <p style="margin:0 0 14px;color:${INK_700};line-height:1.6">
+      Any payment you&rsquo;d already sent us will be refunded to your original method &mdash; usually within 5 working days, sometimes faster.
+    </p>
+    <p style="margin:0;color:${INK_700};line-height:1.6">
+      If this wasn&rsquo;t expected, just reply to this email and we&rsquo;ll look into it right away.
+    </p>
   `);
-  await send({ to: args.email, subject: `Cancelled — ${args.order_number}`, html, replyTo: OWNER_EMAIL });
+  await send({ to: args.email, subject: `Cancelled — order ${args.order_number} — Aizel`, html, replyTo: OWNER_EMAIL });
 }
 
 // ─── 7. Customer: welcome (post-signup) ─────────────────────────────────────
 export async function sendWelcomeEmail(args: { email: string; first_name?: string }) {
   const html = shell(`
-    <h2 style="margin:0 0 12px;font-size:18px">Welcome to Aizel${args.first_name ? `, ${escapeHtml(args.first_name)}` : ''}</h2>
-    <p>We're glad you're here. Take a look at <a href="${SITE_URL}/shop" style="color:${BRAND_PINK}">what's new</a>, or <a href="${SITE_URL}/blog" style="color:${BRAND_PINK}">read our edit</a> for routines and reviews.</p>
+    <h2 style="margin:0 0 14px;font-size:22px;color:${INK};font-family:Georgia,serif;font-weight:500;line-height:1.25">Welcome in${args.first_name ? `, ${escapeHtml(args.first_name)}` : ''}.</h2>
+    <p style="margin:0 0 14px;color:${INK_700};line-height:1.6">
+      Your account&rsquo;s set up &mdash; you&rsquo;ll be able to track orders, save your address, and earn loyalty points on every purchase from here on out.
+    </p>
+    <p style="margin:0 0 22px;color:${INK_700};line-height:1.6">
+      A good place to start: <a href="${SITE_URL}/shop" style="color:${BRAND_PINK};font-weight:600">what&rsquo;s new this week</a>, or <a href="${SITE_URL}/blog" style="color:${BRAND_PINK};font-weight:600">the edit</a> for routines and reviews from the team.
+    </p>
+    <p style="margin:0;text-align:center">
+      <a href="${SITE_URL}/shop" style="display:inline-block;padding:12px 28px;background:${BRAND_PINK};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;letter-spacing:0.02em">Start shopping</a>
+    </p>
   `, { marketingRecipient: args.email });
-  await send({ to: args.email, subject: 'Welcome to Aizel', html, kind: 'batch' });
+  await send({ to: args.email, subject: 'Welcome in — your Aizel account is ready', html, kind: 'batch' });
 }
 
 // ─── 8. Staff: temp password ────────────────────────────────────────────────
