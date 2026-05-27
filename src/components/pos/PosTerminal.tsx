@@ -254,9 +254,16 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
       />
 
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
-        {/* ── Left half — cart ─────────────────────────────────────────── */}
+        {/* ── Left half — cart ───────────────────────────────────────────
+            minHeight: 0 lets the cart-items flex child shrink past its
+            content size when the footer below grows tall (long discount
+            tile row + attached customer pill). Without it the items
+            div balloons to its content height and pushes the tender
+            buttons below the viewport.
+         */}
         <section style={{
           display: 'flex', flexDirection: 'column',
+          minHeight: 0,
           borderRight: '1px solid #2A2A2D',
           background: '#161618',
         }}>
@@ -272,7 +279,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
             )}
           </header>
 
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
             {cart.length === 0 ? (
               <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.9375rem' }}>
                 Scan a barcode or tap a product to add it.
@@ -320,7 +327,22 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
           </div>
 
           {/* ── Totals + tender CTA ─────────────────────────────────────── */}
-          <footer style={{ borderTop: '1px solid #2A2A2D', padding: '14px 18px', background: '#0F0F10' }}>
+          {/* Cart footer is split into a scrollable upper region (customer
+              pill, discount tiles, totals, email) and a sticky action row
+              (Park + Tender) so the tender button is ALWAYS reachable
+              even when the cart's column height is squeezed by the discount
+              tile grid + an attached customer pill (e.g. on tablet
+              portrait or a short laptop window). */}
+          <footer style={{
+            borderTop: '1px solid #2A2A2D',
+            background: '#0F0F10',
+            display: 'flex', flexDirection: 'column',
+            // Cap the upper-half scroll region to 60% of the viewport so
+            // long footer content never pushes the tender row off-screen.
+            maxHeight: '60vh',
+            minHeight: 0,
+          }}>
+            <div style={{ overflowY: 'auto', padding: '14px 18px 0' }}>
             {/* Customer pill — attached customer summary or "Add customer".
                 When attached we surface name + tier + lifetime spend so
                 the cashier can offer a tier perk on the spot. */}
@@ -479,13 +501,29 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
               onChange={e => setCustomerEmail(e.target.value)}
               disabled={!!attachedCustomer}
               style={{
-                width: '100%', marginTop: 12, padding: '10px 12px',
+                width: '100%', marginTop: 12, marginBottom: 14, padding: '10px 12px',
                 background: '#1F1F22', border: '1px solid #2A2A2D', borderRadius: 8,
                 color: '#F5F5F7', fontSize: '0.875rem', outline: 'none',
               }}
             />
+            </div>
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            {/* Always-visible action row — Park + Tender pinned outside
+                the scrollable footer region above so they remain in
+                reach regardless of how tall the discount tiles / customer
+                pill push the content above. */}
+            <div style={{
+              padding: '12px 18px 14px',
+              borderTop: '1px solid #2A2A2D',
+              background: '#0F0F10',
+              flexShrink: 0,
+            }}>
+            {parkError && (
+              <div role="alert" style={{ marginBottom: 10, padding: '8px 10px', background: '#7F1D1D', color: '#FECACA', borderRadius: 6, fontSize: '0.8125rem' }}>
+                {parkError}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
               <button
                 type="button"
                 disabled={cart.length === 0 || parkBusy}
@@ -520,11 +558,7 @@ export function PosTerminal({ products, cashier, session, terminalEnabled }: Pro
                 {cart.length === 0 ? 'Add items to start' : `Tender ${fmtGBP(total)}`}
               </button>
             </div>
-            {parkError && (
-              <div role="alert" style={{ marginTop: 10, padding: '8px 10px', background: '#7F1D1D', color: '#FECACA', borderRadius: 6, fontSize: '0.8125rem' }}>
-                {parkError}
-              </div>
-            )}
+            </div>
           </footer>
         </section>
 
@@ -1567,7 +1601,7 @@ function ReturnsSheet({ sessionId, onClose, onProcessed }: {
             )}
 
             {/* ── Order details + pickable lines ───────────────────────── */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               {!order ? (
                 <div style={{ padding: 32, textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
                   Scan or type the order number to start a return.
