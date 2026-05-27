@@ -168,11 +168,20 @@ test.describe('Storefront — golden path', () => {
     // The HairTypeStrip lets a shopper who already knows their hair type
     // skip the first quiz question. Each card seeds /quiz?seed=<answer-id>
     // and QuizClient pre-selects the curl answer + advances to question 2.
-    // Pre-set consent so the cookie banner doesn't intercept the click.
+    // Pre-set consent so the cookie banner doesn't render. Storage key
+    // matches src/lib/consent.ts STORAGE_KEY ('yp_consent_v1' — leftover
+    // name from the rebrand, never renamed) and shape matches the Consent
+    // interface (essential:true + ts/v).
     await page.addInitScript(() => {
       localStorage.setItem(
-        'aizel.consent.v1',
-        JSON.stringify({ analytics: false, marketing: false, decided: true }),
+        'yp_consent_v1',
+        JSON.stringify({
+          essential: true,
+          analytics: false,
+          marketing: false,
+          ts: Date.now(),
+          v: 1,
+        }),
       );
     });
     await page.goto('/');
