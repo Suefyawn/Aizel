@@ -24,6 +24,7 @@ import { loadHomepageContent } from '@/lib/homepage-content';
 // slugs → display labels + landing-page descriptions.
 import { HeroSection } from '@/sections/home/HeroSection';
 import { TrustBar } from '@/sections/home/TrustBar';
+import { QuizBanner } from '@/sections/home/QuizBanner';
 import { FeaturedProducts } from '@/sections/home/FeaturedProducts';
 import { EditorialDuo } from '@/sections/home/EditorialDuo';
 import { SaleCollection } from '@/sections/home/SaleCollection';
@@ -129,6 +130,7 @@ export default async function HomePage() {
     <main className="fade-in">
       <HeroSection settings={heroSettings} />
       <TrustBar />
+      <QuizBanner />
       <FeaturedProducts products={featured.length ? featured.slice(0, 4) : bestsellers.slice(0, 4)} />
       <EditorialDuo
         banners={[banner1, banner2].filter((b): b is typeof banner1 => Boolean(b)).map(b => ({
