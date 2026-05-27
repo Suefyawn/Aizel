@@ -25,6 +25,7 @@ import { loadHomepageContent } from '@/lib/homepage-content';
 import { HeroSection } from '@/sections/home/HeroSection';
 import { TrustBar } from '@/sections/home/TrustBar';
 import { QuizBanner } from '@/sections/home/QuizBanner';
+import { HairTypeStrip } from '@/sections/home/HairTypeStrip';
 import { FeaturedProducts } from '@/sections/home/FeaturedProducts';
 import { EditorialDuo } from '@/sections/home/EditorialDuo';
 import { SaleCollection } from '@/sections/home/SaleCollection';
@@ -33,7 +34,10 @@ import { BrandStrip } from '@/sections/home/BrandStrip';
 import { CategoryTiles } from '@/sections/home/CategoryTiles';
 import { RealResults } from '@/sections/home/RealResults';
 import { JournalSection } from '@/sections/home/JournalSection';
-import { PressStrip } from '@/sections/home/PressStrip';
+// PressStrip removed: it implied "Featured in ELLE / VOGUE / STYLIST /
+// etc." but Aizel has no live coverage from any of those mastheads. Under
+// CMA / ASA guidance that's misleading by implication. Restore when there's
+// real press to link.
 
 export default async function HomePage() {
   // Pull the static rails + the dynamic homepage-content rows in parallel.
@@ -131,6 +135,7 @@ export default async function HomePage() {
       <HeroSection settings={heroSettings} />
       <TrustBar />
       <QuizBanner />
+      <HairTypeStrip />
       <FeaturedProducts products={featured.length ? featured.slice(0, 4) : bestsellers.slice(0, 4)} />
       <EditorialDuo
         banners={[banner1, banner2].filter((b): b is typeof banner1 => Boolean(b)).map(b => ({
@@ -155,7 +160,7 @@ export default async function HomePage() {
       <CategoryTiles groups={categoryGroups} />
       <RealResults />
       <JournalSection posts={blogPosts} />
-      <PressStrip />
+      {/* PressStrip removed — see import comment above. */}
     </main>
   );
 }

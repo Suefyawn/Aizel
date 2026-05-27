@@ -164,6 +164,38 @@ test.describe('Storefront — golden path', () => {
     await expect(page.getByRole('radio').first()).toBeVisible();
   });
 
+  test('homepage Shop-by-hair-type strip renders cards with seed hrefs', async ({ page }) => {
+    // The HairTypeStrip lets a shopper who already knows their hair type
+    // skip the first quiz question. Verify the four cards render and
+    // each has the right seed-bearing href; the URL-seed-to-question-2
+    // navigation is covered by the separate /quiz?seed= test below so
+    // we don't have to drive a client-side Link click here (those flake
+    // under the parallel-suite Next.js dev server's compile pauses).
+    await page.goto('/');
+    await expect(
+      page.getByRole('heading', { name: /Know your hair\? Jump straight in\./i }),
+    ).toBeVisible();
+    const expected: Array<[string, string]> = [
+      ['type-2',  '/quiz?seed=type-2'],
+      ['type-3',  '/quiz?seed=type-3'],
+      ['type-4',  '/quiz?seed=type-4'],
+      ['unsure',  '/quiz?seed=unsure'],
+    ];
+    for (const [seed, href] of expected) {
+      const card = page.locator(`a[data-hair-type="${seed}"]`);
+      await expect(card).toBeVisible();
+      await expect(card).toHaveAttribute('href', href);
+    }
+  });
+
+  test('/quiz?seed=type-4 pre-fills curl + lands on question 2', async ({ page }) => {
+    // The QuizClient reads ?seed= and pre-selects the curl-pattern
+    // question so a type-aware shopper skips the first step. Direct-
+    // navigation test — the homepage card flow is covered above.
+    await page.goto('/quiz?seed=type-4');
+    await expect(page.getByText(/Question 2 of/i)).toBeVisible();
+  });
+
   test('blog index renders the Aizel journal', async ({ page }) => {
     await page.goto('/blog');
     await expect(page).toHaveTitle(/Aizel/);

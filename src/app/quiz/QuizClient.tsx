@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Overline } from '@/components/ui/Overline';
 import { ProductTile } from '@/components/ui/ProductTile';
@@ -20,8 +21,19 @@ interface Props {
 // a "Here's your routine" panel with a curated product rail. No second route
 // = no extra navigation latency, no analytics dead-end on bounce.
 export function QuizClient({ products }: Props) {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  // ?seed=<answerId> lets the homepage HairTypeStrip pre-select the
+  // curl-pattern question so a "I know I'm Type 4" shopper lands on
+  // question 2 rather than starting from scratch. The seed must match
+  // one of the curl question's answer ids; otherwise we ignore it and
+  // start clean.
+  const searchParams = useSearchParams();
+  const seed = searchParams.get('seed');
+  const seededCurl = QUESTIONS[0].answers.find(a => a.id === seed)?.id ?? null;
+
+  const [step, setStep] = useState(seededCurl ? 1 : 0);
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    seededCurl ? { [QUESTIONS[0].id]: seededCurl } : {},
+  );
   const [done, setDone] = useState(false);
 
   const total = QUESTIONS.length;
