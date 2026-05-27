@@ -290,7 +290,12 @@ export function productLd(
         bestRating: 5,
         worstRating: 1,
       },
-      author: { '@type': 'Person', name: r.author_name ?? 'Verified buyer' },
+      // Fall back to "Anonymous" rather than the previous "Verified buyer"
+      // string — only the `verified_purchase` boolean is the source of
+      // truth for buyer-status claims, and calling an anonymous reviewer
+      // "Verified buyer" by default risks misrepresenting them under
+      // CMA / ASA review-authenticity guidance.
+      author: { '@type': 'Person', name: r.author_name ?? 'Anonymous' },
       reviewBody: r.body ?? undefined,
       datePublished: r.created_at ?? undefined,
     }));
