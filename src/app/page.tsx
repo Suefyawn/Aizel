@@ -34,7 +34,10 @@ import { BrandStrip } from '@/sections/home/BrandStrip';
 import { CategoryTiles } from '@/sections/home/CategoryTiles';
 import { RealResults } from '@/sections/home/RealResults';
 import { JournalSection } from '@/sections/home/JournalSection';
-import { PressStrip } from '@/sections/home/PressStrip';
+// PressStrip removed: it implied "Featured in ELLE / VOGUE / STYLIST /
+// etc." but Aizel has no live coverage from any of those mastheads. Under
+// CMA / ASA guidance that's misleading by implication. Restore when there's
+// real press to link.
 
 export default async function HomePage() {
   // Pull the static rails + the dynamic homepage-content rows in parallel.
@@ -157,7 +160,7 @@ export default async function HomePage() {
       <CategoryTiles groups={categoryGroups} />
       <RealResults />
       <JournalSection posts={blogPosts} />
-      <PressStrip />
+      {/* PressStrip removed — see import comment above. */}
     </main>
   );
 }
