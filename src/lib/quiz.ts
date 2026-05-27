@@ -47,9 +47,9 @@ export const QUESTIONS: QuizQuestion[] = [
       { id: 'type-3',  label: 'Type 3 — defined curls, springy',
         picks: { 'Curl & Styling Creams': 3, 'Hair Treatments & Masks': 1, 'Mousse & Hairspray': 1 } },
       { id: 'type-2',  label: 'Type 2 — wavy, soft S-bends',
-        picks: { 'Mousse & Hairspray': 2, 'Curl & Styling Creams': 1, 'Shampoo & Conditioner': 1 } },
+        picks: { 'Mousse & Hairspray': 2, 'Curl & Styling Creams': 1, 'Shampoo': 1, 'Conditioner': 1 } },
       { id: 'unsure',  label: 'Not sure — a mix',
-        picks: { 'Curl & Styling Creams': 1, 'Shampoo & Conditioner': 1, 'Hair Treatments & Masks': 1 } },
+        picks: { 'Curl & Styling Creams': 1, 'Leave-In Conditioner': 1, 'Hair Treatments & Masks': 1 } },
     ],
   },
   {
@@ -60,11 +60,14 @@ export const QUESTIONS: QuizQuestion[] = [
       { id: 'high', label: 'Soaks up fast (high porosity)',
         picks: { 'Hair Treatments & Masks': 3, 'Hair Oils & Serums': 2, 'Cocoa & Shea Butter': 1 } },
       { id: 'low',  label: 'Beads up & rolls off (low porosity)',
-        picks: { 'Shampoo & Conditioner': 2, 'Hair Oils & Serums': 1, 'Curl & Styling Creams': 1 } },
+        // Low porosity benefits from a clarifying shampoo + lightweight
+        // leave-in to avoid product build-up. Combo packs are too heavy
+        // here — single-purpose Shampoo + Leave-In is the right pick.
+        picks: { 'Shampoo': 2, 'Leave-In Conditioner': 1, 'Hair Oils & Serums': 1 } },
       { id: 'mid',  label: 'Somewhere in between (medium porosity)',
-        picks: { 'Hair Oils & Serums': 1, 'Curl & Styling Creams': 1, 'Shampoo & Conditioner': 1 } },
+        picks: { 'Hair Oils & Serums': 1, 'Curl & Styling Creams': 1, 'Leave-In Conditioner': 1 } },
       { id: 'unsure', label: 'Not sure',
-        picks: { 'Hair Oils & Serums': 1, 'Shampoo & Conditioner': 1 } },
+        picks: { 'Hair Oils & Serums': 1, 'Leave-In Conditioner': 1 } },
     ],
   },
   {
@@ -76,9 +79,9 @@ export const QUESTIONS: QuizQuestion[] = [
       { id: 'frizzy',  label: 'Frizzy & undefined',
         picks: { 'Curl & Styling Creams': 3, 'Mousse & Hairspray': 1, 'Hair Oils & Serums': 1 } },
       { id: 'limp',    label: 'Limp & flat',
-        picks: { 'Mousse & Hairspray': 3, 'Curl & Styling Creams': 1, 'Shampoo & Conditioner': 1 } },
+        picks: { 'Mousse & Hairspray': 3, 'Curl & Styling Creams': 1, 'Shampoo': 1 } },
       { id: 'healthy', label: 'Healthy — just maintenance',
-        picks: { 'Hair Oils & Serums': 2, 'Shampoo & Conditioner': 2 } },
+        picks: { 'Hair Oils & Serums': 2, 'Shampoo': 1, 'Conditioner': 1 } },
     ],
   },
   {
@@ -100,9 +103,11 @@ export const QUESTIONS: QuizQuestion[] = [
     prompt: 'How long does your wash day take?',
     answers: [
       { id: 'quick', label: 'Quick — under 10 minutes',
-        picks: { 'Shampoo & Conditioner': 2, 'Curl & Styling Creams': 1 } },
+        // Quick wash favours combo packs — one set instead of separate
+        // shampoo + conditioner bottles to grab.
+        picks: { 'Shampoo & Conditioner': 2, 'Leave-In Conditioner': 1, 'Curl & Styling Creams': 1 } },
       { id: 'mid',   label: '10–30 minutes',
-        picks: { 'Curl & Styling Creams': 1, 'Hair Oils & Serums': 1, 'Shampoo & Conditioner': 1 } },
+        picks: { 'Curl & Styling Creams': 1, 'Hair Oils & Serums': 1, 'Leave-In Conditioner': 1 } },
       { id: 'long',  label: 'Wash day all day',
         picks: { 'Hair Treatments & Masks': 2, 'Cocoa & Shea Butter': 1, 'Hair Oils & Serums': 1 } },
     ],
