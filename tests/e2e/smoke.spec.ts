@@ -164,37 +164,35 @@ test.describe('Storefront — golden path', () => {
     await expect(page.getByRole('radio').first()).toBeVisible();
   });
 
-  test('homepage Shop-by-hair-type strip routes into the quiz', async ({ page }) => {
+  test('homepage Shop-by-hair-type strip renders cards with seed hrefs', async ({ page }) => {
     // The HairTypeStrip lets a shopper who already knows their hair type
-    // skip the first quiz question. Each card seeds /quiz?seed=<answer-id>
-    // and QuizClient pre-selects the curl answer + advances to question 2.
-    // Pre-set consent so the cookie banner doesn't render. Storage key
-    // matches src/lib/consent.ts STORAGE_KEY ('yp_consent_v1' — leftover
-    // name from the rebrand, never renamed) and shape matches the Consent
-    // interface (essential:true + ts/v).
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'yp_consent_v1',
-        JSON.stringify({
-          essential: true,
-          analytics: false,
-          marketing: false,
-          ts: Date.now(),
-          v: 1,
-        }),
-      );
-    });
+    // skip the first quiz question. Verify the four cards render and
+    // each has the right seed-bearing href; the URL-seed-to-question-2
+    // navigation is covered by the separate /quiz?seed= test below so
+    // we don't have to drive a client-side Link click here (those flake
+    // under the parallel-suite Next.js dev server's compile pauses).
     await page.goto('/');
-    const strip = page.getByRole('heading', { name: /Know your hair\? Jump straight in\./i });
-    await expect(strip).toBeVisible();
-    // Three primary type cards + one "Not sure" → full quiz.
-    for (const badge of ['Type 2', 'Type 3', 'Type 4', 'Not sure']) {
-      await expect(page.locator(`a[data-hair-type] >> text=${badge}`)).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Know your hair\? Jump straight in\./i }),
+    ).toBeVisible();
+    const expected: Array<[string, string]> = [
+      ['type-2',  '/quiz?seed=type-2'],
+      ['type-3',  '/quiz?seed=type-3'],
+      ['type-4',  '/quiz?seed=type-4'],
+      ['unsure',  '/quiz?seed=unsure'],
+    ];
+    for (const [seed, href] of expected) {
+      const card = page.locator(`a[data-hair-type="${seed}"]`);
+      await expect(card).toBeVisible();
+      await expect(card).toHaveAttribute('href', href);
     }
-    // Click the Type 4 card; we should land on question 2 (curl already
-    // answered by the seed), not question 1.
-    await page.locator('a[data-hair-type="type-4"]').click();
-    await page.waitForURL(/\/quiz\?seed=type-4/);
+  });
+
+  test('/quiz?seed=type-4 pre-fills curl + lands on question 2', async ({ page }) => {
+    // The QuizClient reads ?seed= and pre-selects the curl-pattern
+    // question so a type-aware shopper skips the first step. Direct-
+    // navigation test — the homepage card flow is covered above.
+    await page.goto('/quiz?seed=type-4');
     await expect(page.getByText(/Question 2 of/i)).toBeVisible();
   });
 

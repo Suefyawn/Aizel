@@ -291,6 +291,44 @@ export function CollectionPage({
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSelectedBrands(new Set()); }, [activeCategory]);
 
+  // ─── External URL sync (header nav, breadcrumbs, browser back/forward) ───
+  // useState(readInitial) only fires once on mount. CollectionPage stays
+  // mounted across Next App Router soft navigations within /shop, so when a
+  // shopper clicks Skincare in the header and then Hair Care, the URL
+  // changes but activeCategory state stays pinned to whatever the first
+  // mount read — the filter logic then narrows to the OLD taxon's leaf
+  // set and the grid renders empty. Re-derive the URL-bound state when
+  // the relevant params change so external nav takes effect immediately.
+  // Filters (brand / price / attr / free_from) are NOT reset here because
+  // they're local-to-the-collection refinements; the activeCategory-change
+  // effect above already drops selectedBrands per scope.
+  const taxonParam = searchParams.get('taxon');
+  const categoryParam = searchParams.get('category');
+  const subcategoryParam = searchParams.get('subcategory');
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps -- intentional URL→state re-hydration, see comment */
+  useEffect(() => {
+    const fresh = readInitial();
+    setActiveCategory(fresh.cat);
+    setActiveSubcategory(fresh.sub);
+    setQ(fresh.q);
+    // Also reset facet filters tied to the old taxon — leaving them in
+    // place would carry "filter applied: 3 brands" from a Skincare view
+    // into the Hair Care view, where those brand chips don't even apply.
+    // Brand chips are already dropped by the activeCategory-change effect
+    // above; reset the rest explicitly so the rail starts clean on every
+    // taxon hop.
+    setSelectedValueIds(new Set());
+    setSelectedFreeFrom(new Set());
+    setPriceMin('');
+    setPriceMax('');
+    setInStockOnly(false);
+    setOnSaleOnly(false);
+    // Intentionally not depending on readInitial (defined inline and
+    // captures the latest searchParams via closure) — the param triple
+    // below is what actually drives the re-sync.
+  }, [taxonParam, categoryParam, subcategoryParam]);
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
   // ─── URL persistence ─────────────────────────────────────────────────────
   useEffect(() => {
     const sp = new URLSearchParams();

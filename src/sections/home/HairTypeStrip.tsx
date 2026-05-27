@@ -84,9 +84,15 @@ export function HairTypeStrip() {
 
         <div
           className="hair-type-grid"
+          // Responsive grid:
+          //   ≥ 1024px → 4 cards in a row (default)
+          //   720–1023 → 2 cards × 2 rows
+          //   < 720    → 1 card per row, full-width
+          // auto-fit + minmax(220, 1fr) handles all three breakpoints in
+          // a single CSS rule without an explicit media-query stack.
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))',
             gap: 'var(--gutter)',
           }}
         >
