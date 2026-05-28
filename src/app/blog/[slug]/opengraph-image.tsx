@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getBlogPostBySlug } from '@/lib/supabase';
 import { SITE_NAME } from '@/lib/seo';
+import { ogLogoDataUri, OG_LOGO_ASPECT } from '@/lib/og-logo';
 
 // Per-post OG image for blog articles. Overrides the root /opengraph-image
 // so a shared link previews the post's hero photo + title instead of the
@@ -18,18 +19,20 @@ const PURPLE = '#6B2C91';
 
 export default async function PostOgImage({ params }: { params: { slug: string } }) {
   const post = await getBlogPostBySlug(params.slug).catch(() => null);
+  const logo = await ogLogoDataUri('ink');
 
   if (!post) {
     return new ImageResponse(
       (
         <div style={{
           width: '100%', height: '100%', display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
+          alignItems: 'center', justifyContent: 'center', gap: 28,
           background: PAPER, color: PURPLE,
-          fontSize: 96, fontWeight: 700, letterSpacing: '-0.03em',
+          fontSize: 80, fontWeight: 700, letterSpacing: '-0.03em',
           fontFamily: 'sans-serif',
         }}>
-          {SITE_NAME} Journal
+          <img src={logo} alt={SITE_NAME} height={96} width={Math.round(96 * OG_LOGO_ASPECT)} />
+          <span>Journal</span>
         </div>
       ),
       { ...size },
@@ -63,10 +66,11 @@ export default async function PostOgImage({ params }: { params: { slug: string }
           justifyContent: 'space-between', padding: '64px 56px',
         }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
+            display: 'flex', alignItems: 'center', gap: 14,
             fontSize: 32, fontWeight: 700, color: PURPLE, letterSpacing: '-0.02em',
           }}>
-            Aizel · Journal
+            <img src={logo} alt={SITE_NAME} height={40} width={Math.round(40 * OG_LOGO_ASPECT)} />
+            <span>· Journal</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>

@@ -54,11 +54,9 @@ export const metadata: Metadata = {
   },
   description: 'Authentic Afro/Black hair and body care brands — Cantu, ORS, Palmer\'s, Kuza and more. Free UK delivery over £30.',
   applicationName: SITE_NAME,
-  // We deleted /icon.svg when installing the flower favicon. Next.js
-  // auto-generates /icon and /apple-icon link tags from
-  // src/app/icon.png + apple-icon.png, so we don't list them here — listing
-  // /icon.svg explicitly was causing a 404'd <link rel="apple-touch-icon">.
-  // The .ico is picked up automatically from src/app/favicon.ico too.
+  // Icons are the aziel wordmark on an aubergine tile. Next.js auto-generates
+  // the /icon and /apple-icon link tags from src/app/icon.png + apple-icon.png,
+  // and the favicon from src/app/favicon.ico, so we don't list them here.
   openGraph: {
     siteName: SITE_NAME,
     locale: 'en_GB',

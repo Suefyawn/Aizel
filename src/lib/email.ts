@@ -54,10 +54,14 @@ const INK_700 = '#374151';
 const MUTED = '#6b7280';
 const LINE = '#e5e7eb';
 
-// Logo URL — Resend lets us link to any public image. Using the same flower
-// mark that the live site uses as its favicon so the email feels on-brand
-// from the inbox preview onward.
-const LOGO_URL = `${SITE_URL}/icon-192.png`;
+// Logo URL — Resend lets us link to any public image. The charcoal "aziel"
+// wordmark (transparent PNG) sits on the white email header, so the email
+// reads as the brand from the inbox preview onward.
+const LOGO_URL = `${SITE_URL}/logo-ink.png`;
+// Wordmark artwork is 1379×631; render at a fixed height and derive the width
+// so Outlook (which ignores width:auto) still lays it out correctly.
+const LOGO_H = 46;
+const LOGO_W = Math.round((1379 / 631) * LOGO_H);
 
 // ─── Primitives ─────────────────────────────────────────────────────────────
 // Race a promise against a timeout so a stalled call can't block the caller
@@ -126,19 +130,12 @@ function shell(inner: string, opts: ShellOpts = {}): string {
 <body style="margin:0;padding:0;background:${PAPER};color-scheme:light only">
 <div style="background:${PAPER};padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <div style="max-width:560px;margin:0 auto;color:${INK};background:#fff;border-radius:8px;overflow:hidden;border:1px solid ${LINE}">
-    <!-- Branded header: cream band with the live-site flower mark + wordmark.
-         The yellow stripe along the top is a subtle nod to the brand palette
-         that survives even when an email client strips background images. -->
+    <!-- Branded header: white band with the aziel wordmark. The yellow stripe
+         along the top is a subtle nod to the brand palette that survives even
+         when an email client strips background images. -->
     <div style="height:4px;background:${BRAND_YELLOW}"></div>
-    <div style="padding:22px 28px;background:${PAPER};display:flex;align-items:center;gap:14px;border-bottom:1px solid ${LINE}">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="vertical-align:middle;padding-right:14px">
-          <img src="${LOGO_URL}" width="44" height="44" alt="" style="display:block;border:0" />
-        </td>
-        <td style="vertical-align:middle">
-          <span style="font-family:Georgia,serif;font-size:24px;font-weight:500;color:${INK};letter-spacing:-0.3px">Aizel</span>
-        </td>
-      </tr></table>
+    <div style="padding:22px 28px;background:${PAPER};border-bottom:1px solid ${LINE}">
+      <img src="${LOGO_URL}" width="${LOGO_W}" height="${LOGO_H}" alt="aziel — premium cosmetics" style="display:block;border:0;height:${LOGO_H}px;width:${LOGO_W}px" />
     </div>
     <div style="padding:28px;line-height:1.55;font-size:15px;color:${INK_700}">${inner}</div>
     <div style="padding:18px 28px 22px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:1.6">
