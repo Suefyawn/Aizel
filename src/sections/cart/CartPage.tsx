@@ -267,7 +267,7 @@ export function CartPage({ restoreToken = null }: { restoreToken?: string | null
               </div>
               <button className="btn-primary" style={{ width: '100%' }} onClick={() => router.push('/checkout')}>Proceed to Checkout</button>
               <p className="small-text" style={{ textAlign: 'center', marginTop: 12, color: 'var(--ink-500)' }}>
-                Card · PayPal · Apple Pay · Klarna · VAT included
+                Card · Apple Pay · Google Pay · VAT included
               </p>
               {/* Help-on-WhatsApp link — last-mile catch for the visitor who's
                   on the cart but hesitating. Hides when no number set. */}

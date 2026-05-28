@@ -81,11 +81,12 @@ export const COURIERS: Record<string, CourierProfile> = {
 export const COURIER_LIST = Object.values(COURIERS);
 
 // ─── API adapter map ───────────────────────────────────────────────────────
-// Empty until a UK courier adapter is wired. Until then, storefront / admin
-// code paths route through getAdapter() and fall back to manual tracking
-// for every courier above — operator enters the tracking number in the
-// admin order detail and the customer-facing /track page deep-links to the
-// carrier's own status page via the URL builders above.
+// Royal Mail (Click & Drop) is wired; the rest fall back to manual tracking
+// entry. getAdapter() additionally returns null for a wired adapter whose env
+// vars aren't set, so every courier degrades to manual entry until configured —
+// operator enters the tracking number in the admin order detail and the
+// customer-facing /track page deep-links to the carrier's own status page via
+// the URL builders above.
 const ADAPTERS: Record<string, CourierAdapter> = {
   RoyalMail: royalMailAdapter,
   RoyalMailSpecial: royalMailSpecialAdapter,

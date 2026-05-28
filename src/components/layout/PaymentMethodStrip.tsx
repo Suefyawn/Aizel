@@ -1,7 +1,8 @@
 // Footer payment-method strip — the UK trust pattern shoppers look for
-// before clicking through to checkout. Card schemes + wallets first, BNPL
-// second (matches the order most UK beauty retailers ship: Cult Beauty,
-// LookFantastic, Beauty Bay).
+// before clicking through to checkout. Only the methods our Stripe Checkout
+// actually accepts: the card schemes plus the Apple Pay / Google Pay wallets
+// that ride on top of `card` automatically on hosted Checkout. (No PayPal or
+// Klarna — they aren't wired, so we don't advertise them.)
 //
 // Inline SVGs (not images) so the row stays crisp on retina, weighs
 // almost nothing, and recolours via CSS — currentColor in the lockup
@@ -16,9 +17,9 @@ interface Method {
 
 // Each mark is the brand's wordmark or symbol at its canonical lockup —
 // simplified to the bits that read at footer scale. White-on-light card
-// faces match the printed-card convention; PayPal / Apple Pay / Klarna
-// keep their canonical brand colours per their respective brand
-// guidelines (otherwise the operator's compliance gets nervous).
+// faces match the printed-card convention; Apple Pay / Google Pay keep
+// their canonical brand colours per their respective brand guidelines
+// (otherwise the operator's compliance gets nervous).
 
 const METHODS: Method[] = [
   {
@@ -57,19 +58,6 @@ const METHODS: Method[] = [
     ),
   },
   {
-    name: 'PayPal',
-    svg: (
-      <svg viewBox="0 0 64 24" aria-hidden="true" focusable="false">
-        <rect width="64" height="24" rx="3" fill="#fff" stroke="#E5E7EB" />
-        <text x="32" y="17" textAnchor="middle"
-          fontFamily="Arial, Helvetica, sans-serif" fontWeight="800"
-          fontStyle="italic" fontSize="11" letterSpacing="-0.3">
-          <tspan fill="#003087">Pay</tspan><tspan fill="#0070BA">Pal</tspan>
-        </text>
-      </svg>
-    ),
-  },
-  {
     name: 'Apple Pay',
     svg: (
       <svg viewBox="0 0 64 24" aria-hidden="true" focusable="false">
@@ -96,18 +84,6 @@ const METHODS: Method[] = [
           <tspan fill="#34A853">l</tspan>
           <tspan fill="#EA4335">e</tspan>
           <tspan fill="#5F6368"> Pay</tspan>
-        </text>
-      </svg>
-    ),
-  },
-  {
-    name: 'Klarna',
-    svg: (
-      <svg viewBox="0 0 64 24" aria-hidden="true" focusable="false">
-        <rect width="64" height="24" rx="3" fill="#FFA8CD" />
-        <text x="32" y="16" textAnchor="middle"
-          fontFamily="Arial, Helvetica, sans-serif" fontWeight="800" fontSize="10" fill="#0A0A0A">
-          Klarna
         </text>
       </svg>
     ),
