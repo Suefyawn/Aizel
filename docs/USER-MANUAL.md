@@ -9,7 +9,7 @@ store and process sales.
 > behaviour changes. If something here doesn't match what you see on screen,
 > the screen is right — please flag it so the manual can be corrected.
 >
-> *Last updated: 26 May 2026 — Deep rebrand sweep: every Yellow-Pink-era / Pakistani-context reference (About / Contact / FAQ / Shipping / Returns CMS pages, courier integration, code comments, env defaults, internal docs) replaced with Aizel UK copy; free-shipping threshold harmonised across UI + DB at £30; TCS Pakistan courier integration removed; reviews now display on PDPs (RLS policy that had been silently dropped is restored). Notifications page now flags a missing `OWNER_EMAIL` env var explicitly (alerts no longer silently route to a hardcoded address when both the recipients table and the env var are empty); blog mutations require the `blog` permission and write audit log rows; POS Terminal payment intents validate the requested amount against the persisted order total before talking to Stripe.*
+> *Last updated: 28 May 2026 — Hair Care taxonomy deepened (Shampoo / Conditioner / Leave-In split out, junk-drawer products recategorised) and Skincare split into Cleansers / Moisturisers / Serums / Face Masks; new Styling leaves Wigs & Extensions + Hair Tools so wigs, hair dryers, clippers and trimmers have a home; shop taxon pages now read the live DB taxonomy so admin Categories-CMS edits take effect without a redeploy. Brand index rebuilt as an A-Z directory; hair quiz promoted to the top nav + a homepage "Shop by hair type" funnel (`/quiz?seed=`). Fabricated homepage testimonials, performance stats, and the "Featured in" press strip removed, plus all seeded product reviews unapproved (UK DMCC Act / CMA compliance); homepage now carries verifiable brand-promise cards instead. Blog posts render Markdown. PostHog analytics now loads only after the visitor accepts analytics cookies (UK PECR / GDPR). Earlier (26 May): deep Yellow-Pink rebrand sweep; free-shipping threshold harmonised at £30; reviews display on PDPs.*
 >
 > *Catalogue and storefront polish, same date: 565 of 589 products now have full PDP content (long-form description, how-to-use, ingredients, four key-benefit cards, three FAQ entries) written brand-aware per Cantu, ORS, KeraCare, Palmer's, Shea Moisture, Nivea and 90+ other brands; 40+ products redistributed out of a "Makeup" junk-drawer back into their correct Hair Care / Body / Grooming leaves (the Hair Care taxon went from 393 to 422 visible products); `/shop?category=Hair%20Care` now resolves the taxon label instead of returning empty (was a literal `category = 'Hair Care'` filter that no row matched); the "Wash Day Essentials" editorial banner's Unsplash photo had been removed upstream and was swapped for a working URL; the Morgan's Hair Darkening Pomade ingredient line was corrected to the post-2019 UK/EU reformulation (no lead acetate — the historical formulation has been banned in cosmetic hair products in this market since 2019).*
 
@@ -400,6 +400,21 @@ them again.
    pages. Within ~60s, GA4 → *Reports* → *Realtime* should show one user.
 5. (Recommended) link GA4 to Search Console: GA4 *Admin* → *Product links* →
    *Search Console links* → *Link*. Lets GA4 show landing-page queries.
+
+**PostHog (product analytics, funnels & session recording)**
+
+1. In Vercel → Settings → Environment Variables (Production), set
+   `NEXT_PUBLIC_POSTHOG_KEY` (the `phc_…` project key) and
+   `NEXT_PUBLIC_POSTHOG_HOST` (`https://eu.i.posthog.com` for the EU region).
+   Redeploy.
+2. Like GA4, PostHog only collects from visitors who **accept analytics
+   cookies** on the consent banner — sessions where someone rejects or
+   ignores the banner are not captured. So your PostHog numbers reflect
+   *consented* traffic, which will be lower than raw server hits. This is
+   deliberate (UK PECR / GDPR compliance), not a tracking bug.
+3. Verify: visit the storefront, click **Accept** on the cookie banner,
+   browse a couple of pages — PostHog → *Activity* should show your
+   pageviews within seconds.
 
 The site already fires GA4's e-commerce events automatically — `view_item`,
 `add_to_cart`, `begin_checkout`, `purchase`, `search`, `sign_up` — so you'll
