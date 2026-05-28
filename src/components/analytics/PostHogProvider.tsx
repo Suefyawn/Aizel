@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, Suspense } from 'react';
+import { useConsent } from '@/lib/consent';
 
 // posthog-js is ~50 KB gz and was pulling into every storefront route's
 // first-load bundle via static `import posthog from 'posthog-js'`. Nothing
@@ -10,9 +11,13 @@ import { useEffect, useRef, Suspense } from 'react';
 // singleton, lazy-loaded after first paint. Pageview + yp:track forwarding
 // happen via the same singleton once it's loaded.
 //
-// Trade-off: PostHog misses the very first paint event for ~50ms while the
-// chunk loads; given person-on-event mode + the back-end's own server-side
-// $pageview capture this is invisible in the funnel.
+// CONSENT GATING (UK PECR / GDPR): posthog-js sets cookies + runs session
+// recording / autocapture, so it is an "analytics cookie" that legally
+// requires prior opt-in. We therefore DO NOT call loadPostHog() until the
+// visitor has accepted the analytics bucket in the consent banner
+// (consent.analytics === true). If they later revoke, we opt the SDK out.
+// Sentry is left ungated — operational error monitoring is strictly
+// necessary, not behavioural tracking.
 
 type PostHog = typeof import('posthog-js').default;
 
@@ -52,16 +57,31 @@ function loadPostHog(): Promise<PostHog> {
 function PageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { consent } = useConsent();
+  const analyticsOn = consent?.analytics === true;
 
+  // Capture pageviews only while analytics consent is granted. The effect
+  // also re-runs when `analyticsOn` flips true (the moment the visitor
+  // clicks "Accept" in the banner), so the page they're on still counts.
   useEffect(() => {
-    if (!pathname) return;
+    if (!pathname || !analyticsOn) return;
     loadPostHog().then(ph => {
+      // Re-enable if a previous session revoked + opted the SDK out.
+      ph.opt_in_capturing?.();
       let url = window.origin + pathname;
       const qs = searchParams.toString();
       if (qs) url += `?${qs}`;
       ph.capture('$pageview', { $current_url: url });
     }).catch(() => { /* PostHog opt-out / network — ignore */ });
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, analyticsOn]);
+
+  // Revocation: if analytics is switched off after the SDK has loaded,
+  // stop capturing. We only touch posthog if it was ever loaded
+  // (phPromise non-null) so a never-consented visitor never inits it.
+  useEffect(() => {
+    if (analyticsOn || !phPromise) return;
+    phPromise.then(ph => ph.opt_out_capturing?.()).catch(() => { /* ignore */ });
+  }, [analyticsOn]);
 
   return null;
 }
@@ -69,18 +89,22 @@ function PageViewTracker() {
 // Forward `yp:track` window events (dispatched by lib/analytics.ts) to
 // PostHog. lib/analytics stays vendor-neutral; PostHog gets the ecommerce
 // events (add_to_cart, begin_checkout, purchase, etc.) without lib/analytics
-// hard-importing posthog-js. Without this listener the funnel's add_to_cart
-// step reads 0 even though the storefront fires the event on every add.
+// hard-importing posthog-js. Gated on analytics consent like the pageview
+// tracker — no consent, no forwarding (and no SDK load).
 function YpTrackForwarder() {
+  const { consent } = useConsent();
+  const analyticsOn = consent?.analytics === true;
   // Queue events that fire before posthog-js finishes loading so we don't
   // miss the early add_to_cart on a first-visit fast-clicker.
   const queue = useRef<Array<{ name: string; payload?: Record<string, unknown> }>>([]);
   const phRef = useRef<PostHog | null>(null);
 
   useEffect(() => {
+    if (!analyticsOn) return;
     let cancelled = false;
     loadPostHog().then(ph => {
       if (cancelled) return;
+      ph.opt_in_capturing?.();
       phRef.current = ph;
       for (const e of queue.current) {
         try { ph.capture(e.name, e.payload); } catch { /* ignore */ }
@@ -99,7 +123,7 @@ function YpTrackForwarder() {
     };
     window.addEventListener('yp:track', handler);
     return () => { cancelled = true; window.removeEventListener('yp:track', handler); };
-  }, []);
+  }, [analyticsOn]);
   return null;
 }
 
