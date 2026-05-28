@@ -1,5 +1,13 @@
 import * as Sentry from '@sentry/nextjs';
 
+// CLIENT-SIDE Sentry init. This MUST live in `instrumentation-client.ts`
+// (a Next.js-native client hook, loaded before hydration under BOTH webpack
+// and Turbopack) rather than `sentry.client.config.ts`. The Sentry SDK only
+// auto-injects `sentry.client.config.ts` via its webpack plugin — under
+// Turbopack (the default bundler in Next 16) that injection never runs, so
+// the old file silently never executed and browser error monitoring was dead
+// (window.__SENTRY__ was undefined in production).
+//
 // Public Sentry DSN. Prefer the env var (so a staging deploy can point at a
 // different Sentry project) but fall back to the known production DSN so
 // browser error monitoring works even when the Vercel env var doesn't reach
@@ -45,3 +53,7 @@ if (typeof window !== 'undefined') {
     setTimeout(start, 1000);
   }
 }
+
+// Surfaces App Router navigations to Sentry tracing. Sentry warns at build
+// time if this isn't exported once a client config exists.
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
