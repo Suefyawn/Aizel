@@ -78,7 +78,7 @@ export function HairTypeStrip() {
             </h2>
           </div>
           <Link href="/quiz" className="text-link" style={{ fontSize: '0.8125rem' }}>
-            Take the full quiz →
+            Take the full quiz
           </Link>
         </div>
 
