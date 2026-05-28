@@ -151,8 +151,8 @@ export function Header({ navSections }: { navSections?: readonly NavSection[] } 
       padding: scrolled ? '8px 0' : '14px 0',
     }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <LogoWordmark />
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }} aria-label="aziel — home">
+          <LogoWordmark height={34} priority />
         </Link>
 
         <nav style={{ display: 'flex', gap: 26, alignItems: 'center' }} className="desktop-nav" aria-label="Primary">

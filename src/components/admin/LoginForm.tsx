@@ -1,6 +1,7 @@
 'use client';
 import { useActionState, useState } from 'react';
 import { loginAdmin, loginStaff } from '@/app/admin/actions';
+import { LogoWordmark } from '@/components/ui/LogoWordmark';
 
 const inp: React.CSSProperties = {
   width: '100%', padding: '10px 14px',
@@ -94,10 +95,8 @@ export function LoginForm() {
       width: 360, boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
     }}>
       {/* Logo */}
-      <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 6, color: '#4A1A6B' }}>
-          Aizel
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
+        <div style={{ marginBottom: 10 }}><LogoWordmark height={32} /></div>
         <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>Sign in to admin panel</p>
       </div>
 

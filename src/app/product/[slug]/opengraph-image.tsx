@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getProductBySlug } from '@/lib/supabase';
 import { SITE_NAME } from '@/lib/seo';
+import { ogLogoDataUri, OG_LOGO_ASPECT } from '@/lib/og-logo';
 import { brandPlusName } from '@/lib/product-display';
 
 // Per-PDP Open Graph image — overrides the root /opengraph-image.tsx for
@@ -23,6 +24,7 @@ const PURPLE = '#6B2C91';
 
 export default async function ProductOgImage({ params }: { params: { slug: string } }) {
   const product = await getProductBySlug(params.slug).catch(() => null);
+  const logo = await ogLogoDataUri('ink');
 
   // Fallback to a brand card if the slug doesn't resolve — better than
   // 500-ing the OG endpoint, which would block the share preview entirely.
@@ -32,11 +34,10 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
         <div style={{
           width: '100%', height: '100%', display: 'flex',
           alignItems: 'center', justifyContent: 'center',
-          background: PAPER, color: PURPLE,
-          fontSize: 96, fontWeight: 700, letterSpacing: '-0.03em',
+          background: PAPER,
           fontFamily: 'sans-serif',
         }}>
-          {SITE_NAME}
+          <img src={logo} alt={SITE_NAME} height={120} width={Math.round(120 * OG_LOGO_ASPECT)} />
         </div>
       ),
       { ...size },
@@ -86,11 +87,8 @@ export default async function ProductOgImage({ params }: { params: { slug: strin
           flex: 1, display: 'flex', flexDirection: 'column',
           justifyContent: 'space-between', padding: '64px 56px',
         }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            fontSize: 32, fontWeight: 700, color: PURPLE, letterSpacing: '-0.02em',
-          }}>
-            Aizel
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logo} alt={SITE_NAME} height={40} width={Math.round(40 * OG_LOGO_ASPECT)} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

@@ -557,7 +557,6 @@ form[role='search']:focus-within {
   /* Account + wishlist move into the mobile menu drawer, so the header row
    * has room for the logo without it wrapping to two lines. */
   .header-icon-desktop-only { display: none !important; }
-  .logo-wordmark { font-size: 1.0625rem !important; }
 
   /* Bestsellers + blog "Mentioned in this article" — 3 tiles. Stacking them
    * 1-col makes for a vertical wall on a phone. Convert to a horizontal

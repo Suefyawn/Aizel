@@ -78,7 +78,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
       <div className="container">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
           <div>
-            <div style={{ marginBottom: 24 }}><LogoWordmark color="var(--paper)" /></div>
+            <div style={{ marginBottom: 24 }}><LogoWordmark tone="cream" height={34} /></div>
             <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.55)', maxWidth: 260, marginBottom: 16 }}>
               Authentic Black hair and body care brands, shipped across the United Kingdom.
             </p>

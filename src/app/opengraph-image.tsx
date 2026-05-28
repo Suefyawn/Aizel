@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { SITE_NAME } from '@/lib/seo';
+import { ogLogoDataUri, OG_LOGO_ASPECT } from '@/lib/og-logo';
 
 // Root-level Open Graph image. Picked up automatically as <meta property="og:image">
 // for every route that does NOT supply its own image (PDP, blog posts can still
@@ -19,6 +20,8 @@ const GOLD = '#D4A437';
 const PURPLE = '#6B2C91';
 
 export default async function OpengraphImage() {
+  const logo = await ogLogoDataUri('ink');
+  const logoH = 64;
   return new ImageResponse(
     (
       <div
@@ -39,19 +42,7 @@ export default async function OpengraphImage() {
           position: 'relative',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            fontSize: 56,
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
-            color: PURPLE,
-          }}
-        >
-          Aizel
-        </div>
+        <img src={logo} alt={SITE_NAME} height={logoH} width={Math.round(logoH * OG_LOGO_ASPECT)} />
 
         <div
           style={{
