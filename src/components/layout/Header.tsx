@@ -65,6 +65,24 @@ export function Header({ navSections }: { navSections?: readonly NavSection[] } 
   const [openMenu, setOpenMenu] = useState<string | null>(null);       // desktop mega-menu
   const [openSection, setOpenSection] = useState<string | null>(null); // mobile expandable section
   const drawerRef = useRef<HTMLDivElement | null>(null);
+
+  // Mega-menu open/close with a short close grace period. A bare
+  // onMouseLeave={() => setOpenMenu(null)} slams the dropdown shut the
+  // instant the pointer crosses any sub-pixel gap between the trigger and
+  // the panel (or when the user arcs the cursor diagonally toward an
+  // item), so the menu vanishes before it can be clicked. The 140ms
+  // timer is cancelled the moment the pointer re-enters the trigger OR
+  // the panel, which is the standard robust mega-menu pattern.
+  const megaCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openMega = (key: string) => {
+    if (megaCloseTimer.current) { clearTimeout(megaCloseTimer.current); megaCloseTimer.current = null; }
+    setOpenMenu(key);
+  };
+  const scheduleMegaClose = () => {
+    if (megaCloseTimer.current) clearTimeout(megaCloseTimer.current);
+    megaCloseTimer.current = setTimeout(() => setOpenMenu(null), 140);
+  };
+  useEffect(() => () => { if (megaCloseTimer.current) clearTimeout(megaCloseTimer.current); }, []);
   // Mobile-menu modal behaviour: lock body scroll, trap focus inside the
   // drawer, close on Escape. Without scroll-lock the page underneath
   // would keep scrolling behind the open menu — a confusing UX.
@@ -150,23 +168,29 @@ export function Header({ navSections }: { navSections?: readonly NavSection[] } 
               <div
                 key={section.key}
                 style={{ position: 'relative' }}
-                onMouseEnter={() => setOpenMenu(section.key)}
-                onMouseLeave={() => setOpenMenu(null)}
+                onMouseEnter={() => openMega(section.key)}
+                onMouseLeave={scheduleMegaClose}
               >
                 <Link
                   href={section.href}
                   aria-current={active ? 'page' : undefined}
                   aria-expanded={open}
                   aria-haspopup="true"
-                  onFocus={() => setOpenMenu(section.key)}
+                  onFocus={() => openMega(section.key)}
                   style={navLinkStyle(active)}
                 >{section.label}</Link>
                 {open && (
                   // Outer wrapper sits flush against the link (top:100%) and
-                  // its transparent paddingTop bridges the visual gap — so the
-                  // cursor never crosses a dead zone that would fire mouseleave
-                  // and close the menu before a dropdown item can be clicked.
-                  <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 10, zIndex: 200 }}>
+                  // its transparent paddingTop bridges the visual gap. The
+                  // explicit onMouseEnter/Leave here re-assert the open state
+                  // (and cancel the close timer) the moment the pointer is
+                  // over the panel, so arcing the cursor from the trigger
+                  // into the panel never loses the menu.
+                  <div
+                    style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 10, zIndex: 200 }}
+                    onMouseEnter={() => openMega(section.key)}
+                    onMouseLeave={scheduleMegaClose}
+                  >
                     <div
                       style={{
                         // Multi-column menus need more width so the columns

@@ -422,6 +422,7 @@ form[role='search']:focus-within {
   .product-grid, .cat-grid, .results-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .product-grid-3, .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .duo-grid, .story-grid { grid-template-columns: 1fr !important; }
+  .promise-grid { grid-template-columns: 1fr !important; }
   .pdp-grid { grid-template-columns: 1fr !important; }
   .search-suggestions { grid-template-columns: 1fr !important; }
   .trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
@@ -430,6 +431,20 @@ form[role='search']:focus-within {
   .display-l { font-size: 1.75rem !important; }
   .hero-grid { grid-template-columns: 1fr !important; min-height: auto !important; }
   .hero-grid > div:last-child { min-height: 300px; position: relative !important; }
+}
+/* QuizBanner: the "1fr auto" text+button layout squeezes the copy to
+ * one word per line on phones. Stack it — heading/body on top, a
+ * full-width CTA below — below 640px. */
+@media (max-width: 640px) {
+  .quiz-banner {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+  .quiz-banner > a {
+    justify-self: stretch !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
 }
 /* PDP gallery: on phones the 64px vertical thumbnail rail steals too much
  * width from the hero image. Flip to column-reverse so the hero gets full
