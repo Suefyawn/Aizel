@@ -6,8 +6,9 @@
 // order in Click & Drop, generates the postage label, and returns the tracking
 // number + label so the order is marked shipped and the customer emailed.
 //
-// Auth: Bearer API key from Click & Drop → Settings → Integrations →
-//       Click & Drop API.
+// Auth: the raw Click & Drop API key in the Authorization header (NOT a
+//       "Bearer" token). Generate it in Click & Drop → Settings →
+//       Integrations → Click & Drop API.
 //
 // Required env:
 //   ROYALMAIL_CLICKDROP_API_KEY   — the Click & Drop API auth key (server-only)
