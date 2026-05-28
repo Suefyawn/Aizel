@@ -1,12 +1,15 @@
 import * as Sentry from '@sentry/nextjs';
 
-// DSN is inlined at build time by Next's DefinePlugin. Read it into a const
-// so `enabled` can gate on its presence — initialising Sentry with an
-// undefined DSN half-loads the SDK (transport disabled) which is noise; we
-//'d rather it be explicitly off. NOTE: NEXT_PUBLIC_* substitution is cached
-// in .next/cache per source-module, so this file must change whenever the
-// init shape changes for the new env value to be picked up on Vercel.
-const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+// Public Sentry DSN. Prefer the env var (so a staging deploy can point at a
+// different Sentry project) but fall back to the known production DSN so
+// browser error monitoring works even when the Vercel env var doesn't reach
+// the build. The DSN is a PUBLIC value — it ships in the client bundle by
+// design, exactly like the GA/PostHog keys — so there is no secret to
+// protect by keeping it env-only. Same pattern as the PostHog api_host
+// default. `enabled` stays gated so a deliberately-blanked DSN still turns
+// Sentry off cleanly.
+const FALLBACK_DSN = 'https://b4e01e158d30f00285d73c406b2345e7@o4511454907138048.ingest.de.sentry.io/4511455001641040';
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || FALLBACK_DSN;
 
 Sentry.init({
   dsn,
