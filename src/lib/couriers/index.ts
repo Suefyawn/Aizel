@@ -17,6 +17,7 @@
 // ============================================================================
 
 import type { CourierAdapter } from './types';
+import { royalMailAdapter, royalMailSpecialAdapter } from './royalmail';
 
 export interface CourierProfile {
   id: string;
@@ -85,7 +86,10 @@ export const COURIER_LIST = Object.values(COURIERS);
 // for every courier above — operator enters the tracking number in the
 // admin order detail and the customer-facing /track page deep-links to the
 // carrier's own status page via the URL builders above.
-const ADAPTERS: Record<string, CourierAdapter> = {};
+const ADAPTERS: Record<string, CourierAdapter> = {
+  RoyalMail: royalMailAdapter,
+  RoyalMailSpecial: royalMailSpecialAdapter,
+};
 
 /**
  * Returns the live API adapter for a courier id, or null if:
