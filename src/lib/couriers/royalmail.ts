@@ -104,7 +104,8 @@ function makeRoyalMailAdapter({ id, serviceCodeEnv }: RoyalMailConfig): CourierA
           phoneNumber: (c.phone || '').slice(0, 25) || undefined,
           emailAddress: (c.email || undefined)?.slice(0, 254),
         },
-        billing: { useRecipientAsBilling: true },
+        // Billing address is handled by the integration's "use shipping address
+        // for billing" setting (on by default), so we don't send a billing block.
         packages: [
           {
             weightInGrams,
@@ -136,7 +137,9 @@ function makeRoyalMailAdapter({ id, serviceCodeEnv }: RoyalMailConfig): CourierA
         res = await fetch(`${BASE_URL}/orders`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${key}`,
+            // Click & Drop expects the raw API key in the Authorization header
+            // — NOT a "Bearer" token (per the official help-centre cURL example).
+            'Authorization': key,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
