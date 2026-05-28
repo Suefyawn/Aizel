@@ -122,7 +122,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   } else if (trimmedBrand) {
     description = `Shop the ${trimmedBrand} range at Aizel — 100% authentic ${trimmedBrand}, free UK delivery over £30.`;
   } else {
-    description = 'Authentic Afro/Black hair care, body care and grooming brands. Delivered across the UK with card or PayPal.';
+    description = 'Authentic Afro/Black hair care, body care and grooming brands. Delivered across the UK with secure card checkout.';
   }
 
   return pageMeta({

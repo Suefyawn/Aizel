@@ -9,7 +9,6 @@ import { StarRating } from '@/components/ui/StarRating';
 import { useCart } from '@/context/CartContext';
 import { BackInStockForm } from '@/components/pdp/BackInStockForm';
 import { SubscribeAndSave } from '@/components/pdp/SubscribeAndSave';
-import { KlarnaMessaging } from '@/components/pdp/KlarnaMessaging';
 import { RecentlyViewedRail } from '@/components/product/RecentlyViewedRail';
 import { useTrackView } from '@/lib/hooks/useRecentlyViewed';
 import { track } from '@/lib/analytics';
@@ -432,10 +431,6 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
                 </span>
               )}
             </div>
-            {/* Klarna on-site messaging — gated entirely on
-                NEXT_PUBLIC_KLARNA_CLIENT_ID; render-noop when the operator
-                hasn't wired a real Klarna account. */}
-            <KlarnaMessaging price={displayPrice} />
             <div style={{ marginBottom: 20 }}>
               {outOfStock ? (
                 <span style={{ display: 'inline-block', padding: '3px 10px', background: '#fef2f2', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, color: '#dc2626' }}>Out of Stock</span>

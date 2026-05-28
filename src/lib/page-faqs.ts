@@ -74,7 +74,7 @@ const FAQS: Record<string, FaqEntry[]> = {
     {
       question: 'Do you ship outside the UK?',
       answer:
-        'Not at the moment. We currently ship only within the United Kingdom with card, PayPal, and bank transfer payment options.',
+        'Not at the moment. We currently ship only within the United Kingdom with card and bank transfer payment options.',
     },
     {
       question: 'How can I contact customer support?',

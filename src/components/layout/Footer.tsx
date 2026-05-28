@@ -86,7 +86,7 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
               <p className="small-text" style={{ color: 'rgba(255, 255, 255,0.5)', fontSize: '0.75rem', lineHeight: 1.7 }}>
                 Free UK delivery on orders over £30<br />
                 Royal Mail Tracked · DPD next-day available<br />
-                14-day returns · Card · PayPal · Apple Pay<br />
+                14-day returns · Card · Apple Pay · Google Pay<br />
                 All prices include VAT
               </p>
             </address>
@@ -121,8 +121,8 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
         </div>
 
         {/* Payment-method strip — UK trust pattern shoppers scan for
-            before committing to a checkout. Visa / MC / Amex / PayPal /
-            Apple Pay / Google Pay / Klarna in the canonical lockup. */}
+            before committing to a checkout. Visa / MC / Amex / Apple Pay /
+            Google Pay — only what Stripe Checkout actually accepts. */}
         <div style={{
           marginTop: 36, paddingTop: 24, borderTop: '1px solid rgba(255, 255, 255,0.08)',
           display: 'flex', justifyContent: 'flex-start',
