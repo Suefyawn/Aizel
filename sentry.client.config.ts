@@ -1,7 +1,16 @@
 import * as Sentry from '@sentry/nextjs';
 
+// DSN is inlined at build time by Next's DefinePlugin. Read it into a const
+// so `enabled` can gate on its presence — initialising Sentry with an
+// undefined DSN half-loads the SDK (transport disabled) which is noise; we
+//'d rather it be explicitly off. NOTE: NEXT_PUBLIC_* substitution is cached
+// in .next/cache per source-module, so this file must change whenever the
+// init shape changes for the new env value to be picked up on Vercel.
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn,
+  enabled: Boolean(dsn),
   tracesSampleRate: 0.2,
   // Capture replays for 5% of sessions, 100% of sessions with errors.
   replaysSessionSampleRate: 0.05,
