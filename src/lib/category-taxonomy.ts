@@ -51,8 +51,14 @@ export const TAXONS: readonly Taxon[] = [
     key: 'skincare',
     label: 'Skincare',
     tagline: 'Cleanse, moisturise, treat',
+    // Split out of the old single "Skincare" catch-all leaf (migration
+    // 154) so the mega-menu shows a real category list instead of one
+    // redundant self-link.
     categories: [
-      'Skincare',
+      'Cleansers & Face Wash',
+      'Moisturisers',
+      'Serums & Treatments',
+      'Face Masks',
     ],
   },
   {
@@ -149,6 +155,12 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Mousse & Hairspray': 'Setting mousses, hairsprays and finishing products to lock the look in.',
   'Relaxers & Kits': 'Relaxer and texturiser kits — at-home application made simple.',
   'Hair Colour': 'Permanent and semi-permanent hair colour from Bigen, Crazy Color, Creme of Nature and more — full coverage and fade-resistant tones.',
+
+  // ── Skincare leaves ──
+  'Cleansers & Face Wash': 'Face washes, cleansing balms, astringents and exfoliating scrubs for melanin-rich skin.',
+  'Moisturisers': 'Daily creams and intensive moisturisers — lightweight hydration to rich nourishing formulas.',
+  'Serums & Treatments': 'Targeted serums, facial oils, aloe gels and dark-spot / even-tone treatments.',
+  'Face Masks': 'Clay, healing and soothing face masks for a weekly deep-clean or calm-down.',
 
   // ── Body Care leaves ──
   'Cocoa & Shea Butter': 'Pure cocoa and shea butter from Palmer\'s, Ghana\'s Best and more — deeply nourishing for dry skin.',

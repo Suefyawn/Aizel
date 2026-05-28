@@ -8,7 +8,7 @@ import { getProducts, isDemo } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
 import { CollectionPage } from '@/sections/collection/CollectionPage';
 import { pageMeta, jsonLd, breadcrumbLd, itemListLd } from '@/lib/seo';
-import { canonicalCategory, CATEGORY_DESCRIPTIONS } from '@/lib/category-taxonomy';
+import { canonicalCategory, CATEGORY_DESCRIPTIONS, loadTaxonomy } from '@/lib/category-taxonomy';
 import type { ProductAttribute, AttributeValue } from '@/types';
 
 export interface AttributeWithValues extends ProductAttribute {
@@ -153,8 +153,21 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   // labels and the footer "Shop" links), and without this expansion that
   // URL would do a literal `category === 'Hair Care'` filter and return 0
   // products (no leaf row has that value).
-  const { findTaxon } = await import('@/lib/category-taxonomy');
-  const taxonObj = findTaxon(taxon) ?? findTaxon(initialCategory);
+  //
+  // Resolve against the LIVE DB taxonomy (loadTaxonomy), NOT the build-time
+  // TAXONS constant. An operator editing the Categories CMS — or a data
+  // migration that splits/moves leaves — changes the DB immediately; if we
+  // expanded the taxon from the stale compiled constant the taxon page
+  // would filter to leaf names that no longer hold any products and render
+  // empty until the next code deploy. (This is exactly what broke
+  // /shop?taxon=skincare after the skincare-leaf split.)
+  const taxonomy = await loadTaxonomy();
+  const resolveLiveTaxon = (s: string | null | undefined) => {
+    if (!s) return null;
+    const low = s.toLowerCase();
+    return taxonomy.taxons.find(t => t.key.toLowerCase() === low || t.label.toLowerCase() === low) ?? null;
+  };
+  const taxonObj = resolveLiveTaxon(taxon) ?? resolveLiveTaxon(initialCategory);
 
   // Server-side narrow: pass CollectionPage only the products that match
   // the URL's primary scope (taxon → category set, single category, or
