@@ -148,6 +148,7 @@ function makeRoyalMailAdapter({ id, serviceCodeEnv }: RoyalMailConfig): CourierA
         });
         clearTimeout(t);
       } catch (e) {
+        console.error(`[royalmail] network error: ${String(e).slice(0, 200)}`);
         return { ok: false, message: 'Could not reach Royal Mail Click & Drop. Try again, or enter the tracking number manually.', code: 'network', raw: String(e) };
       }
 
@@ -157,6 +158,10 @@ function makeRoyalMailAdapter({ id, serviceCodeEnv }: RoyalMailConfig): CourierA
       } catch {
         body = {};
       }
+
+      // Diagnostic log (no secrets) so the live response is visible in the
+      // Vercel runtime logs while we confirm this account's behaviour.
+      console.info(`[royalmail] create-orders status=${res.status} body=${JSON.stringify(body).slice(0, 1200)}`);
 
       if (!res.ok) {
         const msg = body.failedOrders?.[0]?.errors?.[0]?.errorMessage
