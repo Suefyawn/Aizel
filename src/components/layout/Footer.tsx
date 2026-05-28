@@ -135,37 +135,48 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
         }}>
           <span className="small-text" style={{ color: 'rgba(255, 255, 255, 0.65)' }}>© {new Date().getFullYear()} Aizel. All rights reserved.</span>
-          {socials.length > 0 && (
-            <div style={{ display: 'flex', gap: 8 }} aria-label="Social media">
-              {socials.map(s => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Aizel on ${s.label}`}
-                  style={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    textDecoration: 'none',
-                    fontSize: '0.6875rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    fontFamily: 'var(--font-ui)',
-                    // Pad to a comfortable tap target (~32+ px) and round so the
-                    // hover bg (if we add one later) reads as a chip not a slab.
-                    padding: '10px 12px',
-                    borderRadius: 6,
-                    minHeight: 36,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)')}
-                >{s.label}</a>
-              ))}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            {socials.length > 0 && (
+              <div style={{ display: 'flex', gap: 8 }} aria-label="Social media">
+                {socials.map(s => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Aizel on ${s.label}`}
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      textDecoration: 'none',
+                      fontSize: '0.6875rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      fontFamily: 'var(--font-ui)',
+                      // Pad to a comfortable tap target (~32+ px) and round so the
+                      // hover bg (if we add one later) reads as a chip not a slab.
+                      padding: '10px 12px',
+                      borderRadius: 6,
+                      minHeight: 36,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)')}
+                  >{s.label}</a>
+                ))}
+              </div>
+            )}
+            <a
+              href="https://trellee.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="small-text"
+              style={{ color: 'rgba(255, 255, 255, 0.45)', textDecoration: 'none' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.45)')}
+            >Powered by Trellee</a>
+          </div>
         </div>
       </div>
     </footer>
