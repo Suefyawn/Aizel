@@ -15,9 +15,23 @@ import { track } from '@/lib/analytics';
 import { stripBrandPrefix } from '@/lib/product-display';
 import { whatsappUrl as waUrl, WA_TEMPLATES as WA_T } from '@/lib/whatsapp';
 import { BenefitIcon } from '@/components/ui/BenefitIcon';
+import { departmentForProduct, type TaxonKey } from '@/lib/category-taxonomy';
 import type { Product, ProductImage as ProductImageT, ProductAttribute, AttributeValue, ProductVariant } from '@/types';
 
 const SHIPPING_CONTENT = 'Free UK shipping on orders over £30. 14-day return policy on unopened items.';
+
+// Department-specific middle badge for the "Why Aizel" trust block. The other
+// three badges (authentic / Royal Mail / returns) are true for every product;
+// only this one was hair-biased ("type 3 & 4 curls" on an aloe vera, etc.).
+// Keyed by department; `other` is the safe generic fallback.
+const WHY_AIZEL_TRAITS: Record<TaxonKey | 'other', { label: string; sub: string }> = {
+  hair:     { label: 'Built for textured hair', sub: 'Curated for type 3 & type 4 curls' },
+  skincare: { label: 'Kind to melanin-rich skin', sub: 'Formulated for deeper skin tones' },
+  body:     { label: 'Everyday moisture', sub: 'Rich butters, oils & lotions for skin' },
+  styling:  { label: 'Finish the look', sub: 'Wig care, tools & accessories' },
+  grooming: { label: 'Built for grooming', sub: 'Beard, shave & fragrance essentials' },
+  other:    { label: 'Curated for you', sub: 'Authentic brands the community trusts' },
+};
 
 interface AttributeWithValues extends ProductAttribute {
   values: AttributeValue[];
@@ -641,7 +655,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
               Why this product earns a spot in your routine
             </h2>
             <p className="body-text" style={{ color: 'var(--ink-700)', margin: 0 }}>
-              Every product is curated for Afro & textured hair, sourced from authorised UK distributors, and shipped Royal Mail Tracked across the UK.
+              Authentic Afro-Caribbean beauty brands, hand-picked from authorised UK distributors and shipped Royal Mail Tracked across the UK.
             </p>
           </div>
 
@@ -654,7 +668,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           >
             {[
               { icon: '✓', label: '100% authentic', sub: 'Direct from authorised UK distributors' },
-              { icon: '◐', label: 'Built for textured hair', sub: 'Curated for type 3 & type 4 curls' },
+              { icon: '◐', ...WHY_AIZEL_TRAITS[departmentForProduct(product) ?? 'other'] },
               { icon: '◎', label: 'Royal Mail Tracked', sub: 'Free UK delivery over £30' },
               { icon: '↩', label: '14-day returns', sub: 'UK Consumer Contracts Regs · unopened items' },
             ].map(t => (
@@ -758,7 +772,7 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           boxShadow: '0 -6px 18px rgba(0,0,0,0.06)',
           padding: '10px var(--side)',
           paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
-          display: 'flex', alignItems: 'center', gap: 12,
+          display: 'flex', alignItems: 'center', gap: 8,
           transform: showStickyBar ? 'translateY(0)' : 'translateY(110%)',
           transition: 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: showStickyBar ? 'auto' : 'none',
@@ -783,7 +797,11 @@ export function PDPPage({ product, relatedProducts = [], variants = [], attribut
           disabled={ctaDisabled}
           className="btn-primary"
           style={{
-            flex: 1, minWidth: 0, padding: '12px 16px',
+            // grow to fill, but never shrink below the label (was minWidth:0,
+            // which let "Select options" squash on narrow phones). The
+            // name/price block to the left is the flex shrink-sink instead.
+            flex: '1 1 auto', minWidth: 140, whiteSpace: 'nowrap',
+            padding: '12px 14px',
             background: ctaDisabled ? '#d1d5db' : addedFlash ? 'var(--success)' : 'var(--brand-pink-cta)',
             cursor: ctaDisabled ? 'not-allowed' : 'pointer',
             transition: 'background 100ms ease-out',

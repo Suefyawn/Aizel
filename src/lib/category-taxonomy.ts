@@ -128,6 +128,37 @@ export function taxonForCategory(category: string | null | undefined): Taxon | n
   return null;
 }
 
+/**
+ * Best-effort department for a product, used to pick department-appropriate
+ * marketing copy (e.g. the PDP "Why Aizel" block). Unlike `taxonForCategory`
+ * — which only matches a product tagged with an exact leaf category — this
+ * also resolves the higher-level labels products carry post-import
+ * ("Hair Care", "Body Care", "Beauty & Skincare", …) via conservative
+ * keyword matching on the category/subcategory.
+ *
+ * Returns null when it can't classify confidently, so callers fall back to
+ * generic copy rather than guess. Deliberately conservative: it never infers
+ * "hair" for an item whose category doesn't actually mention hair, which is
+ * the whole point — no "type 3 & 4 curls" on an aloe vera or a supplement.
+ */
+export function departmentForProduct(
+  p: { category?: string | null; subcategory?: string | null },
+): TaxonKey | null {
+  const leaf = taxonForCategory(p.category);
+  if (leaf) return leaf.key;
+  const hay = `${p.category ?? ''} ${p.subcategory ?? ''}`.toLowerCase();
+  if (!hay.trim()) return null;
+  // Order matters: the most brand-specific signal (hair) is tested first and
+  // the broadest (skincare) last, so e.g. "Hair Treatments & Masks" reads as
+  // hair rather than skincare on the word "mask".
+  if (/hair|curl|coil|shampoo|condition|leave.?in|\bedge|relax|texturi|\bwig|weave|braid|durag|bonnet|scalp|\blocs?\b|dread/.test(hay)) return 'hair';
+  if (/beard|shav|after.?shave|cologne|fragrance|groom|\bbump/.test(hay)) return 'grooming';
+  if (/comb|brush|clipper|trimmer|dryer|adhesive|bonding|\blace\b|\btool/.test(hay)) return 'styling';
+  if (/body|shea|cocoa|butter|lotion|petroleum|vaseline|jelly/.test(hay)) return 'body';
+  if (/skin|\bface|cleanser|serum|moistur|\bmask|toner|exfoliat/.test(hay)) return 'skincare';
+  return null;
+}
+
 // ── Category landing-page copy ──────────────────────────────────────────────
 // Intro copy shown on each Shop category/taxon page AND reused as that page's
 // meta description, so every category landing page has unique, indexable text
