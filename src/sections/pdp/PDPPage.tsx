@@ -48,7 +48,8 @@ interface Props {
   attributes?: AttributeWithValues[];
   gallery?: ProductImageT[];
   backInStockEnabled?: boolean;
-  /** True for wellness consumables — enables the Subscribe & Save opt-in. */
+  /** When true, shows the Subscribe & Save opt-in. Currently always false
+   *  for the hair/body catalogue (set in the product route). */
   subscribeEligible?: boolean;
 }
 

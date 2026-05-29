@@ -81,7 +81,7 @@ export default function AccountPage() {
           }}>
             <div style={{ fontSize: '2rem', marginBottom: 12 }}>⟳</div>
             <div style={{ fontWeight: 600, fontSize: '1.0625rem', color: 'var(--ink-900)', marginBottom: 4 }}>Subscriptions</div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--ink-500)' }}>Reorder reminders for your wellness essentials</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--ink-500)' }}>Reorder reminders for the products you restock</div>
           </Link>
           <Link href="/account/profile" style={{
             display: 'block', padding: '28px 24px', background: 'white', borderRadius: 12,

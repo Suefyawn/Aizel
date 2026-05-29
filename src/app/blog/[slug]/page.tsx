@@ -51,30 +51,17 @@ export default async function BlogPostRoute({ params }: { params: Promise<{ slug
 
   const relatedPosts = allPosts.filter(p => p.slug !== post.slug && p.category === post.category).slice(0, 2);
 
-  // Related-products matching by taxon. Blog categories ("Bone Health",
-  // "Fertility Support", "Men Health", etc.) don't map 1:1 to product
-  // categories ("Bone Health" is shared; "Skincare" matches; everything
-  // else needs a heuristic). Wellness-ish blog category → wellness
-  // taxon products; everything else → category-string contains. Always
-  // fall back to a random sample from the catalog so the rail never
-  // goes empty on a niche post.
-  const { categoriesForTaxon } = await import('@/lib/category-taxonomy');
-  const wellnessCats = categoriesForTaxon('wellness') ?? [];
-  const beautyCats = [
-    ...(categoriesForTaxon('makeup') ?? []),
-    ...(categoriesForTaxon('skincare') ?? []),
-  ];
-  const blogCat = (post.category ?? '').toLowerCase();
-  const isWellness = /health|wellness|fertility|sleep|immun|bone|nutrition|men |women |female/.test(blogCat);
-  const isBeauty = /skin|makeup|beauty|lip|cheek|highlight|brush|foundation/.test(blogCat);
-  let relatedProducts: Product[] = allProducts.filter(p => {
-    if (isWellness) return wellnessCats.includes(p.category);
-    if (isBeauty)   return beautyCats.includes(p.category);
-    return false;
-  }).slice(0, 3);
+  // Related-products matching by taxon. Blog categories are the taxon labels
+  // ("Hair Care", "Body Care"), so resolve the post's taxon and show products
+  // whose category sits under it. Always fall back to a few featured /
+  // bestseller products so the rail never goes empty on a niche post.
+  const { categoriesForTaxon, findTaxon } = await import('@/lib/category-taxonomy');
+  const taxonCats = categoriesForTaxon(findTaxon(post.category)?.key) ?? [];
+  let relatedProducts: Product[] = (taxonCats.length
+    ? allProducts.filter(p => taxonCats.includes(p.category))
+    : []
+  ).slice(0, 3);
   if (relatedProducts.length === 0) {
-    // Fallback: a few featured/bestseller products so the section
-    // always has something on niche / Uncategorized posts.
     relatedProducts = allProducts
       .filter(p => p.is_featured || p.is_bestseller)
       .slice(0, 3);

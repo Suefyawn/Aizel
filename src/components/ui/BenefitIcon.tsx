@@ -3,7 +3,7 @@
 //
 // Replaces the emoji glyphs that were stored in products.key_benefits[].icon.
 // All icons use a single 24-unit viewBox, currentColor stroke, and 1.6px
-// stroke-width — they read as a cohesive set on a beauty/wellness PDP and
+// stroke-width — they read as a cohesive set on a beauty PDP and
 // inherit the surrounding text colour (brand-pink-text on paper2).
 //
 // To add a new icon: drop a <path>/<circle> into ICONS and add the

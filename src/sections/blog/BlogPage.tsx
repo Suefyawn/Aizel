@@ -10,10 +10,8 @@ const POSTS_PER_PAGE = 12;
 
 export function BlogPage({ posts }: { posts: BlogPost[] }) {
   // Filters are derived from the actual post categories, sorted by
-  // frequency. The old hardcoded ['Skincare','Makeup','Wellness'] list
-  // didn't match any real category (real values: "Bone Health",
-  // "Fertility Support", "Men Health", etc.) so every non-"All" tab
-  // showed zero posts.
+  // frequency, rather than a hardcoded list — so the tabs always match the
+  // real categories in the journal (currently "Hair Care", "Body Care").
   const filters = useMemo<string[]>(() => {
     const counts = new Map<string, number>();
     for (const p of posts) {

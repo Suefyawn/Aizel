@@ -65,7 +65,7 @@ export default function SubscriptionsPage() {
           <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 500 }}>Subscriptions</h1>
         </div>
         <p style={{ color: 'var(--ink-500)', margin: '0 0 32px', fontSize: '0.9375rem' }}>
-          Reorder reminders for your wellness essentials. Save 10% on every reorder with code <strong>SUBSCRIBE10</strong>.
+          Reorder reminders for the products you restock. Save 10% on every reorder with code <strong>SUBSCRIBE10</strong>.
         </p>
 
         {subs == null && <p style={{ color: '#9ca3af' }}>Loading subscriptions…</p>}
@@ -73,11 +73,11 @@ export default function SubscriptionsPage() {
         {subs && subs.length === 0 && (
           <div style={{ background: 'white', border: '1px dashed var(--line)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
             <p style={{ color: 'var(--ink-500)', margin: '0 0 16px' }}>No subscriptions yet.</p>
-            <Link href="/shop?category=Wellness" style={{
+            <Link href="/shop" style={{
               display: 'inline-block', padding: '10px 18px', background: 'var(--brand-pink-cta)',
               color: 'white', textDecoration: 'none', borderRadius: 8, fontSize: '0.875rem', fontWeight: 600,
             }}>
-              Browse wellness products
+              Browse products
             </Link>
           </div>
         )}

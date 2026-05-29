@@ -242,7 +242,7 @@ export async function getOnSale(limit = 8): Promise<Product[]> {
   }, DEMO_PRODUCTS.slice(0, limit));
 }
 
-/** Resolve a taxon slug ("makeup" / "wellness" / etc.) or a single-category
+/** Resolve a taxon slug ("hair" / "body" / etc.) or a single-category
  *  name into a product list. Returns []  if the taxon is unknown so the home
  *  sections render their empty-state, not their full catalog. */
 export async function getProductsByTaxon(taxonOrCategory: string, limit = 8): Promise<Product[]> {
