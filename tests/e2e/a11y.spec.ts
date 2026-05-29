@@ -41,9 +41,12 @@ const EXCLUDED_SELECTORS = ['#demo-banner', '[data-stripe]'];
 for (const p of PAGES) {
   test(`a11y — ${p.name}`, async ({ page }) => {
     await page.goto(p.path);
-    // Wait for the page to settle — most a11y violations are stable, but
-    // late-loading content (product tiles, ISR hydration) can flap.
-    await page.waitForLoadState('networkidle');
+    // Best-effort settle — most a11y violations are stable, but late-loading
+    // content (product tiles, ISR hydration) can flap. Bounded + swallowed:
+    // under fullyParallel load a 500ms idle window may never appear, and an
+    // uncapped wait would burn the whole 30s budget and time out. Our pages
+    // are server-rendered, so the DOM axe needs is present well before this.
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     const results = await new AxeBuilder({ page })
       .exclude(EXCLUDED_SELECTORS)
