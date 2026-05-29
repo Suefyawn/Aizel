@@ -7,10 +7,11 @@ import { useAuth } from '@/context/AuthContext';
 import { subscribeToProduct, type SubscribeResult } from '@/app/account/subscriptions/actions';
 import { SUBSCRIPTION_INTERVALS } from '@/lib/subscriptions';
 
-// Subscribe & Save opt-in — rendered on wellness PDPs only (eligibility is
-// decided server-side in the product route). Creating a subscription is
-// decoupled from the cart/checkout: it's a standalone "remind me to reorder"
-// record, so this never touches the place_order path.
+// Subscribe & Save opt-in — rendered only when a product is flagged
+// subscribe-eligible server-side in the product route (currently off for the
+// hair/body catalogue). Creating a subscription is decoupled from the
+// cart/checkout: it's a standalone "remind me to reorder" record, so this
+// never touches the place_order path.
 
 function CycleIcon() {
   return (

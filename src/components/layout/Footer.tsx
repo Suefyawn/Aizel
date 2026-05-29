@@ -172,9 +172,12 @@ export function Footer({ socials = [] }: { socials?: SocialLink[] }) {
               target="_blank"
               rel="noopener noreferrer"
               className="small-text"
-              style={{ color: 'rgba(255, 255, 255, 0.45)', textDecoration: 'none' }}
+              // 0.6 (≈7:1 on the #0A0A0A footer) clears WCAG AA; 0.45 was
+              // ≈4.5:1 and tripped axe's serious color-contrast rule on every
+              // page (the footer is global), failing the a11y CI job.
+              style={{ color: 'rgba(255, 255, 255, 0.6)', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--paper)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.45)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)')}
             >Powered by Trellee</a>
           </div>
         </div>

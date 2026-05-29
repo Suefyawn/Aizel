@@ -43,12 +43,12 @@ export default async function SettingsHomepagePage({ searchParams }: { searchPar
             <div>
               <label style={lbl}>Overline (small label above headline)</label>
               <input name="hero_overline" defaultValue={g('hero_overline')} style={inp}
-                placeholder="Beauty & Wellness · Inside Out" />
+                placeholder="Afro & Textured Hair · Curated" />
             </div>
             <div>
               <label style={lbl}>Headline</label>
               <textarea name="hero_headline" defaultValue={g('hero_headline').replace(/<br\/>/g, '\n')} rows={2} style={{ ...inp, resize: 'vertical' }}
-                placeholder="Beautiful skin." />
+                placeholder="Hair you love." />
               <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#9ca3af' }}>
                 Use a new line where you want a line break. You can use <em>italic text</em> with HTML: &lt;em&gt;text&lt;/em&gt;
               </p>
@@ -60,21 +60,21 @@ export default async function SettingsHomepagePage({ searchParams }: { searchPar
             <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={lbl}>Primary button text</label>
-                <input name="hero_cta1_text" defaultValue={g('hero_cta1_text', 'Shop Beauty')} style={inp} />
+                <input name="hero_cta1_text" defaultValue={g('hero_cta1_text', 'Shop Hair Care')} style={inp} />
               </div>
               <div>
                 <label style={lbl}>Primary button URL</label>
-                <input name="hero_cta1_url" defaultValue={g('hero_cta1_url', '/shop')} style={inp} />
+                <input name="hero_cta1_url" defaultValue={g('hero_cta1_url', '/shop?taxon=hair')} style={inp} />
               </div>
             </div>
             <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={lbl}>Secondary button text</label>
-                <input name="hero_cta2_text" defaultValue={g('hero_cta2_text', 'Explore Wellness')} style={inp} />
+                <input name="hero_cta2_text" defaultValue={g('hero_cta2_text', 'Take the Hair Quiz')} style={inp} />
               </div>
               <div>
                 <label style={lbl}>Secondary button URL</label>
-                <input name="hero_cta2_url" defaultValue={g('hero_cta2_url', '/shop?taxon=wellness')} style={inp} />
+                <input name="hero_cta2_url" defaultValue={g('hero_cta2_url', '/quiz')} style={inp} />
               </div>
             </div>
             <div>
@@ -85,8 +85,8 @@ export default async function SettingsHomepagePage({ searchParams }: { searchPar
             </div>
             <div>
               <label style={lbl}>Brand logos row (comma-separated)</label>
-              <input name="hero_brands" defaultValue={g('hero_brands', 'NARS,Kiko Milano,PIXI,CeraVe')} style={inp}
-                placeholder="NARS, Kiko Milano, PIXI, CeraVe" />
+              <input name="hero_brands" defaultValue={g('hero_brands', "Cantu,ORS,Palmer's,Kuza")} style={inp}
+                placeholder="Cantu, ORS, Palmer's, Kuza" />
             </div>
           </div>
         </Card>
@@ -110,7 +110,7 @@ export default async function SettingsHomepagePage({ searchParams }: { searchPar
             <div>
               <label style={lbl}>Subtitle</label>
               <input name="sale_subtitle" defaultValue={g('sale_subtitle')} style={inp}
-                placeholder="e.g. Limited-time prices across beauty & wellness" />
+                placeholder="e.g. Limited-time prices across hair & body care" />
             </div>
             <div className="adm-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>

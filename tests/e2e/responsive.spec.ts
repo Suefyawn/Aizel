@@ -66,9 +66,12 @@ for (const vp of VIEWPORTS) {
     for (const route of ROUTES) {
       test(`${route} fits viewport without horizontal scroll`, async ({ page }) => {
         await page.goto(route, { waitUntil: 'domcontentloaded' });
-        // Allow web fonts to swap in — a wide-font fallback can otherwise
-        // overflow briefly during the test window.
-        await page.waitForLoadState('networkidle').catch(() => {});
+        // Best-effort settle for web-font swap / late tiles. Bounded: under
+        // fullyParallel load the server is busy and a 500ms "network idle"
+        // window may never appear, so an uncapped wait would burn the entire
+        // 30s test budget and time out. The overflow read below is the real
+        // assertion; 3s of settle is plenty.
+        await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
 
         const overflow = await page.evaluate(() => {
           const docEl = document.documentElement;
